@@ -1,20 +1,19 @@
 use room::*;
-
+use std::env;
 mod room;
 mod room_controller;
 
 pub fn main() {
-    let w = Strip(Point(0.0, 0.0), Point(1.5, 0.0));
-    let w2 = Strip(Point(1.5, 0.0), Point(1.5, 1.5));
-    let w3 = Strip(Point(1.5, 1.5), Point(0.0, 1.5));
+    let args: Vec<String> = env::args().collect();
+    let w1 = ((0.0, 0.0), (1.5, 0.0));
+    let w2 = ((1.5, 0.0), (1.5, 1.5));
+    let w3 = ((1.5, 1.5), (0.0, 1.5));
 
-    let config = RoomConfig {
-        led_density: 60.0,
-        view_pos: Point(0.0, 0.0),
-        view_rot: 90.0,
-        strips: vec![w, w2, w3],
-        leds: vec![Color(0, 0, 0)],
-    };
+    //let config = RoomConfig::new(60.0, (0.0, 0.0), 90.0);
 
-    println!("{}", config.num_leds());
+    println!("{}", args.get(1).unwrap());
+
+    let config2 = RoomConfig::new_from_file(args.get(1).expect("no argument given for filename."));
+
+    println!("{}", config2.num_leds());
 }
