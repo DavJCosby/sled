@@ -1,7 +1,7 @@
 #![crate_name = "doc"]
 use std::fs;
 /// Settings and data for a room
-pub struct RoomConfig {
+pub struct Room {
     /// number of leds / meter
     pub led_density: f32,
     /// expected position of the observer (meters, meters)
@@ -13,9 +13,9 @@ pub struct RoomConfig {
     pub leds: Vec<Color>,
 }
 
-impl RoomConfig {
+impl Room {
     pub fn new(led_density: f32, view_pos: Point, view_rot: f32) -> Self {
-        RoomConfig {
+        Room {
             led_density,
             view_pos,
             view_rot,
@@ -50,6 +50,7 @@ impl RoomConfig {
         //println!("{}", lines);
         let num_leds = strips.len();
         RoomConfig {
+        let mut return_value = Room {
             led_density,
             view_pos,
             view_rot,

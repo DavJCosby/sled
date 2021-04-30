@@ -1,7 +1,7 @@
 use crate::room::*;
 
 pub struct RoomController {
-    pub data: RoomConfig,
+    pub room: Room,
 }
 
 impl RoomController {
