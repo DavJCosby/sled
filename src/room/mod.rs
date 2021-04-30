@@ -26,7 +26,7 @@ impl Room {
 
     pub fn new_from_file(filepath: &str) -> Self {
         let contents = fs::read_to_string(filepath).expect("something went wrong reading the file");
-        let lines = contents.split("\n").collect::<Vec<&str>>();
+        let lines = contents.lines().collect::<Vec<&str>>();
 
         let led_density = lines[0].parse::<f32>().unwrap();
         let coords_str = lines[1].split(" ").collect::<Vec<&str>>();
