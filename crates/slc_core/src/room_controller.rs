@@ -1,4 +1,4 @@
-use crate::room::*;
+use crate::{room::Room, util::*};
 
 pub struct RoomController {
     pub room: Room,

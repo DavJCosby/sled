@@ -1,2 +1,18 @@
-pub mod room;
-pub mod room_controller;
+use slc_input;
+
+pub mod core {
+    pub use slc_core::*;
+}
+
+pub mod input {
+    pub use slc_input::*;
+}
+
+pub mod output {
+    pub use slc_output::*;
+}
+
+pub mod gui {
+    pub use slc_gui_output::*;
+}
+

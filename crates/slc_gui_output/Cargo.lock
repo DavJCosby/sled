@@ -2924,16 +2924,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f173ac3d1a7e3b28003f40de0b5ce7fe2710f9b9dc3fc38664cebee46b3b6527"
 
 [[package]]
-name = "slc"
-version = "0.1.0"
-dependencies = [
- "slc_core",
- "slc_gui_output",
- "slc_input",
- "slc_output",
-]
-
-[[package]]
 name = "slc_core"
 version = "0.1.0"
 
@@ -2946,10 +2936,6 @@ dependencies = [
  "slc_core",
  "slc_output",
 ]
-
-[[package]]
-name = "slc_input"
-version = "0.1.0"
 
 [[package]]
 name = "slc_output"
