@@ -74,4 +74,28 @@ impl Room {
         }
         return count as usize;
     }
+
+    pub fn get_pos_at_t(&self, t: f32) -> Point {
+        // find sum of strip lengths
+        let mut sum = 0.0;
+        for strip in &self.strips {
+            sum += strip.len();
+        }
+        // find matching strip
+        let mut cur_dist = 0.0;
+        let mut target_strip = self.strips.get(0).unwrap();
+
+        for strip in &self.strips {
+            let next_dist = cur_dist + strip.len();
+            if next_dist > t * sum {
+                target_strip = &strip;
+                break;
+            }
+            cur_dist = next_dist;
+        }
+
+        // find point along that strip
+        let leftover_t = (t - (cur_dist / sum)) / (target_strip.len() / sum);
+        return target_strip.lerp(leftover_t);
+    }
 }

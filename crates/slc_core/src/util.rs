@@ -13,6 +13,7 @@ pub type Strip = LineSegment;
 pub trait LineSegmentTrait {
     fn len(&self) -> f32;
     fn intersects(&self, other: &LineSegment) -> Option<Point>;
+    fn lerp(&self, t: f32) -> Point;
 }
 
 impl LineSegmentTrait for LineSegment {
@@ -20,6 +21,13 @@ impl LineSegmentTrait for LineSegment {
         let dx = self.1 .0 - self.0 .0;
         let dy = self.1 .1 - self.0 .1;
         return (dx * dx + dy * dy).sqrt();
+    }
+
+    fn lerp(&self, t: f32) -> Point {
+        (
+            self.0 .0 + (self.1 .0 - self.0 .0) * t,
+            self.0 .1 + (self.1 .1 - self.0 .1) * t,
+        )
     }
 
     /// returns the point of intersection between two line segments, if there is one. Stolen from `<https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect>`
