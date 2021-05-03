@@ -2932,6 +2932,7 @@ dependencies = [
  "slc_gui_output",
  "slc_input",
  "slc_output",
+ "slc_sweep_input",
 ]
 
 [[package]]
@@ -2951,12 +2952,23 @@ dependencies = [
 [[package]]
 name = "slc_input"
 version = "0.1.0"
+dependencies = [
+ "slc_core",
+]
 
 [[package]]
 name = "slc_output"
 version = "0.1.0"
 dependencies = [
  "slc_core",
+]
+
+[[package]]
+name = "slc_sweep_input"
+version = "0.1.0"
+dependencies = [
+ "slc_core",
+ "slc_input",
 ]
 
 [[package]]

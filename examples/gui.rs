@@ -1,41 +1,27 @@
-use core::time;
-use std::thread;
-use std::{
-    sync::{Arc, RwLock},
-    time::Instant,
-};
+use std::sync::{Arc, RwLock};
 
-use slc::core::{room::Room, room_controller::RoomController};
-use slc::gui::Gui;
-use slc::output::OutputDevice;
+use slc::{
+    core::{room::Room, room_controller::RoomController},
+    gui::Gui,
+    input::SpatialInputDriver,
+    output::OutputDevice,
+    sweep::Sweep,
+};
 
 pub fn main() {
     let room = Room::new_from_file("room_configs/config1.rcfg");
     let room_controller = RoomController { room };
 
-    let rw_lock = Arc::new(RwLock::new(room_controller));
-    let write_clone = rw_lock.clone();
+    // create a read-write lock on the room_controller for safe multithreaded access
+    let input_access = Arc::new(RwLock::new(room_controller));
+    let output_access = input_access.clone();
 
-    thread::spawn(move || {
-        println!("entered");
-        let start = Instant::now();
-        loop {
-            let duration = start.elapsed().as_secs_f32();
-            let x = duration.cos();
-            let y = duration.sin();
-            let mut controller_write = write_clone.write().unwrap();
-            controller_write.set_led_at_dir(
-                (x, y),
-                (
-                    (((duration / 3.0).sin() * 255.0).abs() as u8),
-                    100,
-                    ((duration / 3.0).cos() * 255.0).abs() as u8,
-                ),
-            );
-            drop(controller_write);
-            //thread::sleep(time::Duration::from_millis(10));
-        }
-    });
+    // prepare input and output devices
+    let input = Sweep::new();
+    let output = Gui::new();
 
-    Gui::start(rw_lock);
+    input.start(input_access);
+    output.start(output_access);
 }
+
+

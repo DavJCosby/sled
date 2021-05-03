@@ -8,6 +8,7 @@ use std::sync::{Arc, RwLock, RwLockReadGuard};
 
 const WORLD_SCALE: f32 = 5.0;
 const CEILING_HEIGHT: f32 = 2.7432;
+const LED_SIZE: f32 = 0.01;
 
 struct LedID(usize);
 
@@ -95,8 +96,8 @@ fn build_leds(
         commands
             .spawn_bundle(PbrBundle {
                 mesh: meshes.add(Mesh::from(shape::Icosphere {
-                    radius: 0.01 * WORLD_SCALE,
-                    subdivisions: 0,
+                    radius: LED_SIZE * WORLD_SCALE,
+                    subdivisions: 1,
                 })),
                 transform: Transform::from_xyz(
                     led_pos.0 * WORLD_SCALE,
@@ -130,17 +131,14 @@ fn build_base_world(
     ambient_light.brightness = 1.0;
 }
 
-fn display_room(
+fn refresh_leds(
     locked_controller: Res<Arc<RwLock<RoomController>>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     query: Query<(&Handle<StandardMaterial>, &LedID)>,
 ) {
     let controller_read_only = locked_controller.read().unwrap();
     for (mat_handle, id) in query.iter() {
-        //println!("entered {}", id.0);
-
         let (r8, g8, b8) = controller_read_only.room.leds.get(id.0).unwrap();
-        //println!("{}, {}, {}", r8, g8, b8);
         let (r32, g32, b32) = (*r8 as f32 / 255.0, *g8 as f32 / 255.0, *b8 as f32 / 255.0);
 
         let mat = materials.get_mut(mat_handle).unwrap();
@@ -152,18 +150,22 @@ fn display_room(
 
 pub struct Gui;
 
+impl Gui {
+    pub fn new() -> Gui {
+        Gui
+    }
+}
+
 impl OutputDevice for Gui {
-    fn start(locked_controller: Arc<RwLock<RoomController>>) {
+    fn start(&self, locked_controller: Arc<RwLock<RoomController>>) {
         App::build()
             .insert_resource(locked_controller)
             .insert_resource(Msaa { samples: 4 })
             .add_plugins(DefaultPlugins)
-            //world
             .add_plugin(WorldBuilder)
-            // camera
             .add_plugin(PlayerPlugin)
             // leds
-            .add_system(display_room.system())
+            .add_system(refresh_leds.system())
             .run();
     }
 }

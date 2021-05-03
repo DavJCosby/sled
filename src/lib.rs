@@ -1,5 +1,3 @@
-use slc_input;
-
 pub mod core {
     pub use slc_core::*;
 }
@@ -16,3 +14,6 @@ pub mod gui {
     pub use slc_gui_output::*;
 }
 
+pub mod sweep {
+    pub use slc_sweep_input::*;
+}
