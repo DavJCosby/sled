@@ -22,7 +22,6 @@ impl RoomController {
             let i = strip.intersects(&(view_pos, ray_end));
             if i.is_some() {
                 intersection = i;
-                println!("{:?}", i.unwrap());
                 break;
             }
             strip_index += 1;
@@ -37,7 +36,9 @@ impl RoomController {
         let intersection_point = intersection.unwrap();
         let tx = reverse_lerp(strip.0, strip.1, intersection_point);
         led_count += tx * self.room.led_density * strip.len();
-
+        if led_count > 0.0 {
+            led_count -= 1.0;
+        }
         self.set_led(led_count as usize, color);
     }
 }

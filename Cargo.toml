@@ -13,6 +13,7 @@ slc_core = { path = "crates/slc_core" }
 slc_output = { path = "crates/slc_output" }
 slc_input = { path = "crates/slc_input" }
 slc_gui_output = { path = "crates/slc_gui_output" }
+bevy = "0.5.0"
 
 
 [[example]]
