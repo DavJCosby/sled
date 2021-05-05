@@ -26,7 +26,7 @@ impl SpatialInputDriver for Sweep {
                     (x, y),
                     (
                         (((duration / 3.0).sin() * 255.0).abs() as u8),
-                        100,
+                        50,
                         ((duration / 3.0).cos() * 255.0).abs() as u8,
                     ),
                 );

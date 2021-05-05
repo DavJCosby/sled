@@ -104,7 +104,7 @@ fn build_leds(
                     CEILING_HEIGHT * WORLD_SCALE,
                     led_pos.1 * WORLD_SCALE,
                 ),
-                material: materials.add(Color::rgb(1.0, 1.0, 1.0).into()),
+                material: materials.add(Color::rgb(0.0, 0.0, 0.0).into()),
                 ..Default::default()
             })
             .insert(LedID(led_counter));
@@ -115,13 +115,10 @@ fn build_leds(
 
 fn build_base_world(
     mut commands: Commands,
-    locked_controller: Res<Arc<RwLock<RoomController>>>,
     mut ambient_light: ResMut<AmbientLight>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let controller_read_only = locked_controller.read().unwrap();
-
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
@@ -142,7 +139,8 @@ fn refresh_leds(
         let (r32, g32, b32) = (*r8 as f32 / 255.0, *g8 as f32 / 255.0, *b8 as f32 / 255.0);
 
         let mat = materials.get_mut(mat_handle).unwrap();
-        mat.base_color
+        mat.roughness = 1.0;
+        mat.emissive
             .set(Box::new(Color::rgb(r32, g32, b32)))
             .unwrap();
     }
