@@ -1,5 +1,9 @@
-use crate::{room::Room, util::*};
+use crate::{room::Room, util::*, };
 
+/// Contains methods for reading and writing room data.
+/// Upon construction, comsumes the [Room](../room/struct.Room.html).
+/// Should be packed into a [RwLock](std::sync::RwLock).
+/// The RwLock's write lock should only be obtained by an [InputDriver](../devices/struct.InputDriver.html).
 pub struct RoomController {
     pub room: Room,
 }
@@ -9,7 +13,7 @@ impl RoomController {
     pub fn set_led(&mut self, index: usize, color: Color) {
         self.room.leds[index] = color;
     }
-
+    /// Casts a ray in the given direction. If it hits a wall, the led closest to that wall position will be colored.
     pub fn set_led_at_dir(&mut self, dir: Vector2D, color: Color) {
         let view_pos = self.room.view_pos;
         let dist = 100.0;

@@ -1,7 +1,7 @@
 use std::{sync::RwLock, thread, time::Instant};
 
 use slc::room_controller::RoomController;
-use slc::devices::SpatialInputDriver;
+use slc::devices::InputDriver;
 
 pub struct Sweep {
     stop: bool,
@@ -13,7 +13,7 @@ impl Sweep {
     }
 }
 
-impl SpatialInputDriver for Sweep {
+impl InputDriver for Sweep {
     fn start(self, controller_copy: std::sync::Arc<RwLock<RoomController>>) {
         thread::spawn(move || {
             let start = Instant::now();

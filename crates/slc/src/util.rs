@@ -1,13 +1,13 @@
-/// Point with x = point.0 and y = point.1
+/// Point with x = point.0 and y = point.1.
 pub type Point = (f32, f32);
-/// Vector2D with x = vec2d.0 and y = vec2d.1
+/// Vector with x = point.0 and y = point.1.
 pub type Vector2D = Point;
-///24-bit color tuple alias
+///24-bit color tuple alias.
 pub type Color = (u8, u8, u8);
 
-/// LED light strip stretching from strip.0 to strip.1. Does not own any leds, see [`Room`].leds
+/// Line segment stretching from line_segment.0 to line_segment.1.
 pub type LineSegment = (Point, Point);
-/// LED light strip stretching from strip.0 to strip.1. Does not own any leds, see [`Room`].leds
+/// LED light strip stretching from strip.0 to strip.1. Does not own any leds, see [Room](../room/struct.Room.html).leds.
 pub type Strip = LineSegment;
 
 pub trait LineSegmentTrait {
@@ -17,12 +17,14 @@ pub trait LineSegmentTrait {
 }
 
 impl LineSegmentTrait for LineSegment {
+    /// Returns the length of the LineSegment, obtained using the pythagorean theorem.
     fn len(&self) -> f32 {
         let dx = self.1 .0 - self.0 .0;
         let dy = self.1 .1 - self.0 .1;
         return (dx * dx + dy * dy).sqrt();
     }
 
+    /// Interpolates between line_segment.0 and line_segment.1 at `t`.
     fn lerp(&self, t: f32) -> Point {
         (
             self.0 .0 + (self.1 .0 - self.0 .0) * t,
@@ -30,7 +32,7 @@ impl LineSegmentTrait for LineSegment {
         )
     }
 
-    /// returns the point of intersection between two line segments, if there is one. Stolen from `<https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect>`
+    /// Returns the point of intersection between two LineSegments, if there is one.
     fn intersects(&self, other: &LineSegment) -> Option<Point> {
         let s1_x = self.1 .0 - self.0 .0;
         let s1_y = self.1 .1 - self.0 .1;
