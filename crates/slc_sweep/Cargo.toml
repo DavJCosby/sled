@@ -1,5 +1,5 @@
 [package]
-name = "slc_gui_output"
+name = "slc_sweep"
 version = "0.1.0"
 edition = "2018"
 
@@ -7,8 +7,4 @@ edition = "2018"
 
 [dependencies]
 # slc
-slc_core = { path = "../slc_core" }
-slc_output = { path = "../slc_output" }
-# bevy
-bevy = "0.5.0"
-bevy_flycam = "*"
+slc = { path = "../slc" }

@@ -1,4 +1,3 @@
-#![crate_name = "doc"]
 use crate::util::*;
 use std::fs;
 

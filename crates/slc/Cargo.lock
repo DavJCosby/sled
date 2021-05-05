@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "slc_input"
+name = "slc"
 version = "0.1.0"

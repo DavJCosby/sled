@@ -1,7 +1,7 @@
 use std::{sync::RwLock, thread, time::Instant};
 
-use slc_core::room_controller::RoomController;
-use slc_input::SpatialInputDriver;
+use slc::room_controller::RoomController;
+use slc::devices::SpatialInputDriver;
 
 pub struct Sweep {
     stop: bool,

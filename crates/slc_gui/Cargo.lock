@@ -2924,22 +2924,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f173ac3d1a7e3b28003f40de0b5ce7fe2710f9b9dc3fc38664cebee46b3b6527"
 
 [[package]]
-name = "slc_core"
+name = "slc"
 version = "0.1.0"
 
 [[package]]
-name = "slc_gui_output"
+name = "slc_gui"
 version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_flycam",
- "slc_core",
- "slc_output",
+ "slc",
 ]
-
-[[package]]
-name = "slc_output"
-version = "0.1.0"
 
 [[package]]
 name = "slice-deque"

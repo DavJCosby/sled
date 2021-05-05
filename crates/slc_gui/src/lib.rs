@@ -1,10 +1,9 @@
-use slc_core::room_controller::RoomController;
-use slc_output::OutputDevice;
-
 use bevy::{pbr::AmbientLight, prelude::*};
-use bevy_flycam::{MovementSettings, PlayerPlugin};
+use bevy_flycam::PlayerPlugin;
+use slc::devices::OutputDevice;
+use slc::room_controller::RoomController;
 
-use std::sync::{Arc, RwLock, RwLockReadGuard};
+use std::sync::{Arc, RwLock};
 
 const WORLD_SCALE: f32 = 5.0;
 const CEILING_HEIGHT: f32 = 2.7432;

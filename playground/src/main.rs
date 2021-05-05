@@ -1,15 +1,16 @@
 use std::sync::{Arc, RwLock};
 
 use slc::{
-    core::{room::Room, room_controller::RoomController},
-    gui::Gui,
-    input::SpatialInputDriver,
-    output::OutputDevice,
-    sweep::Sweep,
+    devices::{OutputDevice, SpatialInputDriver},
+    room::Room,
+    room_controller::RoomController,
 };
 
+use slc_gui::Gui;
+use slc_sweep::Sweep;
+
 pub fn main() {
-    let room = Room::new_from_file("room_configs/config1.rcfg");
+    let room = Room::new_from_file("../room_configs/config1.rcfg");
     let room_controller = RoomController { room };
 
     // create a read-write lock on the room_controller for safe multithreaded access
@@ -23,5 +24,3 @@ pub fn main() {
     input.start(input_access);
     output.start(output_access);
 }
-
-

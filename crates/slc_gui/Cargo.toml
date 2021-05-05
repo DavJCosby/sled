@@ -1,9 +1,13 @@
 [package]
-name = "slc_output"
+name = "slc_gui"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-slc_core = { path = "../slc_core" }
+# slc
+slc = { path = "../slc" }
+# bevy
+bevy = "0.5.0"
+bevy_flycam = "*"
