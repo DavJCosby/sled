@@ -1,15 +1,22 @@
-use crate::{room::Room, util::*, };
+use std::sync::{Arc, RwLock};
+
+use crate::{room::Room, util::*};
 
 /// Contains methods for reading and writing room data.
 /// Upon construction, comsumes the [Room](../room/struct.Room.html).
-/// Should be packed into a [RwLock](std::sync::RwLock).
-/// The RwLock's write lock should only be obtained by an [InputDriver](../devices/struct.InputDriver.html).
+/// Should be packed into a [RwLock](std::sync::RwLock) using [new_thread_safe()](#method.new_thread_safe).
+/// The RwLock's write lock should only be obtained by an [InputDevice](../devices/trait.InputDevice.html).
 pub struct RoomController {
     pub room: Room,
 }
 
 impl RoomController {
-    /// sets the color of a given led
+    /// Creates a RoomController by consuming room, and then wrap the RoomController for thread safety.
+    pub fn new_thread_safe(room: Room) -> Arc<RwLock<RoomController>> {
+        Arc::new(RwLock::new(RoomController { room }))
+    }
+
+    /// Sets the color of a given led
     pub fn set_led(&mut self, index: usize, color: Color) {
         self.room.leds[index] = color;
     }
