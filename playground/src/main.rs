@@ -1,7 +1,7 @@
 use std::sync::{Arc, RwLock};
 
 use slc::{
-    devices::{InputDriver, OutputDevice},
+    devices::{InputDevice, OutputDevice},
     room::Room,
     room_controller::RoomController,
 };
