@@ -26,7 +26,7 @@ impl Room {
             coords_str[0].parse::<f32>().unwrap(),
             coords_str[1].parse::<f32>().unwrap(),
         );
-        let view_rot = lines[2].parse::<f32>().unwrap();
+        let view_rot = lines[2].parse::<f32>().unwrap().to_radians();
         let mut strips: Vec<Strip> = vec![];
 
         for i in 3..lines.len() {

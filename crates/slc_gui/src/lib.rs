@@ -36,7 +36,7 @@ fn build_view_orb(
         })),
         transform: Transform::from_xyz(
             controller_read_only.room.view_pos.0 * WORLD_SCALE,
-            CEILING_HEIGHT * 0.75 * WORLD_SCALE,
+            CEILING_HEIGHT * WORLD_SCALE,
             controller_read_only.room.view_pos.1 * WORLD_SCALE,
         ),
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),

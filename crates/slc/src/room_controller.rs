@@ -17,11 +17,34 @@ impl RoomController {
     }
 
     /// Sets the color of a given led
-    pub fn set_led(&mut self, index: usize, color: Color) {
+    pub fn set(&mut self, index: usize, color: Color) {
         self.room.leds[index] = color;
     }
-    /// Casts a ray in the given direction. If it hits a wall, the led closest to that wall position will be colored.
-    pub fn set_led_at_dir(&mut self, dir: Vector2D, color: Color) {
+
+    /// sets the color of all leds in the room
+    pub fn set_all(&mut self, color: Color) {
+        for led in &mut self.room.leds {
+            *led = color;
+        }
+    }
+
+    pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color) {
+        self.set_at_view_angle(dir.1.atan2(dir.0), color);
+    }
+
+    pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
+        let room_angle = self.room.view_rot + angle;
+        self.set_at_room_angle(room_angle, color);
+    }
+
+    pub fn set_at_room_angle(&mut self, angle: f32, color: Color) {
+        let room_dir = (angle.cos(), angle.sin());
+        self.set_at_room_dir(room_dir, color);
+    }
+
+    /// Casts a ray in the given direction, in room coordinate space, from the camera's position.
+    /// If it hits a wall, the led closest to that wall position will be colored.
+    pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
         let view_pos = self.room.view_pos;
         let dist = 100.0;
         let ray_end = (view_pos.0 + (dir.0 * dist), view_pos.1 + (dir.1 * dist));
@@ -50,7 +73,7 @@ impl RoomController {
         if led_count > 0.0 {
             led_count -= 1.0;
         }
-        self.set_led(led_count as usize, color);
+        self.set(led_count as usize, color);
     }
 }
 
