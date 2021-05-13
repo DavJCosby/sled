@@ -42,6 +42,8 @@ fn build_view_orb(
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
         ..Default::default()
     });
+
+    drop(controller_read_only);
 }
 
 fn build_poles(
@@ -75,6 +77,7 @@ fn build_poles(
             ..Default::default()
         });
     }
+    drop(controller_read_only);
 }
 
 fn build_leds(
@@ -110,6 +113,8 @@ fn build_leds(
 
         led_counter += 1;
     }
+
+    drop(controller_read_only);
 }
 
 fn build_base_world(
@@ -143,6 +148,8 @@ fn refresh_leds(
             .set(Box::new(Color::rgb(r32, g32, b32)))
             .unwrap();
     }
+
+    drop(controller_read_only);
 }
 
 pub struct Gui;

@@ -16,16 +16,6 @@ pub struct Room {
 }
 
 impl Room {
-    pub fn new(led_density: f32, view_pos: Point, view_rot: f32) -> Self {
-        Room {
-            led_density,
-            view_pos,
-            view_rot,
-            strips: vec![],
-            leds: vec![],
-        }
-    }
-
     pub fn new_from_file(filepath: &str) -> Self {
         let contents = fs::read_to_string(filepath).expect("something went wrong reading the file");
         let lines = contents.lines().collect::<Vec<&str>>();
