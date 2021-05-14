@@ -1947,6 +1947,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lab"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4951f42286540a90992685527c4a7940d63d3ae1a750d057ae7c60ef0ccab24"
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2942,7 +2948,16 @@ version = "0.1.0"
 dependencies = [
  "slc",
  "slc_gui",
+ "slc_rainbow",
  "slc_sweep",
+]
+
+[[package]]
+name = "slc_rainbow"
+version = "0.1.0"
+dependencies = [
+ "lab",
+ "slc",
 ]
 
 [[package]]
