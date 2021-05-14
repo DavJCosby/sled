@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 
 const WORLD_SCALE: f32 = 5.0;
 const CEILING_HEIGHT: f32 = 2.7432;
-const LED_SIZE: f32 = 0.01;
+const LED_SIZE: f32 = 0.007;
 
 struct LedID(usize);
 
@@ -36,8 +36,8 @@ fn build_view_orb(
         })),
         transform: Transform::from_xyz(
             controller_read_only.room.view_pos.0 * WORLD_SCALE,
-            CEILING_HEIGHT * WORLD_SCALE,
             controller_read_only.room.view_pos.1 * WORLD_SCALE,
+            CEILING_HEIGHT * WORLD_SCALE,
         ),
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
         ..Default::default()
@@ -57,22 +57,22 @@ fn build_poles(
         let pole_mesh = Mesh::from(shape::Box {
             min_x: -0.05 * WORLD_SCALE,
             max_x: 0.05 * WORLD_SCALE,
-            min_y: 0.0 * WORLD_SCALE,
-            max_y: CEILING_HEIGHT * WORLD_SCALE,
-            min_z: -0.05 * WORLD_SCALE,
-            max_z: 0.05 * WORLD_SCALE,
+            min_y: -0.05 * WORLD_SCALE,
+            max_y: 0.05 * WORLD_SCALE,
+            min_z: 0.0 * WORLD_SCALE,
+            max_z: CEILING_HEIGHT * WORLD_SCALE,
         });
 
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(pole_mesh.clone()),
-            transform: Transform::from_xyz(strip.0 .0 * WORLD_SCALE, 0.0, strip.0 .1 * WORLD_SCALE),
+            transform: Transform::from_xyz(strip.0 .0 * WORLD_SCALE, strip.0 .1 * WORLD_SCALE, 1.0),
             material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
             ..Default::default()
         });
 
         commands.spawn_bundle(PbrBundle {
             mesh: meshes.add(pole_mesh),
-            transform: Transform::from_xyz(strip.1 .0 * WORLD_SCALE, 0.0, strip.1 .1 * WORLD_SCALE),
+            transform: Transform::from_xyz(strip.1 .0 * WORLD_SCALE, strip.1 .1 * WORLD_SCALE, 0.0),
             material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
             ..Default::default()
         });
@@ -103,8 +103,8 @@ fn build_leds(
                 })),
                 transform: Transform::from_xyz(
                     led_pos.0 * WORLD_SCALE,
-                    CEILING_HEIGHT * WORLD_SCALE,
                     led_pos.1 * WORLD_SCALE,
+                    CEILING_HEIGHT * WORLD_SCALE,
                 ),
                 material: materials.add(Color::rgb(0.0, 0.0, 0.0).into()),
                 ..Default::default()
@@ -117,18 +117,7 @@ fn build_leds(
     drop(controller_read_only);
 }
 
-fn build_base_world(
-    mut commands: Commands,
-    mut ambient_light: ResMut<AmbientLight>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<StandardMaterial>>,
-) {
-    commands.spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Plane { size: 100.0 })),
-        material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
-        ..Default::default()
-    });
-
+fn build_base_world(mut ambient_light: ResMut<AmbientLight>) {
     ambient_light.brightness = 1.0;
 }
 

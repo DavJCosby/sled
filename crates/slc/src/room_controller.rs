@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::{f32::consts::PI, sync::{Arc, RwLock}};
 
 use crate::{room::Room, util::*};
 
@@ -29,7 +29,7 @@ impl RoomController {
     }
 
     pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color) {
-        self.set_at_view_angle(dir.1.atan2(dir.0), color);
+        self.set_at_view_angle(dir.1.atan2(dir.0) - (PI / 2.0), color);
     }
 
     pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
@@ -38,8 +38,9 @@ impl RoomController {
     }
 
     pub fn set_at_room_angle(&mut self, angle: f32, color: Color) {
-        let room_dir = (angle.cos(), angle.sin());
-        self.set_at_room_dir(room_dir, color);
+        let adjusted = angle + (PI / 2.0);
+        let room_dir = (adjusted.cos(), adjusted.sin());
+        self.set_at_room_dir(room_dir , color);
     }
 
     /// Casts a ray in the given direction, in room coordinate space, from the camera's position.

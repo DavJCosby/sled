@@ -11,9 +11,9 @@ let room_controller = RoomController::new(room);
 // set all pixels white
 room_controller.set_all((255, 255, 255));
 // set the LED leftmost to the camera red
-room_controller.set_at_view_dir((-1.0, 0.0), (255, 0, 0));
+controller_write.set_at_view_angle(PI / 2.0, (255, 0, 0));
 // set the LED rightmost to the camera green
-room_controller.set_at_view_angle(PI * -0.5, (0, 255, 0));
+controller_write.set_at_view_dir((1.0, 0.0), (0, 255, 0));
 // set the northmost LED blue (relative to the room's coordinate space)
 room_controller.set_at_room_dir((0.0, 1.0), (0, 0, 255));
 
