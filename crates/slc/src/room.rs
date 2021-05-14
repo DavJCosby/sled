@@ -1,5 +1,5 @@
 use crate::util::*;
-use std::{f32::consts::PI, fs};
+use std::{fs};
 
 /// Settings and data for a Room, to be consumed by a [RoomController](../room_controller/struct.RoomController.html).
 pub struct Room {

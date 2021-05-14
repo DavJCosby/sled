@@ -1,5 +1,4 @@
-use core::time;
-use std::{f32::consts::PI, sync::RwLock, thread, time::Instant};
+use std::{sync::RwLock, thread, time::Instant};
 
 use slc::devices::InputDevice;
 use slc::room_controller::RoomController;
@@ -48,7 +47,6 @@ impl InputDevice for Sweep {
                 controller_write.set_at_room_dir((x, y), (0, 255, 0));
                 drop(controller_write);
                 last = duration;
-                //thread::sleep(time::Duration::from_millis(1));
             }
         });
     }
