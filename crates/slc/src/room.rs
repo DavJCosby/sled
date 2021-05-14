@@ -4,23 +4,24 @@ use std::{f32::consts::PI, fs};
 /// Settings and data for a Room, to be consumed by a [RoomController](../room_controller/struct.RoomController.html).
 pub struct Room {
     /// Number of leds / meter.
-    pub led_density: f32,
+    density: f32,
     /// expected position of the observer (meters, meters).
-    pub view_pos: Point,
+    view_pos: Point,
     /// expected rotation of the observer in degrees.
-    pub view_rot: f32,
+    view_rot: f32,
     /// collection of [LineSegments](LineSegment) that represent LED strips.
-    pub strips: Vec<Strip>,
+    strips: Vec<Strip>,
     /// list of all led colors in the room. Vector size should be `length of all strips * density`.
-    pub leds: Vec<Color>,
+    leds: Vec<Color>,
 }
 
 impl Room {
+    /// constructs a room from a .rcfg file.
     pub fn new_from_file(filepath: &str) -> Self {
         let contents = fs::read_to_string(filepath).expect("something went wrong reading the file");
         let lines = contents.lines().collect::<Vec<&str>>();
 
-        let led_density = lines[0].parse::<f32>().unwrap();
+        let density = lines[0].parse::<f32>().unwrap();
         let coords_str = lines[1].split(" ").collect::<Vec<&str>>();
         let view_pos = (
             coords_str[0].parse::<f32>().unwrap(),
@@ -40,31 +41,43 @@ impl Room {
         }
 
         let mut return_value = Room {
-            led_density,
+            density,
             view_pos,
             view_rot,
             strips,
             leds: vec![],
         };
 
-        return_value.leds = vec![(0, 0, 0); return_value.num_leds()];
+        return_value.leds = vec![(0, 0, 0); return_value.num_expected_leds()];
         return return_value;
     }
 
-    /// returns the number of pixels in the light strip chain, derived from [`Room`].led_density
-    pub fn num_leds(&self) -> usize {
-        if self.leds.len() != 0 {
-            return self.leds.len();
-        }
-
-        let mut count = 0.0;
-        let strips = &self.strips;
-        for w in strips {
-            count += w.len() * self.led_density;
-        }
-        return count as usize;
+    /// read-only access to the density field.
+    pub fn density(&self) -> f32 {
+        self.density
     }
 
+    /// read-only access to the view_pos field.
+    pub fn view_pos(&self) -> Point {
+        self.view_pos
+    }
+
+    /// read-only access to the view_rot field.
+    pub fn view_rot(&self) -> f32 {
+        self.view_rot
+    }
+
+    /// read-only access to the srips field
+    pub fn strips(&self) -> &Vec<Strip> {
+        &self.strips
+    }
+
+    /// read-only access to the leds field
+    pub fn leds(&self) -> &Vec<Color> {
+        &self.leds
+    }
+
+    /// Interpolates down the chain of strips to return the point at t.
     pub fn get_pos_at_t(&self, t: f32) -> Point {
         // find sum of strip lengths
         let mut sum = 0.0;
@@ -87,5 +100,20 @@ impl Room {
         // find point along that strip
         let leftover_t = (t - (cur_dist / sum)) / (target_strip.len() / sum);
         return target_strip.lerp(leftover_t);
+    }
+
+    /// Sets the led at index to the given color.
+    pub fn set_led(&mut self, index: usize, color: Color) {
+        self.leds[index] = color;
+    }
+
+    /// Returns the number of leds expected in the room, calulated using strip lengths and density.
+    fn num_expected_leds(&self) -> usize {
+        let mut count = 0.0;
+        let strips = &self.strips;
+        for w in strips {
+            count += w.len() * self.density;
+        }
+        return count as usize;
     }
 }

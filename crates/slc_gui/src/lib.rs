@@ -35,9 +35,9 @@ fn build_view_orb(
             subdivisions: 1,
         })),
         transform: Transform::from_xyz(
-            controller_read_only.room.view_pos.0 * WORLD_SCALE,
-            controller_read_only.room.view_pos.1 * WORLD_SCALE,
+            controller_read_only.room.view_pos().0 * WORLD_SCALE,
             CEILING_HEIGHT * WORLD_SCALE,
+            controller_read_only.room.view_pos().1 * WORLD_SCALE,
         ),
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
         ..Default::default()
@@ -53,7 +53,7 @@ fn build_poles(
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let controller_read_only = locked_controller.read().unwrap();
-    for strip in &controller_read_only.room.strips {
+    for strip in controller_read_only.room.strips() {
         let pole_mesh = Mesh::from(shape::Box {
             min_x: -0.05 * WORLD_SCALE,
             max_x: 0.05 * WORLD_SCALE,
@@ -89,9 +89,9 @@ fn build_leds(
     let controller_read_only = locked_controller.read().unwrap();
 
     let mut led_counter = 0;
-    let ceiling = controller_read_only.room.num_leds();
+    let ceiling = controller_read_only.room.leds().len();
 
-    for _ in &controller_read_only.room.leds {
+    for _ in controller_read_only.room.leds() {
         let t = led_counter as f32 / ceiling as f32;
         let led_pos = controller_read_only.room.get_pos_at_t(t);
 
@@ -128,7 +128,7 @@ fn refresh_leds(
 ) {
     let controller_read_only = locked_controller.read().unwrap();
     for (mat_handle, id) in query.iter() {
-        let (r8, g8, b8) = controller_read_only.room.leds.get(id.0).unwrap();
+        let (r8, g8, b8) = controller_read_only.room.leds().get(id.0).unwrap();
         let (r32, g32, b32) = (*r8 as f32 / 255.0, *g8 as f32 / 255.0, *b8 as f32 / 255.0);
 
         let mat = materials.get_mut(mat_handle).unwrap();

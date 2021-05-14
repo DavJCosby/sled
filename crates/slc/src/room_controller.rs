@@ -18,13 +18,13 @@ impl RoomController {
 
     /// Sets the color of a given led
     pub fn set(&mut self, index: usize, color: Color) {
-        self.room.leds[index] = color;
+        self.room.set_led(index, color);
     }
 
     /// sets the color of all leds in the room
     pub fn set_all(&mut self, color: Color) {
-        for led in &mut self.room.leds {
-            *led = color;
+        for index in 0..self.room.leds().len() {
+            self.room.set_led(index, color);
         }
     }
 
@@ -33,7 +33,7 @@ impl RoomController {
     }
 
     pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
-        let room_angle = self.room.view_rot + angle;
+        let room_angle = self.room.view_rot() + angle;
         self.set_at_room_angle(room_angle, color);
     }
 
@@ -46,31 +46,31 @@ impl RoomController {
     /// Casts a ray in the given direction, in room coordinate space, from the camera's position.
     /// If it hits a wall, the led closest to that wall position will be colored.
     pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
-        let view_pos = self.room.view_pos;
+        let view_pos = self.room.view_pos();
         let dist = 100.0;
         let ray_end = (view_pos.0 + (dir.0 * dist), view_pos.1 + (dir.1 * dist));
         let mut intersection: Option<Point> = None;
         let mut strip_index = 0;
         let mut led_count = 0.0;
 
-        for strip in &self.room.strips {
+        for strip in self.room.strips() {
             let i = strip.intersects(&(view_pos, ray_end));
             if i.is_some() {
                 intersection = i;
                 break;
             }
             strip_index += 1;
-            led_count += strip.len() * self.room.led_density;
+            led_count += strip.len() * self.room.density();
         }
 
         if intersection.is_none() {
             return;
         }
 
-        let strip = self.room.strips[strip_index];
+        let strip = self.room.strips()[strip_index];
         let intersection_point = intersection.unwrap();
         let tx = reverse_lerp(strip.0, strip.1, intersection_point);
-        led_count += tx * self.room.led_density * strip.len();
+        led_count += tx * self.room.density() * strip.len();
         if led_count > 0.0 {
             led_count -= 1.0;
         }
