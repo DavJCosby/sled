@@ -7,7 +7,7 @@ use std::sync::{Arc, RwLock};
 
 const WORLD_SCALE: f32 = 5.0;
 const CEILING_HEIGHT: f32 = 2.7432;
-const LED_SIZE: f32 = 0.007;
+const LED_SIZE: f32 = 0.008;
 
 struct LedID(usize);
 
