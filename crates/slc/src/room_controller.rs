@@ -1,6 +1,5 @@
 use std::{
-    cmp::Ordering,
-    f32::consts::{PI, TAU},
+    f32::consts::{TAU},
     sync::{Arc, RwLock},
 };
 
@@ -16,6 +15,8 @@ pub struct RoomController {
 }
 
 impl RoomController {
+    /// Constructs a RoomController and precalculates the direction and angle of each led
+    /// to make color mapping fast.
     pub fn new(room: Room) -> Self {
         let mut angle_dir_led_index_triplets: Vec<(f32, Vector2D, usize)> = vec![];
 
@@ -34,19 +35,6 @@ impl RoomController {
             ));
         }
 
-        // sort by angle to make ranges faster
-        angle_dir_led_index_triplets.sort_by(|p0, p1| {
-            if p0.0 < p1.0 {
-                Ordering::Less
-            } else if p0.0 > p1.0 {
-                Ordering::Greater
-            } else {
-                Ordering::Equal
-            }
-        });
-
-        //println!("{:?}", angle_dir_led_index_triplets);
-
         RoomController {
             room,
             angle_dir_led_index_triplets,
@@ -64,25 +52,27 @@ impl RoomController {
         self.room.set_led(index, color);
     }
 
-    /// sets the color of all leds in the room
+    /// Sets the color of all leds in the room
     pub fn set_all(&mut self, color: Color) {
         for index in 0..self.room.leds().len() {
             self.room.set_led(index, color);
         }
     }
 
+    /// Sets the color of the pixel in a given direction, relative to the view.
     pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color) {
-        self.set_at_view_angle(dir.1.atan2(dir.0) - (PI / 2.0), color);
+        self.set_at_view_angle(dir.1.atan2(dir.0), color);
     }
 
+    /// Sets the color of the pixel at a given angle, relative to the view.
     pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
         let room_angle = self.room.view_rot() + angle;
         self.set_at_room_angle(room_angle, color);
     }
 
+    /// Sets the color of the pixel at a given angle, relative to the room.
     pub fn set_at_room_angle(&mut self, angle: f32, color: Color) {
-        let adjusted = angle + (PI / 2.0);
-        let room_dir = (adjusted.cos(), adjusted.sin());
+        let room_dir = (angle.cos(), angle.sin());
         self.set_at_room_dir(room_dir, color);
     }
 
@@ -120,6 +110,7 @@ impl RoomController {
         self.set(led_count as usize, color);
     }
 
+    /// Allows the user to pass in a Color-returning function to calculate the color of each led, given its angle.
     pub fn map_angle_to_color(&mut self, map: &dyn Fn(f32) -> Color) {
         for (angle, _dir, led_index) in &self.angle_dir_led_index_triplets {
             let color = map(*angle);
@@ -127,6 +118,7 @@ impl RoomController {
         }
     }
 
+    /// Allows the user to pass in a Color-returning function to calculate the color of each led within a range, given its angle.
     pub fn map_angle_to_color_clamped(
         &mut self,
         map: &dyn Fn(f32) -> Color,
@@ -139,7 +131,6 @@ impl RoomController {
 
         for (angle, _dir, led_index) in &self.angle_dir_led_index_triplets {
             let deref_angle = *angle;
-
             // if this angle doesn't fit in the arc, skip it
             if crosses_wraparound {
                 if !((deref_angle < TAU && deref_angle > adjusted_min)
@@ -155,6 +146,7 @@ impl RoomController {
         }
     }
 
+    /// Allows the user to pass in a Color-returning function to calculate the color of each led, given its direction.
     pub fn map_dir_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
         for (_angle, dir, led_index) in &self.angle_dir_led_index_triplets {
             let color = map(*dir);
@@ -162,6 +154,7 @@ impl RoomController {
         }
     }
 
+    /// Allows the user to pass in a Color-returning function to calculate the color of each led within an angle range, given its direction.
     pub fn map_dir_to_color_clamped(
         &mut self,
         map: &dyn Fn(Vector2D) -> Color,
