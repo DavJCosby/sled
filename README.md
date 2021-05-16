@@ -24,6 +24,7 @@ room_controller.set_at_room_dir((0.0, 1.0), (0, 0, 255));
 The SLC crate is not in charge of interfacing with GPIO pins or activating any real-world LEDs; you will need to write your own OutputDevice to handle that. SLC is merely a set of tools that lets you think of your LEDs in spatial terms. Below are some example to get you started building your own Input and Output devices.
 
 * [Sweep](crates/slc_sweep) - A simple visual effect that sweeps a green light around the room, kinda like a radar.
+* [Rainbow](crates/slc_lab_rainbow) - Uses the mapping feature to map LED direction to their associated color on the CIELAB color wheel.
 * [Gui](crates/slc_gui) - 3D Gui powered by Bevy that lets you preview your room and visual effects.
 
 # Basic API

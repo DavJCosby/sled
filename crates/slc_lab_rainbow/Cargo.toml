@@ -1,5 +1,5 @@
 [package]
-name = "slc_rainbow"
+name = "slc_lab_rainbow"
 version = "0.1.0"
 authors = ["DavidCosbyUofU <70235806+DavidCosbyUofU@users.noreply.github.com>"]
 edition = "2018"

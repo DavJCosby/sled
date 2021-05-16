@@ -1,7 +1,7 @@
 use slc::prelude::*;
 
 use slc_gui::Gui;
-use slc_rainbow::*;
+use slc_lab_rainbow::*;
 
 pub fn main() {
     let room = Room::new_from_file("../room_configs/myroom.rcfg");

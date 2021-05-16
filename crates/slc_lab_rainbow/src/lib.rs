@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use lab::Lab;
 use slc::prelude::*;
 pub struct Rainbow {
@@ -16,7 +14,7 @@ impl InputDevice for Rainbow {
     fn start(self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
         let color_map = |(dx, dy): (f32, f32)| {
             let lab = Lab {
-                l: 65.0,
+                l: 66.67,
                 a: dx * 100.0,
                 b: dy * 100.0,
             };

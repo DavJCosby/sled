@@ -10,4 +10,4 @@ edition = "2018"
 slc = { path = "../crates/slc" }
 slc_gui = { path = "../crates/slc_gui" }
 slc_sweep = { path = "../crates/slc_sweep" }
-slc_rainbow = { path = "../crates/slc_rainbow" }
+slc_lab_rainbow = { path = "../crates/slc_lab_rainbow" }
