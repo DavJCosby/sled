@@ -11,7 +11,7 @@ let room_controller = RoomController::new(room);
 // set all pixels white
 room_controller.set_all((255, 255, 255));
 // set the LED leftmost to the camera red
-controller_write.set_at_view_angle(PI / 2.0, (255, 0, 0));
+controller_write.set_at_view_angle(PI, (255, 0, 0));
 // set the LED rightmost to the camera green
 controller_write.set_at_view_dir((1.0, 0.0), (0, 255, 0));
 // set the northmost LED blue (relative to the room's coordinate space)
@@ -76,7 +76,7 @@ A Room is typically created from a room configuration (.rcfg) file, which follow
 // SUBJECT TO CHANGE
 60                      // LED density (LEDs/meter)
 0.75 0.75               // Position (meters) of the "Camera"
-90                     // Rotation (degrees, later converted into radians) of the "Camera" (0 = facing right, pi/2 = facing up)
+0                       // Rotational offset (degrees, counter-clockwise, auto converted into radians) of the "Camera" (0 = facing right, 90 = facing up)
 0 -1.5 2.0 0            // strip0_start.x strip0_start.y strip0_end.x strip0_end.y
 2.0 0 1.5 1.5           // strip1_start.x strip1_start.y strip1_end.x strip1_end.y
 1.5 1.5 1.5 2.0         // strip2_start.x strip2_start.y strip0_end.x strip2_end.y
@@ -93,10 +93,34 @@ println!("room has {} strips.", room_controller.room.strips.len());
 
 For more information, check out the Docs (NOT DONE YET).
 
+## Mapping
+The "set at view/direction" methods showcased earlier are good for when you need a color at a precise
+direction, but because they rely on a ray-line segment intersection algorithm to find the target led, they can be expensive. SLC offers an alternative approach to directional coloring, in the form of maps.
+
+```rs
+// --snip--
+let uv_map = |(dx, dy): (f32, f32)| {
+    let r = ((dx + 1.0) * 0.5) * 255.0;
+    let g = ((dy + 1.0) * 0.5) * 255.0;
+    (r as u8, g as u8, 0)
+};
+
+room_controller.map_dir_to_color(&uv_map);
+```
+
+If you only want to color the leds within a certain area, you can set a `min_angle` and a `max_angle`.
+
+```rs
+let map = |(dx, dy): (f32, f32)| { ... };
+room_controller.map_dir_to_color_clamped(&map, 0.0, PI / 4.0);
+```
+
+See  the docs for a full list of mapping methods.
+
 # Extra
 ## ToDo
-- Implement the new RoomController API
-- Docs
+- Images in README
+- Finalize Docs
 
 ## BRAIN DUMP
 - could also rename to SLED (spatial LED)
