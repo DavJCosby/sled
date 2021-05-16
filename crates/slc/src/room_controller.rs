@@ -161,6 +161,33 @@ impl RoomController {
             self.room.set_led(*led_index, color);
         }
     }
+
+    pub fn map_dir_to_color_clamped(
+        &mut self,
+        map: &dyn Fn(Vector2D) -> Color,
+        min_angle: f32,
+        max_angle: f32,
+    ) {
+        let adjusted_min = (min_angle + TAU) % TAU;
+        let adjusted_max = (max_angle + TAU) % TAU;
+        let crosses_wraparound = min_angle < 0.0 && max_angle > 0.0;
+
+        for (angle, dir, led_index) in &self.angle_dir_led_index_triplets {
+            let deref_angle = *angle;
+            // if this angle doesn't fit in the arc, skip it
+            if crosses_wraparound {
+                if !((deref_angle < TAU && deref_angle > adjusted_min)
+                    || (deref_angle > 0.0 && deref_angle < adjusted_max))
+                {
+                    continue;
+                }
+            } else if !(deref_angle > adjusted_min && deref_angle < adjusted_max) {
+                continue;
+            }
+
+            self.room.set_led(*led_index, map(*dir));
+        }
+    }
 }
 
 /// if lerp(a, b, t) = c, reverse_lerb(a, b, c) = t
