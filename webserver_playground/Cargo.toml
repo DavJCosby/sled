@@ -1,0 +1,14 @@
+[package]
+name = "slc_playground"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# slc
+slc = { path = "../crates/slc" }
+slc_gui = { path = "../crates/slc_gui" }
+slc_sweep = { path = "../crates/slc_sweep" }
+slc_lab_rainbow = { path = "../crates/slc_lab_rainbow" }
+slc_net_client = { path = "../crates/slc_net_client"}

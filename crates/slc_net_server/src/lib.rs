@@ -1,5 +1,5 @@
 use std::{
-    io::prelude::*,
+    io::Read,
     sync::{Arc, RwLock},
 };
 use std::{
@@ -59,9 +59,13 @@ impl Server {
                 0 => {
                     let mut write = controller_handle.write().unwrap();
                     write.set(led_index, (buffer[1], buffer[2], buffer[3]));
+                    drop(write);
                     led_index += 1;
                 }
-                1 => { /* new frame */ }
+                1 => {
+                    /* new frame */
+                    led_index = 0;
+                }
                 x => {
                     println!("unexpected identifier: {}", x);
                 }
@@ -69,14 +73,3 @@ impl Server {
         }
     }
 }
-/*
-fn main() -> std::io::Result<()> {
-    let listener = TcpListener::bind(IP)?;
-
-    // accept connections and process them serially
-    for stream in listener.incoming() {
-        handle_client(stream?);
-    }
-    Ok(())
-}
-*/
