@@ -3,7 +3,6 @@
 use slc::prelude::*;
 
 use slc_gui::Gui;
-use slc_lab_rainbow::*;
 use slc_net_server::Server;
 
 pub fn main() {

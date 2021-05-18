@@ -9,7 +9,7 @@ use std::{
 
 use slc::prelude::*;
 
-const IP: &str = "127.0.0.1:11000";
+const IP: &str = "192.168.1.249:11000";
 
 pub struct Server {
     stop: bool,
@@ -53,7 +53,7 @@ impl Server {
                 }
                 Ok(_) => { /* success; do nothing */ }
             }
-            println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
+            //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
 
             match buffer[0] {
                 0 => {
