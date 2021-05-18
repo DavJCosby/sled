@@ -1,7 +1,7 @@
 use slc::devices::OutputDevice;
 use std::{io::Write, net::TcpStream, thread, time::Duration};
 
-const IP: &str = "127.0.0.1:11000";
+const IP: &str = "192.168.1.249:11000";
 
 pub struct Client;
 
@@ -16,7 +16,7 @@ impl OutputDevice for Client {
         if let Ok(mut stream) = TcpStream::connect(IP) {
             println!("connected to the server!");
             loop {
-                thread::sleep(Duration::from_secs(1));
+                thread::sleep(Duration::from_millis(6));
                 let read = controller.read().unwrap();
                 for led in read.room.leds() {
                     stream.write(&[0, led.0, led.1, led.2]).unwrap();
