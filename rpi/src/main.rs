@@ -48,6 +48,7 @@ impl OutputDevice for GPIOOutput {
                 counter += 1;
             }
 
+            drop(read);
             last = duration;
             controller.render();
         }
