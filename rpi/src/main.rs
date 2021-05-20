@@ -22,7 +22,6 @@ fn main() {
     let leds = controller.leds_mut(0);
 
     let start = Instant::now();
-    let mut last = 0.0;
 
     loop {
         let duration = start.elapsed().as_secs_f32();
@@ -39,8 +38,6 @@ fn main() {
         leds[2] = [0, 0, 255, 0];
         leds[3] = [b, r, 0, 0];
 
-        last = duration;
-        
         controller.render();
     }
 }
