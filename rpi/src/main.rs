@@ -1,5 +1,7 @@
 use rs_ws281x::*;
 
+const REFRESH_TIMING: f32 = 1.0 / 120.0;
+
 fn main() {
     println!("hello world");
     let mut controller = ControllerBuilder::new()
@@ -18,9 +20,24 @@ fn main() {
         .unwrap();
 
     let leds = controller.leds_mut(0);
-    leds[0] = [255, 0, 0, 0];
-    leds[1] = [0, 255, 0, 0];
-    leds[2] = [0, 0, 255, 0];
-    leds[3] = [255, 255, 0, 0];
-    controller.render();
+
+    let start = Instant::now();
+
+    loop {
+        let duration = start.elapsed().as_secs_f32();
+
+        if duration - last < REFRESH_TIMING {
+            continue;
+        }
+
+        let r = duration.sin() as u8;
+        let b = duration.cos() as u8;
+
+        leds[0] = [255, 0, 0, 0];
+        leds[1] = [0, 255, 0, 0];
+        leds[2] = [0, 0, 255, 0];
+        leds[3] = [b, r, 0, 0];
+
+        controller.render();
+    }
 }
