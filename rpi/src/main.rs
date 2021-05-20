@@ -20,8 +20,6 @@ fn main() {
         .build()
         .unwrap();
 
-    let leds = controller.leds_mut(0);
-
     let start = Instant::now();
     let mut last = 0.0;
     loop {
@@ -33,6 +31,8 @@ fn main() {
 
         let r = duration.sin() as u8;
         let b = duration.cos() as u8;
+
+        let leds = controller.leds_mut(0);
 
         leds[0] = [255, 0, 0, 0];
         leds[1] = [0, 255, 0, 0];
