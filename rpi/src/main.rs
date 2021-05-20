@@ -6,6 +6,12 @@ const REFRESH_TIMING: f32 = 1.0 / 120.0;
 
 struct GPIOOutput;
 
+impl GPIOOutput {
+    pub fn new() -> Self {
+        GPIOOutput
+    }
+}
+
 impl OutputDevice for GPIOOutput {
     fn start(&self, controller: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
         println!("hello world");
