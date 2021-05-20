@@ -29,8 +29,8 @@ fn main() {
             continue;
         }
 
-        let r = duration.sin() as u8;
-        let b = duration.cos() as u8;
+        let r = (duration.sin() * 255.0) as u8;
+        let b = (duration.cos() * 255.0) as u8;
 
         let leds = controller.leds_mut(0);
 
