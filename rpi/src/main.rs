@@ -1,4 +1,5 @@
 use rs_ws281x::*;
+use std::time::Instant;
 
 const REFRESH_TIMING: f32 = 1.0 / 120.0;
 
