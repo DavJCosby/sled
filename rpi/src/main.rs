@@ -43,7 +43,7 @@ impl OutputDevice for GPIOOutput {
             let leds = controller.leds_mut(0);
 
             let mut counter = 0;
-            for (r, b, g) in read.room.leds() {
+            for (b, g, r) in read.room.leds() {
                 leds[counter] = [*r, *g, *b, 0];
                 counter += 1;
             }
