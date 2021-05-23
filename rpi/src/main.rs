@@ -1,5 +1,6 @@
 use rs_ws281x::*;
 use slc::prelude::*;
+use slc_net_server::Server;
 use std::time::Instant;
 use std::thread;
 
@@ -61,6 +62,7 @@ impl OutputDevice for GPIOOutput {
 
 use slc::prelude::*;
 
+use slc_net_server::*;
 use slc_lab_rainbow::Rainbow;
 
 pub fn main() {
@@ -69,7 +71,7 @@ pub fn main() {
     let rc_input_handle = RoomController::new_thread_safe(room);
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
-    let input = Rainbow::new();
+    let input = Server::new();
     let output = GPIOOutput::new();
 
     input.start(rc_input_handle);
