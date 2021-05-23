@@ -28,7 +28,7 @@ impl OutputDevice for GPIOOutput {
                     ChannelBuilder::new()
                         .pin(18)
                         .count(num_leds as i32)
-                        .strip_type(StripType::Ws2811Rgb)
+                        .strip_type(StripType::Ws2811Bgr)
                         .brightness(255)
                         .build(),
                 )
