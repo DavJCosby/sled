@@ -14,7 +14,10 @@ impl GPIOOutput {
 
 impl OutputDevice for GPIOOutput {
     fn start(&self, rc: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
-        println!("hello world");
+        let read = rc.read().unwrap();
+        let num_leds = read.room.leds();
+
+        println!("Booted room with {} leds.", num_leds);
         let mut controller = ControllerBuilder::new()
             .freq(800_000)
             .dma(10)
@@ -22,7 +25,7 @@ impl OutputDevice for GPIOOutput {
                 0,
                 ChannelBuilder::new()
                     .pin(18)
-                    .count(60)
+                    .count(num_leds as i32)
                     .strip_type(StripType::Ws2811Rgb)
                     .brightness(255)
                     .build(),
@@ -39,7 +42,6 @@ impl OutputDevice for GPIOOutput {
                 continue;
             }
 
-            let read = rc.read().unwrap();
             let leds = controller.leds_mut(0);
 
             let mut counter = 0;
@@ -48,7 +50,6 @@ impl OutputDevice for GPIOOutput {
                 counter += 1;
             }
 
-            drop(read);
             last = duration;
             controller.render();
         }
