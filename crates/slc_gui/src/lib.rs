@@ -55,10 +55,10 @@ fn build_poles(
     let controller_read_only = locked_controller.read().unwrap();
     for strip in controller_read_only.room.strips() {
         let pole_mesh = Mesh::from(shape::Box {
-            min_x: -0.05 * WORLD_SCALE,
-            max_x: 0.05 * WORLD_SCALE,
-            min_y: -0.05 * WORLD_SCALE,
-            max_y: 0.05 * WORLD_SCALE,
+            min_x: -0.025 * WORLD_SCALE,
+            max_x: 0.025 * WORLD_SCALE,
+            min_y: -0.025 * WORLD_SCALE,
+            max_y: 0.025 * WORLD_SCALE,
             min_z: 0.0 * WORLD_SCALE,
             max_z: CEILING_HEIGHT * WORLD_SCALE,
         });
