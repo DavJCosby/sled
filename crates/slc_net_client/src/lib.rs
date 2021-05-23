@@ -1,7 +1,7 @@
 use slc::devices::OutputDevice;
 use std::{io::Write, net::TcpStream, thread, time::Duration};
 
-const IP: &str = "192.168.1.249:11000";
+const IP: &str = "192.168.1.238:11000";
 
 pub struct Client;
 
