@@ -55,7 +55,7 @@ impl OutputDevice for GPIOOutput {
                 last = duration;
                 controller.render();
             }
-        });
+        }).join();
     }
 }
 
