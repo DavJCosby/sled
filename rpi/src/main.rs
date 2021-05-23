@@ -1,6 +1,7 @@
 use rs_ws281x::*;
 use slc::prelude::*;
 use std::time::Instant;
+use std::thread;
 
 const REFRESH_TIMING: f32 = 1.0 / 120.0;
 
@@ -46,7 +47,7 @@ impl OutputDevice for GPIOOutput {
                 let leds = controller.leds_mut(0);
 
                 let mut counter = 0;
-                for (b, g, r) in read.room.leds() {
+                for (b, r, g) in read.room.leds() {
                     leds[num_leds - counter - 1] = [*r, *g, *b, 0];
                     counter += 1;
                 }
