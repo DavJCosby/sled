@@ -53,7 +53,7 @@ impl Server {
                 }
                 Ok(_) => { /* success; do nothing */ }
             }
-            //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
+            println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
 
             match buffer[0] {
                 0 => {
