@@ -64,6 +64,7 @@ impl Server {
             }
 
             for i in (0..(128 / 4)).rev() {
+                println!("{}", i);
                 let si = i * 4;
                 let op = super_buffer[si - 3];
                 let x = super_buffer[si - 2];
