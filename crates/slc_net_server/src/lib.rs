@@ -40,7 +40,7 @@ impl Server {
         println!("got new client!");
         let mut led_index = 0;
         while !self.stop {
-            let mut buffer = [0; 128];
+            let mut buffer = [0; 661 * 4];
             let read_result = stream.read_exact(&mut buffer);
             match read_result {
                 Err(e) => {
@@ -51,7 +51,7 @@ impl Server {
             }
             //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
 
-            for i in 0..128 / 4 {
+            for i in 0..661 {
                 let cursor = i * 4;
                 let op = buffer[cursor];
                 let x = buffer[cursor + 1];
