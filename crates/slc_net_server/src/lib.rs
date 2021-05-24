@@ -58,8 +58,8 @@ impl Server {
                     Ok(x) => x,
                 };
 
-                for i in (0..bytes_read).rev() {
-                    super_buffer.push(buffer[i]);
+                for i in 0..bytes_read {
+                    super_buffer.insert(super_buffer.len(), buffer[i]);
                 }
             }
 
@@ -87,7 +87,7 @@ impl Server {
                 }
             }
 
-            super_buffer.drain(0..(128/4));
+            super_buffer.drain(0..(128 / 4));
         }
     }
 }
