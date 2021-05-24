@@ -59,16 +59,16 @@ impl Server {
                 };
 
                 for i in 0..bytes_read {
-                    super_buffer.insert(super_buffer.len(), buffer[i]);
+                    super_buffer.push(buffer[i]);
                 }
             }
 
-            for i in 0..(128 / 4) {
+            for i in (0..(128 / 4)).rev() {
                 let si = i * 4;
-                let op = super_buffer[si];
-                let x = super_buffer[si + 1];
-                let y = super_buffer[si + 2];
-                let z = super_buffer[si + 3];
+                let op = super_buffer[si - 3];
+                let x = super_buffer[si - 2];
+                let y = super_buffer[si - 1];
+                let z = super_buffer[si];
 
                 match op {
                     0 => {
