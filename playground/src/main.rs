@@ -2,8 +2,8 @@
 
 use slc::prelude::*;
 
-use slc_lab_rainbow::Rainbow;
 use slc_gui::Gui;
+use slc_lab_rainbow::Rainbow;
 use slc_net_server::Server;
 
 pub fn main() {
@@ -18,4 +18,3 @@ pub fn main() {
     input.start(rc_input_handle);
     output.start(rc_output_handle);
 }
-

@@ -18,10 +18,18 @@ impl OutputDevice for Client {
             loop {
                 thread::sleep(Duration::from_millis(1));
                 let read = controller.read().unwrap();
+                let mut buffer = [0; 660 * 4];
+                let mut count = 0;
                 for led in read.room.leds() {
                     //println!("sending led: {:?}", led);
-                    stream.write(&[0, led.0, led.1, led.2]).unwrap();
+                    buffer[count] = 0;
+                    buffer[count + 1] = led.0;
+                    buffer[count + 2] = led.1;
+                    buffer[count + 3] = led.2;
+                    count += 4;
+                    //stream.write(&[0, led.0, led.1, led.2]).unwrap();
                 }
+                stream.write(&buffer).unwrap();
                 drop(read);
                 stream.write(&[1, 0, 0, 0]).unwrap();
             }

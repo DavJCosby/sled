@@ -10,6 +10,7 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.238:11000";
+const EXPECTED_LEDS: usize = 660;
 
 pub struct Server {
     stop: bool,
@@ -40,7 +41,7 @@ impl Server {
         println!("got new client!");
         let mut led_index = 0;
         while !self.stop {
-            let mut buffer = [0; 4];
+            let mut buffer = [0; 4 * EXPECTED_LEDS];
             let read_result = stream.read(&mut buffer);
             match read_result {
                 Ok(0) => {
@@ -54,20 +55,27 @@ impl Server {
                 Ok(_) => { /* success; do nothing */ }
             }
             //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
+            for i in 0..EXPECTED_LEDS {
+                let start_index = i * 4;
+                let op_code = buffer[start_index];
+                let red = buffer[start_index + 1];
+                let green = buffer[start_index + 2];
+                let blue = buffer[start_index + 3];
 
-            match buffer[0] {
-                0 => {
-                    let mut write = controller_handle.write().unwrap();
-                    write.set(led_index, (buffer[1], buffer[2], buffer[3]));
-                    drop(write);
-                    led_index += 1;
-                }
-                1 => {
-                    /* new frame */
-                    led_index = 0;
-                }
-                x => {
-                    println!("unexpected identifier: {}", x);
+                match op_code {
+                    0 => {
+                        let mut write = controller_handle.write().unwrap();
+                        write.set(led_index, (red, green, blue));
+                        drop(write);
+                        led_index += 1;
+                    }
+                    1 => {
+                        /* new frame */
+                        led_index = 0;
+                    }
+                    x => {
+                        println!("unexpected op code: {}", x);
+                    }
                 }
             }
         }
