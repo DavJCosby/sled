@@ -10,7 +10,7 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.238:11000";
-const EXPECTED_LEDS: usize = 660;
+const EXPECTED_LEDS: usize = 661;
 
 pub struct Server {
     stop: bool,
