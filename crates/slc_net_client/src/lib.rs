@@ -19,7 +19,7 @@ impl OutputDevice for Client {
                 thread::sleep(Duration::from_millis(6));
                 let read = controller.read().unwrap();
                 for led in read.room.leds() {
-                    println!("sending led: {:?}", led);
+                    //println!("sending led: {:?}", led);
                     stream.write(&[0, led.0, led.1, led.2]).unwrap();
                 }
                 drop(read);
