@@ -58,17 +58,17 @@ impl Server {
                     Ok(x) => x,
                 };
 
-                for i in 0..bytes_read {
+                for i in (0..bytes_read).rev() {
                     super_buffer.push(buffer[i]);
                 }
             }
 
-            for i in (0..(128 / 4)).rev() {
+            for i in 0..(128 / 4) {
                 let si = i * 4;
-                let op = super_buffer[si - 3];
-                let x = super_buffer[si - 2];
-                let y = super_buffer[si - 1];
-                let z = super_buffer[si];
+                let op = super_buffer[si];
+                let x = super_buffer[si + 1];
+                let y = super_buffer[si + 2];
+                let z = super_buffer[si + 3];
 
                 match op {
                     0 => {
@@ -87,7 +87,7 @@ impl Server {
                 }
             }
 
-            super_buffer.drain(0..(128 / 4));
+            super_buffer.drain(0..(128/4));
         }
     }
 }
