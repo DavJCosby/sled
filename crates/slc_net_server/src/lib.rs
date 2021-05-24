@@ -41,7 +41,7 @@ impl Server {
         println!("got new client!");
         let mut led_index = 0;
         while !self.stop {
-            let mut buffer = [0; 4];
+            let mut buffer = [0; 16];
             let read_result = stream.read(&mut buffer);
             match read_result {
                 Ok(0) => {
