@@ -65,7 +65,7 @@ impl Server {
                 match op_code {
                     0 => {
                         let mut write = controller_handle.write().unwrap();
-                        write.set(led_index, (red, green, blue));
+                        write.set(i, (red, green, blue));
                         drop(write);
                         led_index += 1;
                     }
