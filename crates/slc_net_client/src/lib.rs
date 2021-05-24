@@ -16,7 +16,7 @@ impl OutputDevice for Client {
         if let Ok(mut stream) = TcpStream::connect(IP) {
             println!("connected to the server!");
             loop {
-                thread::sleep(Duration::from_millis(6));
+                thread::sleep(Duration::from_millis(1));
                 let read = controller.read().unwrap();
                 for led in read.room.leds() {
                     //println!("sending led: {:?}", led);
