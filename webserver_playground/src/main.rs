@@ -1,6 +1,7 @@
 // CLIENT
 
 use slc::prelude::*;
+use slc_lab_rainbow::Rainbow;
 use slc_net_client::Client;
 use slc_sweep::Sweep;
 
@@ -10,7 +11,7 @@ pub fn main() {
     let rc_input_handle = RoomController::new_thread_safe(room);
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
-    let input = Sweep::new();
+    let input = Rainbow::new();
     let output = Client::new();
 
     input.start(rc_input_handle);
