@@ -40,26 +40,40 @@ impl Server {
     fn handle_client(&self, mut stream: TcpStream, controller_handle: Arc<RwLock<RoomController>>) {
         println!("got new client!");
         let mut led_index = 0;
+        let mut super_buffer: Vec<u8> = vec![];
+
         while !self.stop {
-            let mut buffer = [0; 16];
-            let read_result = stream.read(&mut buffer);
-            match read_result {
-                Ok(0) => {
-                    println!("Connection closed.");
-                    break;
+            while super_buffer.len() < 128 {
+                let mut buffer = [0; 128];
+                let read_result = stream.read(&mut buffer);
+                let bytes_read = match read_result {
+                    Ok(0) => {
+                        println!("Connection closed.");
+                        break;
+                    }
+                    Err(e) => {
+                        println!("Error: {}", e);
+                        break;
+                    }
+                    Ok(x) => x,
+                };
+
+                for i in 0..bytes_read {
+                    super_buffer.push(buffer[i]);
                 }
-                Err(e) => {
-                    println!("Error: {}", e);
-                    break;
-                }
-                Ok(_) => { /* success; do nothing */ }
             }
-            //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
-            for chunk in buffer.chunks(4) {
-                match chunk[0] {
+
+            for i in 0..(128 / 4) {
+                let si = i * 4;
+                let op = super_buffer[si];
+                let x = super_buffer[si + 1];
+                let y = super_buffer[si + 2];
+                let z = super_buffer[si + 3];
+
+                match op {
                     0 => {
                         let mut write = controller_handle.write().unwrap();
-                        write.set(led_index % 660, (chunk[1], chunk[2], chunk[3]));
+                        write.set(led_index % 660, (x, y, z));
                         drop(write);
                         led_index += 1;
                     }
@@ -72,6 +86,8 @@ impl Server {
                     }
                 }
             }
+
+            super_buffer.drain(0..(128/4));
         }
     }
 }
