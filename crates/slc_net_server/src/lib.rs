@@ -59,7 +59,7 @@ impl Server {
                 match chunk[0] {
                     0 => {
                         let mut write = controller_handle.write().unwrap();
-                        write.set(led_index, (chunk[1], chunk[2], chunk[3]));
+                        write.set(led_index % 660, (chunk[1], chunk[2], chunk[3]));
                         drop(write);
                         led_index += 1;
                     }
