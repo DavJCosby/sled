@@ -10,7 +10,6 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.238:11000";
-const EXPECTED_LEDS: usize = 661;
 
 pub struct Server {
     stop: bool,
@@ -40,41 +39,29 @@ impl Server {
     fn handle_client(&self, mut stream: TcpStream, controller_handle: Arc<RwLock<RoomController>>) {
         println!("got new client!");
         let mut led_index = 0;
-        let mut super_buffer: Vec<u8> = vec![];
-
         while !self.stop {
-            while super_buffer.len() < 128 {
-                let mut buffer = [0; 128];
-                let read_result = stream.read(&mut buffer);
-                let bytes_read = match read_result {
-                    Ok(0) => {
-                        println!("Connection closed.");
-                        break;
-                    }
-                    Err(e) => {
-                        println!("Error: {}", e);
-                        break;
-                    }
-                    Ok(x) => x,
-                };
-
-                for i in 0..bytes_read {
-                    super_buffer.push(buffer[i]);
+            let mut buffer = [0; 128];
+            let read_result = stream.read_exact(&mut buffer);
+            match read_result {
+                Err(e) => {
+                    println!("Error: {}", e);
+                    break;
                 }
+                Ok(_) => { /* success; do nothing */ }
             }
+            //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
 
-            for i in (1..(128 / 4)).rev() {
-                println!("{}", i);
-                let si = i * 4;
-                let op = super_buffer[si - 3];
-                let x = super_buffer[si - 2];
-                let y = super_buffer[si - 1];
-                let z = super_buffer[si];
+            for i in 0..128 / 4 {
+                let cursor = i * 4;
+                let op = buffer[cursor];
+                let x = buffer[cursor + 1];
+                let y = buffer[cursor + 2];
+                let z = buffer[cursor + 3];
 
                 match op {
                     0 => {
                         let mut write = controller_handle.write().unwrap();
-                        write.set(led_index % 660, (x, y, z));
+                        write.set(led_index, (x, y, z));
                         drop(write);
                         led_index += 1;
                     }
@@ -83,12 +70,10 @@ impl Server {
                         led_index = 0;
                     }
                     x => {
-                        println!("unexpected op code: {}", x);
+                        println!("unexpected identifier: {}", x);
                     }
                 }
             }
-
-            super_buffer.drain(0..(128 / 4));
         }
     }
 }
