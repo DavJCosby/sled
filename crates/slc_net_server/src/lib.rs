@@ -55,17 +55,11 @@ impl Server {
                 Ok(_) => { /* success; do nothing */ }
             }
             //println!("Got color: ({}, {}, {})", buffer[1], buffer[2], buffer[3]);
-            for i in 0..EXPECTED_LEDS {
-                let start_index = i * 4;
-                let op_code = buffer[start_index];
-                let red = buffer[start_index + 1];
-                let green = buffer[start_index + 2];
-                let blue = buffer[start_index + 3];
-
-                match op_code {
+            for chunk in buffer.chunks(4) {
+                match chunk[0] {
                     0 => {
                         let mut write = controller_handle.write().unwrap();
-                        write.set(led_index % 660, (red, green, blue));
+                        write.set(led_index, (chunk[1], chunk[2], chunk[3]));
                         drop(write);
                         led_index += 1;
                     }
