@@ -4,22 +4,20 @@ use std::time::Instant;
 
 const REFRESH_TIMING: f32 = 1.0 / 240.0;
 
-struct GPIOOutput {
-    pub brightness: u8,
-    num_leds: i32,
-}
+struct GPIOOutput;
 
 impl GPIOOutput {
-    pub fn new(num_leds: i32) -> Self {
-        GPIOOutput {
-            brightness: 255,
-            num_leds,
-        }
+    pub fn new() -> Self {
+        GPIOOutput
     }
 }
 
 impl OutputDevice for GPIOOutput {
     fn start(&self, rc: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
+        let read = rc.read().unwrap();
+        let num_leds = read.room.leds().len() as i32;
+        let brightness = read.room.brightness;
+        drop(read);
         let mut gpio_controller = ControllerBuilder::new()
             .freq(800_000)
             .dma(10)
@@ -27,9 +25,9 @@ impl OutputDevice for GPIOOutput {
                 0,
                 ChannelBuilder::new()
                     .pin(18)
-                    .count(self.num_leds as i32)
+                    .count(num_leds)
                     .strip_type(StripType::Ws2811Gbr) // Ws2811Grb
-                    .brightness(255)
+                    .brightness(brightness)
                     .build(),
             )
             .build()
@@ -43,17 +41,17 @@ impl OutputDevice for GPIOOutput {
                 continue;
             }
 
-            gpio_controller.set_brightness(0, self.brightness);
+            let read = rc.read().unwrap();
+            gpio_controller.set_brightness(0, read.room.brightness);
 
             let leds = gpio_controller.leds_mut(0);
-            let read = rc.read().unwrap();
             let mut counter = 0;
             for (r, g, b) in read.room.leds() {
                 leds[counter] = [*r, *g, *b, 0];
                 counter += 1;
             }
-            drop(read);
 
+            drop(read);
             gpio_controller.render();
             last = duration;
         }

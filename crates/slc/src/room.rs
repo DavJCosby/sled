@@ -1,5 +1,5 @@
 use crate::util::*;
-use std::{fs};
+use std::fs;
 
 /// Settings and data for a Room, to be consumed by a [RoomController](../room_controller/struct.RoomController.html).
 pub struct Room {
@@ -13,6 +13,8 @@ pub struct Room {
     strips: Vec<Strip>,
     /// list of all led colors in the room. Vector size should be `length of all strips * density`.
     leds: Vec<Color>,
+    /// Brightness of the leds on a 0-255 scale.
+    pub brightness: u8,
 }
 
 impl Room {
@@ -46,6 +48,7 @@ impl Room {
             view_rot,
             strips,
             leds: vec![],
+            brightness: 255,
         };
 
         return_value.leds = vec![(0, 0, 0); return_value.num_expected_leds()];
