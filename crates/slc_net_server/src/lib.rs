@@ -9,7 +9,7 @@ use std::{
 
 use slc::prelude::*;
 
-const IP: &str = "192.168.1.235:11000";
+const IP: &str = "192.168.1.238:11000";
 
 pub struct Server {
     stop: bool,
@@ -69,8 +69,6 @@ impl Server {
                         /* new frame */
                         led_index = 0;
                     }
-                    2 => { /* change brightness */ }
-                    3 => { /* shut down */ }
                     x => {
                         println!("unexpected identifier: {}", x);
                     }

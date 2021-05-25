@@ -5,7 +5,6 @@ use slc::prelude::*;
 use slc_gui::Gui;
 use slc_lab_rainbow::Rainbow;
 use slc_net_server::Server;
-use slc_sweep::Sweep;
 
 pub fn main() {
     let room = Room::new_from_file("../room_configs/myroom.rcfg");

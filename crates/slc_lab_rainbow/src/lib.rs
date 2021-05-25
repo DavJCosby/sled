@@ -26,7 +26,7 @@ impl InputDevice for Rainbow {
                 };
 
                 let color_map = |r: f32| {
-                    let (dy, dx) = (r * 3.14 + duration * 3.14).sin_cos();
+                    let (dy, dx) = (r * 2.0 + duration * 0.0).sin_cos();
                     let lab = Lab {
                         l: 36.67,
                         a: dx * 100.0,
@@ -37,11 +37,14 @@ impl InputDevice for Rainbow {
 
                     (rgb[0], rgb[1], rgb[2])
                 };
-                
 
                 let mut write = controller.write().unwrap();
                 write.set_all((0, 0, 0));
-                write.map_angle_to_color(&color_map);
+                write.map_angle_to_color_clamped(
+                    &color_map,
+                    duration % (2.0 * PI),
+                    (duration + 1.0) % (2.0 * PI),
+                );
 
                 drop(write);
                 last = duration;

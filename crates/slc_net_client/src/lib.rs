@@ -1,7 +1,7 @@
 use slc::devices::OutputDevice;
 use std::{io::Write, net::TcpStream, thread, time::Duration};
 
-const IP: &str = "192.168.1.235:11000";
+const IP: &str = "192.168.1.238:11000";
 
 pub struct Client;
 
@@ -21,9 +21,6 @@ impl OutputDevice for Client {
                 let mut buffer = [0; 660 * 4];
                 let mut count = 0;
                 for led in read.room.leds() {
-                    if count >= 660 * 4 {
-                        break;
-                    }
                     //println!("sending led: {:?}", led);
                     buffer[count] = 0;
                     buffer[count + 1] = led.0;
