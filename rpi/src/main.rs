@@ -1,6 +1,6 @@
-pub mod GPIO;
+pub mod gpio;
 
-use crate::GPIO::GPIOOutput;
+use crate::gpio::GPIOOutput;
 
 use slc::prelude::*;
 use slc_lab_rainbow::Rainbow;

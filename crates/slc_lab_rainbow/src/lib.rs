@@ -1,7 +1,9 @@
-use std::{f32::consts::PI, thread, time::Instant};
-
+use std::{thread, time::Instant};
 use lab::Lab;
 use slc::prelude::*;
+
+const UPDATE_TIMING: f32 = 1.0 / 240.0;
+
 pub struct Rainbow {
     stop: bool,
 }
@@ -20,13 +22,12 @@ impl InputDevice for Rainbow {
             let mut last = 0.0;
             while !self.stop {
                 let duration = start.elapsed().as_secs_f32() / 2.0;
-                if duration - last < 0.008333 {
-                    //thread::sleep(Duration::from_millis(1));
+                if duration - last < UPDATE_TIMING {
                     continue;
                 };
 
                 let color_map = |r: f32| {
-                    let (dy, dx) = (r * 0.00314 + duration / 6.28).sin_cos();
+                    let (dy, dx) = (r * 1.57 + duration).sin_cos();
                     let lab = Lab {
                         l: 36.67,
                         a: dx * 100.0,
@@ -37,9 +38,9 @@ impl InputDevice for Rainbow {
 
                     (rgb[0], rgb[1], rgb[2])
                 };
-                
 
                 let mut write = controller.write().unwrap();
+                write.room.brightness = 255;
                 write.set_all((0, 0, 0));
                 write.map_angle_to_color(&color_map);
 

@@ -1,7 +1,13 @@
 use slc::devices::OutputDevice;
-use std::{io::Write, net::TcpStream, thread, time::Duration};
+use std::{
+    io::Write,
+    net::TcpStream,
+    thread,
+    time::{Duration, Instant},
+};
 
 const IP: &str = "192.168.1.235:11000";
+const SEND_TIMING: f32 = 1.0 / 240.0;
 
 pub struct Client;
 
@@ -15,7 +21,15 @@ impl OutputDevice for Client {
     fn start(&self, controller: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
         if let Ok(mut stream) = TcpStream::connect(IP) {
             println!("connected to the server!");
+            let start = Instant::now();
+            let mut last = 0.0;
+
             loop {
+                let duration = start.elapsed().as_secs_f32();
+                if duration - last < SEND_TIMING {
+                    continue;
+                };
+
                 thread::sleep(Duration::from_millis(1));
                 let read = controller.read().unwrap();
                 let mut buffer = [0; 660 * 4];
@@ -33,8 +47,10 @@ impl OutputDevice for Client {
                     //stream.write(&[0, led.0, led.1, led.2]).unwrap();
                 }
                 stream.write(&buffer).unwrap();
-                drop(read);
                 stream.write(&[1, 0, 0, 0]).unwrap();
+                stream.write(&[2, read.room.brightness, 0, 0]).unwrap();
+                drop(read);
+                last = duration;
             }
         } else {
             println!("couldn't connect to the server...");

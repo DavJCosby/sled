@@ -4,7 +4,7 @@ use slc::prelude::*;
 
 use slc_gui::Gui;
 use slc_lab_rainbow::Rainbow;
-use slc_net_server::Server;
+// use slc_net_server::Server;
 use slc_sweep::Sweep;
 
 pub fn main() {
