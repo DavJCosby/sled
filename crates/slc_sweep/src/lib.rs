@@ -71,8 +71,8 @@ impl InputDevice for Sweep {
                 let num = 30;
 
                 for i in 0..num {
-                    let x = (duration / 5.0 + (i as f32 / num as f32) * 6.2831853).cos();
-                    let y = (duration / 5.0 + (i as f32 / num as f32) * 6.2831853).sin();
+                    let x = (duration / 2.0 + (i as f32 / num as f32) * 6.2831853).cos();
+                    let y = (duration / 2.0 + (i as f32 / num as f32) * 6.2831853).sin();
                     controller_write.set_at_room_dir((x, y), (0, 255, 0));
                 }
 

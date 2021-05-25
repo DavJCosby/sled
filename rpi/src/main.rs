@@ -4,7 +4,7 @@ use slc_net_server::Server;
 use std::thread;
 use std::time::Instant;
 
-const REFRESH_TIMING: f32 = 1.0 / 120.0;
+const REFRESH_TIMING: f32 = 1.0 / 240.0;
 
 struct GPIOOutput;
 
