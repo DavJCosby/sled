@@ -7,11 +7,15 @@ const REFRESH_TIMING: f32 = 1.0 / 240.0;
 
 struct GPIOOutput {
     pub brightness: u8,
+    num_leds: i32,
 }
 
 impl GPIOOutput {
-    pub fn new() -> Self {
-        GPIOOutput { brightness: 255 }
+    pub fn new(num_leds: i32) -> Self {
+        GPIOOutput {
+            brightness: 255,
+            num_leds,
+        }
     }
 }
 
@@ -42,7 +46,7 @@ impl OutputDevice for GPIOOutput {
 
             gpio_controller.set_brightness(0, self.brightness);
 
-            let leds = controller.leds_mut(0);
+            let leds = gpio_controller.leds_mut(0);
             let read = rc.read().unwrap();
             let mut counter = 0;
             for (r, g, b) in read.room.leds() {
