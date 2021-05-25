@@ -4,7 +4,7 @@ use std::time::Instant;
 
 const REFRESH_TIMING: f32 = 1.0 / 240.0;
 
-struct GPIOOutput;
+pub struct GPIOOutput;
 
 impl GPIOOutput {
     pub fn new() -> Self {
