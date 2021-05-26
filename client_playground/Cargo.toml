@@ -1,5 +1,5 @@
 [package]
-name = "slc_playground"
+name = "slc_client_playground"
 version = "0.1.0"
 edition = "2018"
 
