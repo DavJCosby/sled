@@ -1,5 +1,5 @@
 [package]
-name = "slc_sweep"
+name = "networking"
 version = "0.1.0"
 edition = "2018"
 

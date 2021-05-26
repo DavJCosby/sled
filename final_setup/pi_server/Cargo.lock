@@ -66,12 +66,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
-name = "lab"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4951f42286540a90992685527c4a7940d63d3ae1a750d057ae7c60ef0ccab24"
-
-[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -94,6 +88,13 @@ name = "memchr"
 version = "2.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
+
+[[package]]
+name = "networking"
+version = "0.1.0"
+dependencies = [
+ "slc",
+]
 
 [[package]]
 name = "nom"
@@ -148,10 +149,9 @@ checksum = "f497285884f3fcff424ffc933e56d7cbca511def0c9831a7f9b5f6153e3cc89b"
 name = "rpi"
 version = "0.1.0"
 dependencies = [
+ "networking",
  "rs_ws281x",
  "slc",
- "slc_lab_rainbow",
- "slc_net_server",
 ]
 
 [[package]]
@@ -198,21 +198,6 @@ checksum = "7fdf1b9db47230893d76faad238fd6097fd6d6a9245cd7a4d90dbd639536bbd2"
 [[package]]
 name = "slc"
 version = "0.1.0"
-
-[[package]]
-name = "slc_lab_rainbow"
-version = "0.1.0"
-dependencies = [
- "lab",
- "slc",
-]
-
-[[package]]
-name = "slc_net_server"
-version = "0.1.0"
-dependencies = [
- "slc",
-]
 
 [[package]]
 name = "syn"

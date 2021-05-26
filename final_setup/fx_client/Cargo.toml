@@ -7,7 +7,7 @@ edition = "2018"
 
 [dependencies]
 # slc
-slc = { path = "../crates/slc" }
-slc_sweep = { path = "../crates/slc_sweep" }
-slc_lab_rainbow = { path = "../crates/slc_lab_rainbow" }
-slc_net_client = { path = "../crates/slc_net_client"}
+slc = { path = "../../crates/slc" }
+sweep = { path = "../../crates/fx/sweep" }
+lab_rainbow = { path = "../../crates/fx/lab_rainbow" }
+networking = { path = "../../crates/networking" }

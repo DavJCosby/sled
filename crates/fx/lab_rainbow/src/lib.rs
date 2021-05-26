@@ -40,7 +40,7 @@ impl InputDevice for Rainbow {
                 };
 
                 let mut write = controller.write().unwrap();
-                write.room.brightness = 255;
+                //write.room.brightness = 255;
                 write.set_all((0, 0, 0));
                 write.map_angle_to_color(&color_map);
 
