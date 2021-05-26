@@ -8,6 +8,5 @@ edition = "2018"
 
 [dependencies]
 rs_ws281x = "0.4.2"
-slc = { path = "../crates/slc" }
-slc_lab_rainbow = { path = "../crates/slc_lab_rainbow" }
-slc_net_server = {path = "../crates/slc_net_server"}
+slc = { path = "../../crates/slc" }
+slc_net_server = {path = "../../crates/slc_net_server"}
