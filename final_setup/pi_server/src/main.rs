@@ -1,6 +1,6 @@
 pub mod gpio;
 
-use crate::gpio::GPIOOutput;
+use crate::gpio_output::GPIOOutput;
 
 use slc::prelude::*;
 use networking::Server;
