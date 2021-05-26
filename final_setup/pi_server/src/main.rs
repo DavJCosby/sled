@@ -12,7 +12,7 @@ pub fn main() {
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
     let input = Server::new();
-    let mut output = GPIOOutput::new();
+    let output = GPIOOutput::new();
     // start input and output devices
     input.start(rc_input_handle);
     output.start(rc_output_handle);

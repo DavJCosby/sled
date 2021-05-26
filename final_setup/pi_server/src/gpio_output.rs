@@ -52,7 +52,7 @@ impl OutputDevice for GPIOOutput {
             }
 
             drop(read);
-            gpio_controller.render();
+            gpio_controller.render().unwrap();
             last = duration;
         }
     }
