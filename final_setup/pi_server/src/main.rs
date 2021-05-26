@@ -1,4 +1,4 @@
-pub mod gpio;
+pub mod gpio_output;
 
 use crate::gpio_output::GPIOOutput;
 
