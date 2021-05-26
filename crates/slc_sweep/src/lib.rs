@@ -1,11 +1,9 @@
-use std::{
-    sync::RwLock,
-    thread,
-    time::{Duration, Instant},
-};
+use std::{sync::RwLock, thread, time::Instant};
 
 use slc::room_controller::RoomController;
 use slc::{devices::InputDevice, prelude::LineSegmentTrait};
+
+const UPDATE_TIMING: f32 = 1.0 / 240.0;
 
 pub struct Sweep {
     stop: bool,
@@ -45,14 +43,14 @@ impl InputDevice for Sweep {
             for strip in controller_write.room.strips() {
                 tot += strip.len() * controller_write.room.density();
                 a.push(tot as usize);
-                println!("{}", strip.len() * controller_write.room.density());
+                //println!("{}", strip.len() * controller_write.room.density());
             }
 
             for id in a {
                 if id < 660 {
                     controller_write.set(id, (255, 255, 255));
                 } else {
-                    println!("oop {}", id);
+                    //println!("oop {}", id);
                 }
             }
 
@@ -60,19 +58,18 @@ impl InputDevice for Sweep {
 
             while !self.stop {
                 let duration = start.elapsed().as_secs_f32();
-                if duration - last < 0.008333 {
-                    //thread::sleep(Duration::from_millis(1));
+                if duration - last < UPDATE_TIMING {
                     continue;
                 };
 
                 let mut controller_write = controller_copy.write().unwrap();
                 controller_write.set_all((0, 0, 0));
 
-                let num = 30;
+                let num = 8;
 
                 for i in 0..num {
-                    let x = (duration / 2.0 + (i as f32 / num as f32) * 6.2831853).cos();
-                    let y = (duration / 2.0 + (i as f32 / num as f32) * 6.2831853).sin();
+                    let x = (duration / 3.0 + (i as f32 / num as f32) * 6.2831853).cos();
+                    let y = (duration / 3.0 + (i as f32 / num as f32) * 6.2831853).sin();
                     controller_write.set_at_room_dir((x, y), (0, 255, 0));
                 }
 

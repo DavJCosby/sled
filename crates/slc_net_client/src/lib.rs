@@ -7,7 +7,7 @@ use std::{
 };
 
 const IP: &str = "192.168.1.235:11000";
-const SEND_TIMING: f32 = 1.0 / 240.0;
+const SEND_TIMING: f32 = 1.0 / 120.0;
 
 pub struct Client;
 
