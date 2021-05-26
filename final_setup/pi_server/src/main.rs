@@ -3,7 +3,6 @@ pub mod gpio;
 use crate::gpio::GPIOOutput;
 
 use slc::prelude::*;
-use slc_lab_rainbow::Rainbow;
 use networking::Server;
 
 pub fn main() {
