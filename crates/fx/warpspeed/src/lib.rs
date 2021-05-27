@@ -9,11 +9,11 @@ use std::{
 
 use slc::prelude::*;
 
-const SPAWN_RADIUS: f32 = 0.25;
+const SPAWN_RADIUS: f32 = 0.70;
 const MIN_TEMP: i64 = 2100;
 const MAX_TEMP: i64 = 6800;
 
-const UPDATE_TIMING: f32 = 1.0 / 144.0;
+const UPDATE_TIMING: f32 = 1.0 / 500.0;
 
 struct Star {
     start_position: Point,
@@ -39,12 +39,13 @@ impl Warpspeed {
         }
     }
 
-    fn add_star(&mut self, spawn_center: Point) {
-        let mut rng = rand::thread_rng();
+    fn add_star(&mut self, spawn_center: Point, rng: &mut ThreadRng) {
         let position = (
             spawn_center.0 + (rng.gen::<f32>() - 0.5) * SPAWN_RADIUS,
             spawn_center.1 + (rng.gen::<f32>() - 0.5) * SPAWN_RADIUS,
         );
+
+        let brightness = rng.gen::<f64>() * 0.5;
 
         let kelvin = rng.gen_range(MIN_TEMP..MAX_TEMP);
         let color64 = temp_to_rgb(kelvin);
@@ -54,9 +55,9 @@ impl Warpspeed {
             start_position: position,
             position,
             color: (
-                (color64.r / 10.0) as u8,
-                (color64.g / 10.0) as u8,
-                (color64.b / 10.0) as u8,
+                (color64.r * brightness) as u8,
+                (color64.g * brightness) as u8,
+                (color64.b * brightness) as u8,
             ),
             birthday,
         };
@@ -80,13 +81,28 @@ impl Warpspeed {
 
     fn render_stars(&self, controller: &Arc<RwLock<RoomController>>) {
         let mut write = controller.write().unwrap();
-        write.set_all((0, 0, 0));
-        let view_pos = write.room.view_pos();
+
+        for led in 0..write.room.leds().len() {
+            let col = write.room.leds()[led];
+            write.set(
+                led,
+                (
+                    (col.0 as f32 * 0.935) as u8,
+                    (col.1 as f32 * 0.9425) as u8,
+                    (col.2 as f32 * 0.95) as u8, //  artificial blueshift
+                ),
+            );
+        }
+        drop(write);
+
+        let read = controller.read().unwrap();
+
+        let view_pos = read.room.view_pos();
 
         let mut affected_leds: HashMap<usize, (f32, f32, f32)> = HashMap::new();
         for star in &self.stars {
             let dir = (star.position.0 - view_pos.0, star.position.1 - view_pos.1);
-            if let Some(id) = write.get_led_at_room_dir(dir) {
+            if let Some(id) = read.get_led_at_room_dir(dir) {
                 let mut colorf32 = (
                     star.color.0 as f32 / 255.0,
                     star.color.1 as f32 / 255.0,
@@ -103,6 +119,9 @@ impl Warpspeed {
             }
         }
 
+        drop(read);
+
+        let mut write = controller.write().unwrap();
         // reinhard tonemapping
         for (id, colorf32) in affected_leds {
             let tonemapped = (
@@ -128,14 +147,15 @@ impl InputDevice for Warpspeed {
         thread::spawn(move || {
             let read = controller.read().unwrap();
             let spawn_center = (
-                read.room.view_pos().0 + self.movement_dir.0 * 6.0,
-                read.room.view_pos().1 + self.movement_dir.1 * 6.0,
+                read.room.view_pos().0 + self.movement_dir.0 * 5.0,
+                read.room.view_pos().1 + self.movement_dir.1 * 5.0,
             );
             drop(read);
 
+            let mut rng = rand::thread_rng();
+
             let start = Instant::now();
             let mut last = 0.0;
-
             let mut next_spawn = 0.0;
 
             while !self.stop {
@@ -145,15 +165,12 @@ impl InputDevice for Warpspeed {
                 }
 
                 if duration > next_spawn {
-                    self.add_star(spawn_center);
-                    next_spawn = duration + rand::thread_rng().gen::<f32>() * 0.13;
+                    self.add_star(spawn_center, &mut rng);
+                    next_spawn = duration + rng.gen::<f32>() * 0.225;
                 }
 
-                for star in &self.stars {
-                    if star.birthday.elapsed().as_secs_f32() > 10.0 {
-                        drop(star);
-                    }
-                }
+                self.stars
+                    .retain(|star| star.birthday.elapsed().as_secs_f32() < 20.0);
 
                 self.update_stars();
                 self.render_stars(&controller);
