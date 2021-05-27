@@ -11,3 +11,4 @@ slc = { path = "../crates/slc" }
 slc_gui = { path = "../crates/slc_gui" }
 sweep = { path = "../crates/fx/sweep" }
 lab_rainbow = { path = "../crates/fx/lab_rainbow" }
+calibration = { path = "../crates/fx/calibration" }

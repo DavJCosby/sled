@@ -1,9 +1,8 @@
-// SERVER
-
 use slc::prelude::*;
 
 use lab_rainbow::Rainbow;
 use slc_gui::Gui;
+use calibration::Calibration;
 use sweep::Sweep;
 
 pub fn main() {
@@ -12,7 +11,7 @@ pub fn main() {
     let rc_input_handle = RoomController::new_thread_safe(room);
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
-    let input = Rainbow::new(1.0, 1.0);
+    let input = Sweep::new(1.0);
     let output = Gui::new();
 
     input.start(rc_input_handle);

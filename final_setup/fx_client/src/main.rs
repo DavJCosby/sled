@@ -2,6 +2,7 @@
 
 use slc::prelude::*;
 use lab_rainbow::Rainbow;
+use calibration::Calibration;
 use networking::Client;
 use sweep::Sweep;
 
@@ -11,7 +12,7 @@ pub fn main() {
     let rc_input_handle = RoomController::new_thread_safe(room);
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
-    let input = Rainbow::new(1.0, 1.0);
+    let input = Calibration::new();
     let output = Client::new();
 
     input.start(rc_input_handle);
