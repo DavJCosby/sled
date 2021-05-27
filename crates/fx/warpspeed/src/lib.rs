@@ -9,7 +9,7 @@ use std::{
 
 use slc::prelude::*;
 
-const SPAWN_RADIUS: f32 = 0.5;
+const SPAWN_RADIUS: f32 = 0.6;
 const MIN_TEMP: i64 = 2150;
 const MAX_TEMP: i64 = 6750;
 
@@ -45,7 +45,7 @@ impl Warpspeed {
             spawn_center.1 + (rng.gen::<f32>() - 0.5) * SPAWN_RADIUS,
         );
 
-        let brightness = rng.gen_range(0.05..0.4);
+        let brightness = rng.gen_range(0.025..0.4);
 
         let kelvin = rng.gen_range(MIN_TEMP..MAX_TEMP);
         let color64 = temp_to_rgb(kelvin);
@@ -157,8 +157,8 @@ impl InputDevice for Warpspeed {
         thread::spawn(move || {
             let read = controller.read().unwrap();
             let spawn_center = (
-                read.room.view_pos().0 + self.movement_dir.0 * 7.0,
-                read.room.view_pos().1 + self.movement_dir.1 * 7.0,
+                read.room.view_pos().0 + self.movement_dir.0 * 4.5,
+                read.room.view_pos().1 + self.movement_dir.1 * 4.5,
             );
             drop(read);
 
