@@ -957,6 +957,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
+name = "colortemp"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b5f86d2987fdf49a4912194917d7b590b2bbf2bc407fe220d939b97080dfbc2"
+
+[[package]]
 name = "combine"
 version = "4.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2966,6 +2972,7 @@ dependencies = [
  "slc",
  "slc_gui",
  "sweep",
+ "warpspeed",
 ]
 
 [[package]]
@@ -3376,6 +3383,15 @@ dependencies = [
  "same-file",
  "winapi 0.3.9",
  "winapi-util",
+]
+
+[[package]]
+name = "warpspeed"
+version = "0.1.0"
+dependencies = [
+ "colortemp",
+ "rand",
+ "slc",
 ]
 
 [[package]]

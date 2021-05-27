@@ -1,10 +1,11 @@
 // CLIENT
 
-use slc::prelude::*;
-use lab_rainbow::Rainbow;
 use calibration::Calibration;
+use lab_rainbow::Rainbow;
 use networking::Client;
+use slc::prelude::*;
 use sweep::Sweep;
+use warpspeed::Warpspeed;
 
 pub fn main() {
     let room = Room::new_from_file("../../room_configs/myroom.rcfg");
@@ -12,7 +13,7 @@ pub fn main() {
     let rc_input_handle = RoomController::new_thread_safe(room);
     let rc_output_handle = rc_input_handle.clone();
     // prepare input and output devices
-    let input = Sweep::new(1.0);
+    let input = Warpspeed::new((0.62, 1.0), 1.0);
     let output = Client::new();
 
     input.start(rc_input_handle);

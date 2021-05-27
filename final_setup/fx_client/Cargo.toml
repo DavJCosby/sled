@@ -12,3 +12,4 @@ sweep = { path = "../../crates/fx/sweep" }
 lab_rainbow = { path = "../../crates/fx/lab_rainbow" }
 networking = { path = "../../crates/networking" }
 calibration = { path = "../../crates/fx/calibration" }
+warpspeed = { path = "../../crates/fx/warpspeed" }

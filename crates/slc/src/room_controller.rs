@@ -76,8 +76,8 @@ impl RoomController {
     }
 
     /// Casts a ray in the given direction, in room coordinate space, from the camera's position.
-    /// If it hits a wall, the led closest to that wall position will be colored.
-    pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
+    /// If it hits a wall, the in of the led closest to that wall position will be returned.
+    pub fn get_led_at_room_dir(&self, dir: Vector2D) -> Option<usize> {
         let view_pos = self.room.view_pos();
         let dist = 100.0;
         let ray_end = (view_pos.0 + (dir.0 * dist), view_pos.1 + (dir.1 * dist));
@@ -96,7 +96,7 @@ impl RoomController {
         }
 
         if intersection.is_none() {
-            return;
+            return None;
         }
 
         let strip = self.room.strips()[strip_index];
@@ -106,7 +106,24 @@ impl RoomController {
         if led_count > 0.0 {
             led_count -= 1.0;
         }
-        self.set(led_count as usize, color);
+
+        Some(led_count as usize)
+    }
+
+    /// Returns the color of the led at the given room-space direction.
+    /// If no led exists in that direction, black is returned.
+    pub fn get_color_at_room_dir(&self, dir: Vector2D) -> Color {
+        match self.get_led_at_room_dir(dir) {
+            Some(id) => self.room.leds()[id],
+            None => (0, 0, 0),
+        }
+    }
+
+    /// Uses get_led_at_room_dir() to color an led at a given room-space direction.
+    pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
+        if let Some(led_id) = self.get_led_at_room_dir(dir) {
+            self.set(led_id as usize, color);
+        }
     }
 
     /// Allows the user to pass in a Color-returning function to calculate the color of each led, given its angle.
