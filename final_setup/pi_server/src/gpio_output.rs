@@ -2,7 +2,7 @@ use rs_ws281x::*;
 use slc::prelude::*;
 use std::time::Instant;
 
-const REFRESH_TIMING: f32 = 1.0 / 240.0;
+const REFRESH_TIMING: f32 = 1.0 / 144.0;
 
 pub struct GPIOOutput;
 
