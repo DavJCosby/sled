@@ -1,5 +1,5 @@
 use std::{
-    f32::consts::{TAU},
+    f32::consts::TAU,
     sync::{Arc, RwLock},
 };
 
@@ -61,13 +61,12 @@ impl RoomController {
 
     /// Sets the color of the pixel in a given direction, relative to the view.
     pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color) {
-        self.set_at_view_angle(dir.1.atan2(dir.0), color);
+        self.set_at_room_dir(self.room.view_dir_to_room_dir(dir), color);
     }
 
     /// Sets the color of the pixel at a given angle, relative to the view.
     pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
-        let room_angle = self.room.view_rot() + angle;
-        self.set_at_room_angle(room_angle, color);
+        self.set_at_room_angle(self.room.view_angle_to_room_angle(angle), color);
     }
 
     /// Sets the color of the pixel at a given angle, relative to the room.

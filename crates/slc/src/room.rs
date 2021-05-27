@@ -7,7 +7,7 @@ pub struct Room {
     density: f32,
     /// expected position of the observer (meters, meters).
     view_pos: Point,
-    /// expected rotation of the observer in degrees.
+    /// expected rotation of the observer in degrees (automaticallly converted to radians).
     view_rot: f32,
     /// collection of [LineSegments](LineSegment) that represent LED strips.
     strips: Vec<Strip>,
@@ -70,14 +70,26 @@ impl Room {
         self.view_rot
     }
 
-    /// read-only access to the srips field
+    /// read-only access to the srips field.
     pub fn strips(&self) -> &Vec<Strip> {
         &self.strips
     }
 
-    /// read-only access to the leds field
+    /// read-only access to the leds field.
     pub fn leds(&self) -> &Vec<Color> {
         &self.leds
+    }
+
+    /// Transforms a direction in view space to room space.
+    pub fn view_dir_to_room_dir(&self, view_dir: Vector2D) -> Vector2D {
+        let view_angle = view_dir.1.atan2(view_dir.0);
+        let room_rot = self.view_angle_to_room_angle(view_angle);
+        return (room_rot.cos(), room_rot.sin());
+    }
+
+    /// Transforms an angle in view space to room space.
+    pub fn view_angle_to_room_angle(&self, view_angle: f32) -> f32 {
+        return self.view_rot + view_angle;
     }
 
     /// Interpolates down the chain of strips to return the point at t.
