@@ -17,6 +17,7 @@ impl OutputDevice for GPIOOutput {
         let read = rc.read().unwrap();
         let num_leds = read.room.leds().len() as i32;
         let brightness = read.room.brightness;
+        println!("booted room with {} leds.", num_leds);
         drop(read);
         let mut gpio_controller = ControllerBuilder::new()
             .freq(800_000)
