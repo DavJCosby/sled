@@ -2,7 +2,7 @@ use lab::Lab;
 use slc::prelude::*;
 use std::{thread, time::Instant};
 
-const UPDATE_TIMING: f32 = 1.0 / 240.0;
+const UPDATE_TIMING: f32 = 1.0 / 144.0;
 
 pub struct Rainbow {
     stop: bool,

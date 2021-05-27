@@ -1,9 +1,9 @@
 use std::{sync::RwLock, thread, time::Instant};
 
+use slc::devices::InputDevice;
 use slc::room_controller::RoomController;
-use slc::{devices::InputDevice, prelude::LineSegmentTrait};
 
-const UPDATE_TIMING: f32 = 1.0 / 240.0;
+const UPDATE_TIMING: f32 = 1.0 / 144.0;
 
 pub struct Sweep {
     stop: bool,
