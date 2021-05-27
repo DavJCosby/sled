@@ -9,9 +9,9 @@ use std::{
 
 use slc::prelude::*;
 
-const SPAWN_RADIUS: f32 = 0.70;
-const MIN_TEMP: i64 = 2100;
-const MAX_TEMP: i64 = 6800;
+const SPAWN_RADIUS: f32 = 0.5;
+const MIN_TEMP: i64 = 2150;
+const MAX_TEMP: i64 = 6750;
 
 const UPDATE_TIMING: f32 = 1.0 / 500.0;
 
@@ -45,7 +45,7 @@ impl Warpspeed {
             spawn_center.1 + (rng.gen::<f32>() - 0.5) * SPAWN_RADIUS,
         );
 
-        let brightness = rng.gen::<f64>() * 0.5;
+        let brightness = rng.gen_range(0.05..0.4);
 
         let kelvin = rng.gen_range(MIN_TEMP..MAX_TEMP);
         let color64 = temp_to_rgb(kelvin);
@@ -87,9 +87,9 @@ impl Warpspeed {
             write.set(
                 led,
                 (
-                    (col.0 as f32 * 0.935) as u8,
-                    (col.1 as f32 * 0.9425) as u8,
-                    (col.2 as f32 * 0.95) as u8, //  artificial blueshift
+                    (col.0 as f32 * 0.925) as u8,
+                    (col.1 as f32 * 0.935) as u8,
+                    (col.2 as f32 * 0.94) as u8, //  artificial blueshift
                 ),
             );
         }
@@ -107,6 +107,16 @@ impl Warpspeed {
                     star.color.0 as f32 / 255.0,
                     star.color.1 as f32 / 255.0,
                     star.color.2 as f32 / 255.0,
+                );
+
+                let dist_squared = ((view_pos.0 - star.position.0).powi(2)
+                    + (view_pos.1 - star.position.1).powi(2))
+                .max(0.2);
+                // distance squared law
+                colorf32 = (
+                    colorf32.0 / dist_squared,
+                    colorf32.1 / dist_squared,
+                    colorf32.2 / dist_squared,
                 );
 
                 if affected_leds.contains_key(&id) {
@@ -147,8 +157,8 @@ impl InputDevice for Warpspeed {
         thread::spawn(move || {
             let read = controller.read().unwrap();
             let spawn_center = (
-                read.room.view_pos().0 + self.movement_dir.0 * 5.0,
-                read.room.view_pos().1 + self.movement_dir.1 * 5.0,
+                read.room.view_pos().0 + self.movement_dir.0 * 7.0,
+                read.room.view_pos().1 + self.movement_dir.1 * 7.0,
             );
             drop(read);
 
@@ -166,11 +176,11 @@ impl InputDevice for Warpspeed {
 
                 if duration > next_spawn {
                     self.add_star(spawn_center, &mut rng);
-                    next_spawn = duration + rng.gen::<f32>() * 0.225;
+                    next_spawn = duration + rng.gen_range(0.1..0.15);
                 }
 
                 self.stars
-                    .retain(|star| star.birthday.elapsed().as_secs_f32() < 20.0);
+                    .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
 
                 self.update_stars();
                 self.render_stars(&controller);
