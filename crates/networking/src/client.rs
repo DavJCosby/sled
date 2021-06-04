@@ -35,7 +35,7 @@ impl OutputDevice for Client {
                 let read = controller.read().unwrap();
                 let mut buffer = [0; 660 * 4];
                 let mut count = 0;
-                for led in read.room.leds() {
+                for led in read.room_data.leds() {
                     if count >= 660 * 4 {
                         break;
                     }
@@ -52,7 +52,7 @@ impl OutputDevice for Client {
                 stream.write(&[1, 0, 0, 0]).unwrap();
 
                 // write new brightness, if necessary
-                let current_brightness = read.room.brightness;
+                let current_brightness = read.room_data.brightness;
                 if current_brightness != last_brightness {
                     stream.write(&[2, current_brightness, 0, 0]).unwrap();
                     last_brightness = current_brightness;

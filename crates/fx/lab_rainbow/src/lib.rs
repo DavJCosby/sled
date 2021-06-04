@@ -1,6 +1,6 @@
 use lab::Lab;
 use slc::prelude::*;
-use std::{thread, time::Instant};
+use std::{sync::Arc, thread, time::Instant};
 
 const UPDATE_TIMING: f32 = 1.0 / 144.0;
 
@@ -21,19 +21,23 @@ impl Rainbow {
 }
 
 impl InputDevice for Rainbow {
-    fn start(self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
+    fn start(&self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
+        let scale = self.scale;
+        let spin_speed = self.spin_speed;
+        let stop_watcher = Arc::new(self.stop);
+
         thread::spawn(move || {
             let start = Instant::now();
             let mut last = 0.0;
 
-            while !self.stop {
+            while !*stop_watcher {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;
                 };
 
                 let color_map = |r: f32| {
-                    let (dy, dx) = (r * self.scale + duration * self.spin_speed).sin_cos();
+                    let (dy, dx) = (r * scale + duration * spin_speed).sin_cos();
                     let lab = Lab {
                         l: 36.67,
                         a: dx * 100.0,

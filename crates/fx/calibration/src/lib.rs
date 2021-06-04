@@ -9,7 +9,7 @@ impl Calibration {
 }
 
 impl InputDevice for Calibration {
-    fn start(self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
+    fn start(&self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
         let mut write = controller.write().unwrap();
 
         // set forward white
@@ -24,13 +24,13 @@ impl InputDevice for Calibration {
         // find vertices
         let mut vertex_ids: Vec<usize> = vec![];
         let mut led_count = 0.0;
-        for strip in write.room.strips() {
-            led_count += strip.len() * write.room.density();
+        for strip in write.room_data.strips() {
+            led_count += strip.len() * write.room_data.density();
             vertex_ids.push(led_count as usize);
         }
         // set vertices yellow
         for id in vertex_ids {
-            if id < write.room.leds().len() {
+            if id < write.room_data.leds().len() {
                 write.set(id, (255, 255, 0));
             }
         }

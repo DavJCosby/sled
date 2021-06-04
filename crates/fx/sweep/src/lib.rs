@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::{sync::RwLock, thread, time::Instant};
 
 use slc::devices::InputDevice;
@@ -20,12 +21,15 @@ impl Sweep {
 }
 
 impl InputDevice for Sweep {
-    fn start(self, controller_copy: std::sync::Arc<RwLock<RoomController>>) {
+    fn start(&self, controller_copy: std::sync::Arc<RwLock<RoomController>>) {
+        let spin_speed = self.spin_speed;
+        let stop_watcher = Arc::new(self.stop);
+        
         thread::spawn(move || {
             let start = Instant::now();
             let mut last = 0.0;
 
-            while !self.stop {
+            while !*stop_watcher {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;
@@ -34,7 +38,7 @@ impl InputDevice for Sweep {
                 let mut controller_write = controller_copy.write().unwrap();
 
                 controller_write.set_all((0, 0, 0));
-                let (y, x) = (duration * self.spin_speed).sin_cos();
+                let (y, x) = (duration * spin_speed).sin_cos();
                 controller_write.set_at_room_dir((x, y), (0, 255, 0));
 
                 drop(controller_write);

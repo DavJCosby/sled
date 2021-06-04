@@ -22,10 +22,13 @@ struct Star {
     birthday: Instant,
 }
 
-pub struct Warpspeed {
+struct StarController {
     movement_dir: Vector2D,
     movement_speed: f32,
     stars: Vec<Star>,
+}
+
+pub struct Warpspeed {
     stop: bool,
 }
 
@@ -82,8 +85,8 @@ impl Warpspeed {
     fn render_stars(&self, controller: &Arc<RwLock<RoomController>>) {
         let mut write = controller.write().unwrap();
 
-        for led in 0..write.room.leds().len() {
-            let col = write.room.leds()[led];
+        for led in 0..write.room_data.leds().len() {
+            let col = write.room_data.leds()[led];
             write.set(
                 led,
                 (
@@ -97,7 +100,7 @@ impl Warpspeed {
 
         let read = controller.read().unwrap();
 
-        let view_pos = read.room.view_pos();
+        let view_pos = read.room_data.view_pos();
 
         let mut affected_leds: HashMap<usize, (f32, f32, f32)> = HashMap::new();
         for star in &self.stars {
@@ -153,40 +156,40 @@ impl Warpspeed {
 }
 
 impl InputDevice for Warpspeed {
-    fn start(mut self, controller: Arc<RwLock<RoomController>>) {
-        thread::spawn(move || {
-            let read = controller.read().unwrap();
-            let spawn_center = (
-                read.room.view_pos().0 + self.movement_dir.0 * 4.5,
-                read.room.view_pos().1 + self.movement_dir.1 * 4.5,
-            );
-            drop(read);
+    fn start(&self, controller: Arc<RwLock<RoomController>>) {
+        // thread::spawn(move || {
+        //     let read = controller.read().unwrap();
+        //     let spawn_center = (
+        //         read.room_data.view_pos().0 + self.movement_dir.0 * 4.5,
+        //         read.room_data.view_pos().1 + self.movement_dir.1 * 4.5,
+        //     );
+        //     drop(read);
 
-            let mut rng = rand::thread_rng();
+        //     let mut rng = rand::thread_rng();
 
-            let start = Instant::now();
-            let mut last = 0.0;
-            let mut next_spawn = 0.0;
+        //     let start = Instant::now();
+        //     let mut last = 0.0;
+        //     let mut next_spawn = 0.0;
 
-            while !self.stop {
-                let duration = start.elapsed().as_secs_f32();
-                if duration - last < UPDATE_TIMING {
-                    continue;
-                }
+        //     while !self.stop {
+        //         let duration = start.elapsed().as_secs_f32();
+        //         if duration - last < UPDATE_TIMING {
+        //             continue;
+        //         }
 
-                if duration > next_spawn {
-                    self.add_star(spawn_center, &mut rng);
-                    next_spawn = duration + rng.gen_range(0.1..0.15);
-                }
+        //         if duration > next_spawn {
+        //             self.add_star(spawn_center, &mut rng);
+        //             next_spawn = duration + rng.gen_range(0.1..0.15);
+        //         }
 
-                self.stars
-                    .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
+        //         self.stars
+        //             .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
 
-                self.update_stars();
-                self.render_stars(&controller);
-                last = duration;
-            }
-        });
+        //         self.update_stars();
+        //         self.render_stars(&controller);
+        //         last = duration;
+        //     }
+        // });
     }
 
     fn stop(&mut self) {
