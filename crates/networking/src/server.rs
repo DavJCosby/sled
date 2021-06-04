@@ -9,7 +9,7 @@ use std::{
 
 use slc::prelude::*;
 
-const IP: &str = "192.168.1.235:11000";
+const IP: &str = "192.168.1.234:11000";
 
 pub struct Server {
     stop: bool,

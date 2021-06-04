@@ -6,7 +6,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const IP: &str = "192.168.1.235:11000";
+const IP: &str = "192.168.1.234:11000";
 const SEND_TIMING: f32 = 1.0 / 144.0;
 
 pub struct Client;
