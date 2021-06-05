@@ -23,12 +23,12 @@ struct Star {
 }
 
 struct StarController {
-    movement_dir: Vector2D,
-    movement_speed: f32,
     stars: Vec<Star>,
 }
 
 pub struct Warpspeed {
+    movement_dir: Vector2D,
+    movement_speed: f32,
     stop: bool,
 }
 
@@ -37,11 +37,12 @@ impl Warpspeed {
         Warpspeed {
             movement_dir,
             movement_speed,
-            stars: vec![],
             stop: false,
         }
     }
+}
 
+impl StarController {
     fn add_star(&mut self, spawn_center: Point, rng: &mut ThreadRng) {
         let position = (
             spawn_center.0 + (rng.gen::<f32>() - 0.5) * SPAWN_RADIUS,
@@ -67,10 +68,10 @@ impl Warpspeed {
         self.stars.push(star);
     }
 
-    fn update_stars(&mut self) {
+    fn update_stars(&mut self, movement_dir: Vector2D, movement_speed: f32) {
         let star_vel = (
-            -self.movement_dir.0 * self.movement_speed,
-            -self.movement_dir.1 * self.movement_speed,
+            -movement_dir.0 * movement_speed,
+            -movement_dir.1 * movement_speed,
         );
         for mut star in &mut self.stars {
             let elapsed = star.birthday.elapsed().as_secs_f32();
@@ -157,39 +158,44 @@ impl Warpspeed {
 
 impl InputDevice for Warpspeed {
     fn start(&self, controller: Arc<RwLock<RoomController>>) {
-        // thread::spawn(move || {
-        //     let read = controller.read().unwrap();
-        //     let spawn_center = (
-        //         read.room_data.view_pos().0 + self.movement_dir.0 * 4.5,
-        //         read.room_data.view_pos().1 + self.movement_dir.1 * 4.5,
-        //     );
-        //     drop(read);
+        let mut star_contoller = StarController { stars: vec![] };
+        let movement_dir = self.movement_dir;
+        let movement_speed = self.movement_speed;
+        let stop_watcher = Arc::new(self.stop);
+        thread::spawn(move || {
+            let read = controller.read().unwrap();
+            let spawn_center = (
+                read.room_data.view_pos().0 + movement_dir.0 * 4.5,
+                read.room_data.view_pos().1 + movement_dir.1 * 4.5,
+            );
+            drop(read);
 
-        //     let mut rng = rand::thread_rng();
+            let mut rng = rand::thread_rng();
 
-        //     let start = Instant::now();
-        //     let mut last = 0.0;
-        //     let mut next_spawn = 0.0;
+            let start = Instant::now();
+            let mut last = 0.0;
+            let mut next_spawn = 0.0;
 
-        //     while !self.stop {
-        //         let duration = start.elapsed().as_secs_f32();
-        //         if duration - last < UPDATE_TIMING {
-        //             continue;
-        //         }
+            while !*stop_watcher {
+                let duration = start.elapsed().as_secs_f32();
+                if duration - last < UPDATE_TIMING {
+                    continue;
+                }
 
-        //         if duration > next_spawn {
-        //             self.add_star(spawn_center, &mut rng);
-        //             next_spawn = duration + rng.gen_range(0.1..0.15);
-        //         }
+                if duration > next_spawn {
+                    star_contoller.add_star(spawn_center, &mut rng);
+                    next_spawn = duration + rng.gen_range(0.1..0.15);
+                }
 
-        //         self.stars
-        //             .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
+                star_contoller
+                    .stars
+                    .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
 
-        //         self.update_stars();
-        //         self.render_stars(&controller);
-        //         last = duration;
-        //     }
-        // });
+                star_contoller.update_stars(movement_dir, movement_speed);
+                star_contoller.render_stars(&controller);
+                last = duration;
+            }
+        });
     }
 
     fn stop(&mut self) {

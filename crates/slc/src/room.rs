@@ -44,4 +44,12 @@ impl<'a> Room<'a> {
             device.start(self.room_controller_handle.clone());
         }
     }
+
+    pub fn stop(&mut self) {
+        if let Some(input_device) = &mut self.input_device {
+            input_device.stop();
+        } else {
+            eprintln!("No input device.");
+        }
+    }
 }
