@@ -11,7 +11,7 @@ use warpspeed::Warpspeed;
 // new
 pub fn main() {
     let mut room = Room::new("../../room_configs/myroom.rcfg");
-    //room.set_input_device(Calibration::new());
+    room.set_input_device(Calibration::new());
     room.add_output_device(Client::new());
 
     room.start();
