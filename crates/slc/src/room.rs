@@ -25,11 +25,11 @@ impl<'a> Room<'a> {
         }
     }
 
-    pub fn set_input(&mut self, input: impl InputDevice + 'static) {
+    pub fn set_input_device<I: InputDevice + 'a>(&mut self, input: I) {
         self.input_device = Some(Box::new(input));
     }
 
-    pub fn add_output<O: OutputDevice + 'a>(&mut self, output: O) {
+    pub fn add_output_device<O: OutputDevice + 'a>(&mut self, output: O) {
         self.output_devices.push(Box::new(output));
     }
 

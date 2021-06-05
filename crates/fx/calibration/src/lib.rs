@@ -31,7 +31,7 @@ impl InputDevice for Calibration {
         // set vertices yellow
         for id in vertex_ids {
             if id < write.room_data.leds().len() {
-                write.set(id, (255, 255, 0));
+                write.set(id, (255, 150, 0));
             }
         }
     }
