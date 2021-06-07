@@ -17,8 +17,10 @@ pub fn main() {
 
     room.set_input_device(input);
     room.add_output_device(output);
+    println!("starting room...");
     // start input and output devices
     room.start();
+    println!("post...");
     //thread::sleep(Duration::from_secs(1000));
     //room.stop();
 }
