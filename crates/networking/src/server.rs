@@ -38,7 +38,7 @@ fn handle_client(
 
     let mut led_index = 0;
     let mut local_stop = false;
-    while !(*stop_watcher || local_stop) {
+    while !(local_stop) {
         let mut buffer = [0; 4];
         let read_result = stream.read_exact(&mut buffer);
         match read_result {
