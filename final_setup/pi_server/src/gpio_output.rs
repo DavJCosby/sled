@@ -13,8 +13,8 @@ impl GPIOOutput {
 }
 
 impl OutputDevice for GPIOOutput {
-    fn start(&self, rc: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
-        let read = rc.read().unwrap();
+    fn start(&self, output_handle: RoomControllerOutputHandle) {
+        let read = output_handle.read().unwrap();
         let num_leds = read.room.leds().len() as i32;
         let brightness = read.room.brightness;
         println!("booted room with {} leds.", num_leds);
@@ -42,7 +42,7 @@ impl OutputDevice for GPIOOutput {
                 continue;
             }
 
-            let read = rc.read().unwrap();
+            let read = output_handle.read().unwrap();
             gpio_controller.set_brightness(0, read.room.brightness);
 
             let leds = gpio_controller.leds_mut(0);
@@ -52,7 +52,6 @@ impl OutputDevice for GPIOOutput {
                 counter += 1;
             }
 
-            drop(read);
             gpio_controller.render().unwrap();
             last = duration;
         }
