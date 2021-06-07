@@ -15,6 +15,7 @@ pub fn main() {
     let input = Warpspeed::new((-0.00062, 1.0), 0.5);
     //let input = Rainbow::new(1.0, 1.0);
     //let input = Sweep::new(0.2);
+    //let input = Calibration::new();
     let output = Client::new();
 
     room.set_input_device(input);

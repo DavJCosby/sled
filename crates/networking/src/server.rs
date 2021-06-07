@@ -7,7 +7,7 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.234:11000";
-const BUFFER_SIZE: usize = 256;
+const BUFFER_SIZE: usize = 128;
 pub struct Server {
     stop: bool,
 }

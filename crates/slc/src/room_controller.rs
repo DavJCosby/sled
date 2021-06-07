@@ -52,19 +52,27 @@ impl RoomController {
     }
 
     /// Sets the color of the pixel in a given direction, relative to the view.
-    pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color) {
-        self.set_at_room_dir(self.room_data.view_dir_to_room_dir(dir), color);
+    pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color, enable_smoothing: bool) {
+        self.set_at_room_dir(
+            self.room_data.view_dir_to_room_dir(dir),
+            color,
+            enable_smoothing,
+        );
     }
 
     /// Sets the color of the pixel at a given angle, relative to the view.
-    pub fn set_at_view_angle(&mut self, angle: f32, color: Color) {
-        self.set_at_room_angle(self.room_data.view_angle_to_room_angle(angle), color);
+    pub fn set_at_view_angle(&mut self, angle: f32, color: Color, enable_smoothing: bool) {
+        self.set_at_room_angle(
+            self.room_data.view_angle_to_room_angle(angle),
+            color,
+            enable_smoothing,
+        );
     }
 
     /// Sets the color of the pixel at a given angle, relative to the room.
-    pub fn set_at_room_angle(&mut self, angle: f32, color: Color) {
+    pub fn set_at_room_angle(&mut self, angle: f32, color: Color, enable_smoothing: bool) {
         let room_dir = (angle.cos(), angle.sin());
-        self.set_at_room_dir(room_dir, color);
+        self.set_at_room_dir(room_dir, color, enable_smoothing);
     }
 
     /// Casts a ray in the given direction, in room coordinate space, from the camera's position.
@@ -108,29 +116,34 @@ impl RoomController {
     /// If no led exists in that direction, black is returned.
     pub fn get_color_at_room_dir(&self, dir: Vector2D) -> Color {
         match self.get_led_at_room_dir(dir) {
-            Some((id, occupancy)) => self.room_data.leds()[id],
+            Some((id, _occupancy)) => self.room_data.leds()[id],
             None => (0, 0, 0),
         }
     }
 
     /// Uses get_led_at_room_dir() to color an led at a given room-space direction.
-    pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
+    pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color, enable_smoothing: bool) {
         if let Some((id, occupancy)) = self.get_led_at_room_dir(dir) {
-            let c0 = (
-                (color.0 as f32 * occupancy) as u8,
-                (color.1 as f32 * occupancy) as u8,
-                (color.2 as f32 * occupancy) as u8,
-            );
-            let next_occ = 1.0 - occupancy;
-            let c1 = (
-                (color.0 as f32 * next_occ) as u8,
-                (color.1 as f32 * next_occ) as u8,
-                (color.2 as f32 * next_occ) as u8,
-            );
+            if enable_smoothing {
+                let next_occ = 1.0 - occupancy;
+                let c0 = (
+                    (color.0 as f32 * occupancy) as u8,
+                    (color.1 as f32 * occupancy) as u8,
+                    (color.2 as f32 * occupancy) as u8,
+                );
+                let c1 = (
+                    (color.0 as f32 * next_occ) as u8,
+                    (color.1 as f32 * next_occ) as u8,
+                    (color.2 as f32 * next_occ) as u8,
+                );
 
-            self.set(id as usize, c0);
-            if id + 1 < self.room_data.leds().len() {
-                self.set(id as usize + 1, c1);
+                self.set(id as usize, c0);
+                if id + 1 < self.room_data.leds().len() {
+                    self.set(id as usize + 1, c1);
+                }
+            } else {
+                let c = (color.0 as u8, color.1 as u8, color.2 as u8);
+                self.set(id as usize, c);
             }
         }
     }

@@ -11,8 +11,10 @@ use sweep::Sweep;
 pub fn main() {
     let mut room = Room::new("../room_configs/myroom.rcfg");
     //let input = Warpspeed::new((-0.62, 1.0), 1.0);
-    let input = Rainbow::new(1.0, 1.0);
+    //let input = Rainbow::new(1.0, 1.0);
     let output = Gui::new();
+    let input = Sweep::new(0.04);
+
     room.set_input_device(input);
     room.add_output_device(output);
     room.start();

@@ -13,13 +13,13 @@ impl InputDevice for Calibration {
         let mut write = input_handle.write().unwrap();
 
         // set forward white
-        write.set_at_view_dir((0.0, 1.0), (255, 255, 255));
+        write.set_at_view_dir((0.0, 1.0), (255, 255, 255), false);
         // set left red
-        write.set_at_view_dir((-1.0, 0.0), (255, 0, 0));
+        write.set_at_view_dir((-1.0, 0.0), (255, 0, 0), false);
         // set right green
-        write.set_at_view_dir((1.0, 0.0), (0, 255, 0));
+        write.set_at_view_dir((1.0, 0.0), (0, 255, 0), false);
         // set backward blue
-        write.set_at_view_dir((0.0, -1.0), (0, 0, 255));
+        write.set_at_view_dir((0.0, -1.0), (0, 0, 255), false);
 
         // find vertices
         let mut vertex_ids: Vec<usize> = vec![];

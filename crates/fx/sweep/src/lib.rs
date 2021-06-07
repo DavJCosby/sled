@@ -38,7 +38,7 @@ impl InputDevice for Sweep {
 
                 controller_write.set_all((0, 0, 0));
                 let (y, x) = (duration * spin_speed).sin_cos();
-                controller_write.set_at_room_dir((x, y), (0, 255, 0));
+                controller_write.set_at_room_dir((x, y), (0, 255, 0), true);
 
                 last = duration;
             }
