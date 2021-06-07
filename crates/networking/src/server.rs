@@ -1,7 +1,4 @@
-use std::{
-    io::Read,
-    sync::{Arc, RwLock},
-};
+use std::{io::Read, sync::Arc};
 use std::{
     net::{TcpListener, TcpStream},
     thread,
@@ -16,11 +13,11 @@ pub struct Server {
 }
 
 impl InputDevice for Server {
-    fn start(&self, controller: Arc<RwLock<RoomController>>) {
+    fn start(&self, input_handle: RoomControllerInputHandle) {
         let listener = TcpListener::bind(IP).unwrap();
 
         for stream in listener.incoming() {
-            self.handle_client(stream.unwrap(), Arc::clone(&controller));
+            self.handle_client(stream.unwrap(), input_handle.clone());
         }
     }
 
@@ -34,7 +31,7 @@ impl Server {
         Server { stop: false }
     }
 
-    fn handle_client(&self, mut stream: TcpStream, controller_handle: Arc<RwLock<RoomController>>) {
+    fn handle_client(&self, mut stream: TcpStream, input_handle: RoomControllerInputHandle) {
         let stop_watcher = Arc::new(self.stop);
         thread::spawn(move || {
             println!("got new client!");
@@ -59,7 +56,7 @@ impl Server {
 
                 match op {
                     0 => {
-                        let mut write = controller_handle.write().unwrap();
+                        let mut write = input_handle.write().unwrap();
                         write.set(led_index, (x, y, z));
                         drop(write);
                         led_index += 1;
@@ -70,7 +67,7 @@ impl Server {
                     }
                     2 => {
                         /* change brightness to x */
-                        let mut write = controller_handle.write().unwrap();
+                        let mut write = input_handle.write().unwrap();
                         write.room_data.brightness = x;
                         drop(write);
                     }

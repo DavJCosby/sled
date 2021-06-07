@@ -1,9 +1,8 @@
+use bevy::prelude::Color;
 use bevy::{pbr::AmbientLight, prelude::*};
 use bevy_flycam::PlayerPlugin;
-use slc::devices::OutputDevice;
-use slc::room_controller::RoomController;
 
-use std::sync::{Arc, RwLock};
+use slc::prelude::*;
 
 const WORLD_SCALE: f32 = 5.0;
 const CEILING_HEIGHT: f32 = 2.7432;
@@ -23,11 +22,11 @@ impl Plugin for WorldBuilder {
 
 fn build_view_orb(
     mut commands: Commands,
-    locked_controller: Res<Arc<RwLock<RoomController>>>,
+    output_handle: Res<RoomControllerOutputHandle>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let controller_read_only = locked_controller.read().unwrap();
+    let controller_read_only = output_handle.read().unwrap();
 
     commands.spawn_bundle(PbrBundle {
         mesh: meshes.add(Mesh::from(shape::Icosphere {
@@ -42,17 +41,15 @@ fn build_view_orb(
         material: materials.add(Color::rgb(0.3, 0.3, 0.3).into()),
         ..Default::default()
     });
-
-    drop(controller_read_only);
 }
 
 fn build_poles(
     mut commands: Commands,
-    locked_controller: Res<Arc<RwLock<RoomController>>>,
+    output_handle: Res<RoomControllerOutputHandle>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let controller_read_only = locked_controller.read().unwrap();
+    let controller_read_only = output_handle.read().unwrap();
     for strip in controller_read_only.room_data.strips() {
         let pole_mesh = Mesh::from(shape::Box {
             min_x: -0.025 * WORLD_SCALE,
@@ -77,16 +74,15 @@ fn build_poles(
             ..Default::default()
         });
     }
-    drop(controller_read_only);
 }
 
 fn build_leds(
     mut commands: Commands,
-    locked_controller: Res<Arc<RwLock<RoomController>>>,
+    output_handle: Res<RoomControllerOutputHandle>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
-    let controller_read_only = locked_controller.read().unwrap();
+    let controller_read_only = output_handle.read().unwrap();
 
     let mut led_counter = 0;
     let ceiling = controller_read_only.room_data.leds().len();
@@ -113,8 +109,6 @@ fn build_leds(
 
         led_counter += 1;
     }
-
-    drop(controller_read_only);
 }
 
 fn build_base_world(mut ambient_light: ResMut<AmbientLight>) {
@@ -122,11 +116,11 @@ fn build_base_world(mut ambient_light: ResMut<AmbientLight>) {
 }
 
 fn refresh_leds(
-    locked_controller: Res<Arc<RwLock<RoomController>>>,
+    output_handle: Res<RoomControllerOutputHandle>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     query: Query<(&Handle<StandardMaterial>, &LedID)>,
 ) {
-    let controller_read_only = locked_controller.read().unwrap();
+    let controller_read_only = output_handle.read().unwrap();
     for (mat_handle, id) in query.iter() {
         let (r8, g8, b8) = controller_read_only.room_data.leds().get(id.0).unwrap();
         let (r32, g32, b32) = (*r8 as f32 / 255.0, *g8 as f32 / 255.0, *b8 as f32 / 255.0);
@@ -137,8 +131,6 @@ fn refresh_leds(
             .set(Box::new(Color::rgb(r32, g32, b32)))
             .unwrap();
     }
-
-    drop(controller_read_only);
 }
 
 pub struct Gui;
@@ -150,9 +142,9 @@ impl Gui {
 }
 
 impl OutputDevice for Gui {
-    fn start(&self, locked_controller: Arc<RwLock<RoomController>>) {
+    fn start(&self, output_handle: RoomControllerOutputHandle) {
         App::build()
-            .insert_resource(locked_controller)
+            .insert_resource(output_handle)
             .insert_resource(Msaa { samples: 4 })
             .add_plugins(DefaultPlugins)
             .add_plugin(WorldBuilder)

@@ -1,4 +1,4 @@
-use slc::devices::OutputDevice;
+use slc::devices::*;
 use std::{
     io::Write,
     net::TcpStream,
@@ -18,7 +18,7 @@ impl Client {
 }
 
 impl OutputDevice for Client {
-    fn start(&self, controller: std::sync::Arc<std::sync::RwLock<slc::prelude::RoomController>>) {
+    fn start(&self, output_handle: RoomControllerOutputHandle) {
         thread::spawn(move || {
             if let Ok(mut stream) = TcpStream::connect(IP) {
                 println!("connected to the server!");
@@ -33,7 +33,7 @@ impl OutputDevice for Client {
                     };
 
                     thread::sleep(Duration::from_millis(1));
-                    let read = controller.read().unwrap();
+                    let read = output_handle.read().unwrap();
                     let mut buffer = [0; 660 * 4];
                     let mut count = 0;
                     for led in read.room_data.leds() {
@@ -59,7 +59,6 @@ impl OutputDevice for Client {
                         last_brightness = current_brightness;
                     }
 
-                    drop(read);
                     last = duration;
                 }
             } else {

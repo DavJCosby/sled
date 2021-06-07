@@ -9,8 +9,8 @@ impl Calibration {
 }
 
 impl InputDevice for Calibration {
-    fn start(&self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
-        let mut write = controller.write().unwrap();
+    fn start(&self, input_handle: RoomControllerInputHandle) {
+        let mut write = input_handle.write().unwrap();
 
         // set forward white
         write.set_at_view_dir((0.0, 1.0), (255, 255, 255));

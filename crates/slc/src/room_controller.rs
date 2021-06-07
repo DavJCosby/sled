@@ -1,7 +1,4 @@
-use std::{
-    f32::consts::TAU,
-    sync::{Arc, RwLock},
-};
+use std::f32::consts::TAU;
 
 use crate::prelude::*;
 

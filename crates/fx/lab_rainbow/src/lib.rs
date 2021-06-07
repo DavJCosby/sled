@@ -21,7 +21,7 @@ impl Rainbow {
 }
 
 impl InputDevice for Rainbow {
-    fn start(&self, controller: std::sync::Arc<std::sync::RwLock<RoomController>>) {
+    fn start(&self, input_handle: RoomControllerInputHandle) {
         let scale = self.scale;
         let spin_speed = self.spin_speed;
         let stop_watcher = Arc::new(self.stop);
@@ -49,10 +49,9 @@ impl InputDevice for Rainbow {
                     (rgb[0], rgb[1], rgb[2])
                 };
 
-                let mut write = controller.write().unwrap();
+                let mut write = input_handle.write().unwrap();
                 write.map_angle_to_color(&color_map);
 
-                drop(write);
                 last = duration;
             }
         });

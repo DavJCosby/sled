@@ -1,11 +1,6 @@
 use colortemp::temp_to_rgb;
 use rand::{prelude::ThreadRng, Rng};
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-    thread,
-    time::Instant,
-};
+use std::{collections::HashMap, sync::Arc, thread, time::Instant};
 
 use slc::prelude::*;
 
@@ -83,8 +78,8 @@ impl StarController {
         }
     }
 
-    fn render_stars(&self, controller: &Arc<RwLock<RoomController>>) {
-        let mut write = controller.write().unwrap();
+    fn render_stars(&self, input_handle: &RoomControllerInputHandle) {
+        let mut write = input_handle.write().unwrap();
 
         for led in 0..write.room_data.leds().len() {
             let col = write.room_data.leds()[led];
@@ -99,7 +94,7 @@ impl StarController {
         }
         drop(write);
 
-        let read = controller.read().unwrap();
+        let read = input_handle.read().unwrap();
 
         let view_pos = read.room_data.view_pos();
 
@@ -135,7 +130,7 @@ impl StarController {
 
         drop(read);
 
-        let mut write = controller.write().unwrap();
+        let mut write = input_handle.write().unwrap();
         // reinhard tonemapping
         for (id, colorf32) in affected_leds {
             let tonemapped = (
@@ -157,13 +152,13 @@ impl StarController {
 }
 
 impl InputDevice for Warpspeed {
-    fn start(&self, controller: Arc<RwLock<RoomController>>) {
+    fn start(&self, input_handle: RoomControllerInputHandle) {
         let mut star_contoller = StarController { stars: vec![] };
         let movement_dir = self.movement_dir;
         let movement_speed = self.movement_speed;
         let stop_watcher = Arc::new(self.stop);
         thread::spawn(move || {
-            let read = controller.read().unwrap();
+            let read = input_handle.read().unwrap();
             let spawn_center = (
                 read.room_data.view_pos().0 + movement_dir.0 * 4.5,
                 read.room_data.view_pos().1 + movement_dir.1 * 4.5,
@@ -192,7 +187,7 @@ impl InputDevice for Warpspeed {
                     .retain(|star| star.birthday.elapsed().as_secs_f32() < 30.0);
 
                 star_contoller.update_stars(movement_dir, movement_speed);
-                star_contoller.render_stars(&controller);
+                star_contoller.render_stars(&input_handle);
                 last = duration;
             }
         });

@@ -13,8 +13,8 @@ pub fn main() {
     //let input = Warpspeed::new((-0.62, 1.0), 1.0);
     let input = Rainbow::new(1.0, 1.0);
     let output = Gui::new();
-    room.set_input(input);
-    room.add_output(output);
+    room.set_input_device(input);
+    room.add_output_device(output);
     room.start();
     thread::sleep(Duration::from_secs(1));
     room.stop();

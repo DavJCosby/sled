@@ -1,12 +1,9 @@
-use std::{
-    sync::{Arc, RwLock},
-    thread,
-};
+use std::sync::{Arc, RwLock};
 
 use crate::prelude::*;
 
 pub struct Room<'a> {
-    room_controller_handle: Arc<RwLock<RoomController>>,
+    rc_lock: Arc<RwLock<RoomController>>,
     input_device: Option<Box<dyn InputDevice + 'a>>,
     output_devices: Vec<Box<dyn OutputDevice + 'a>>,
     running: bool,
@@ -15,10 +12,10 @@ pub struct Room<'a> {
 impl<'a> Room<'a> {
     pub fn new(filepath: &str) -> Self {
         let rc = RoomController::new(filepath);
-        let rc_handle = Arc::new(RwLock::new(rc));
+        let rc_lock = Arc::new(RwLock::new(rc));
 
         Room {
-            room_controller_handle: rc_handle,
+            rc_lock,
             input_device: None,
             output_devices: vec![],
             running: false,
@@ -34,22 +31,21 @@ impl<'a> Room<'a> {
     }
 
     pub fn start(&mut self) {
-        if let Some(input_device) = &self.input_device {
-            input_device.start(self.room_controller_handle.clone());
-        } else {
-            eprintln!("No input device.");
-        }
+        if !self.running {
+            if let Some(input_device) = &self.input_device {
+                input_device.start(RoomControllerInputHandle::new(self.rc_lock.clone()));
+            }
 
-        for device in &self.output_devices {
-            device.start(self.room_controller_handle.clone());
+            for device in &self.output_devices {
+                device.start(RoomControllerOutputHandle::new(self.rc_lock.clone()));
+            }
         }
     }
 
     pub fn stop(&mut self) {
         if let Some(input_device) = &mut self.input_device {
             input_device.stop();
-        } else {
-            eprintln!("No input device.");
         }
+        self.running = false;
     }
 }
