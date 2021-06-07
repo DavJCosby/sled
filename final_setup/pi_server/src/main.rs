@@ -19,6 +19,6 @@ pub fn main() {
     room.add_output_device(output);
     // start input and output devices
     room.start();
-    thread::sleep(Duration::from_secs(1000));
-    room.stop();
+    //thread::sleep(Duration::from_secs(1000));
+    //room.stop();
 }
