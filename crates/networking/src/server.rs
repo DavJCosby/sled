@@ -1,4 +1,4 @@
-use std::{io::Read, sync::Arc};
+use std::io::Read;
 use std::{
     net::{TcpListener, TcpStream},
     thread,
@@ -7,7 +7,7 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.234:11000";
-const BUFFER_SIZE: usize = 661 * 4;
+const BUFFER_SIZE: usize = 256;
 pub struct Server {
     stop: bool,
 }

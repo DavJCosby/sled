@@ -3,7 +3,7 @@ use std::{thread, time::Instant};
 
 use slc::prelude::*;
 
-const UPDATE_TIMING: f32 = 1.0 / 144.0;
+const UPDATE_TIMING: f32 = 1.0 / 240.0;
 
 pub struct Sweep {
     stop: bool,
