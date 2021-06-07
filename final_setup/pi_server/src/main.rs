@@ -16,7 +16,7 @@ pub fn main() {
     let output = GPIOOutput::new();
 
     room.set_input_device(input);
-    room.set_output_device(output);
+    room.add_output_device(output);
     // start input and output devices
     room.start();
     thread::sleep(Duration::from_secs(1000));
