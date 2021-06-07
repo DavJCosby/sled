@@ -36,7 +36,7 @@ fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle)
     while !(local_stop) {
         let mut buffer = [0; 4];
         let read_result = stream.read_exact(&mut buffer);
-        println!("got pix");
+
         match read_result {
             Err(e) => {
                 println!("Error: {}", e);
