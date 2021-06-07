@@ -14,12 +14,11 @@ pub struct Server {
 
 impl InputDevice for Server {
     fn start(&self, input_handle: RoomControllerInputHandle) {
-        let stop_watcher = Arc::new(self.stop);
         thread::spawn(move || {
             let listener = TcpListener::bind(IP).unwrap();
 
             for stream in listener.incoming() {
-                handle_client(stop_watcher.clone(), stream.unwrap(), input_handle.clone());
+                handle_client(stream.unwrap(), input_handle.clone());
             }
         });
     }
@@ -29,11 +28,7 @@ impl InputDevice for Server {
     }
 }
 
-fn handle_client(
-    stop_watcher: Arc<bool>,
-    mut stream: TcpStream,
-    input_handle: RoomControllerInputHandle,
-) {
+fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle) {
     println!("got new client!");
 
     let mut led_index = 0;
