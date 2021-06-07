@@ -15,13 +15,11 @@ pub struct Server {
 impl InputDevice for Server {
     fn start(&self, input_handle: RoomControllerInputHandle) {
         let stop_watcher = Arc::new(self.stop);
-        thread::spawn(move || {
-            let listener = TcpListener::bind(IP).unwrap();
+        let listener = TcpListener::bind(IP).unwrap();
 
-            for stream in listener.incoming() {
-                handle_client(stop_watcher.clone(), stream.unwrap(), input_handle.clone());
-            }
-        });
+        for stream in listener.incoming() {
+            handle_client(stop_watcher.clone(), stream.unwrap(), input_handle.clone());
+        }
     }
 
     fn stop(&mut self) {
