@@ -5,10 +5,10 @@ use std::{collections::HashMap, sync::Arc, thread, time::Instant};
 use slc::prelude::*;
 
 const SPAWN_RADIUS: f32 = 0.6;
-const MIN_TEMP: i64 = 2150;
-const MAX_TEMP: i64 = 6750;
+const MIN_TEMP: i64 = 2950;
+const MAX_TEMP: i64 = 6350;
 
-const UPDATE_TIMING: f32 = 1.0 / 500.0;
+const UPDATE_TIMING: f32 = 1.0 / 960.0;
 
 struct Star {
     start_position: Point,
@@ -102,20 +102,22 @@ impl StarController {
         for star in &self.stars {
             let dir = (star.position.0 - view_pos.0, star.position.1 - view_pos.1);
             if let Some((id, occupancy)) = read.get_led_at_room_dir(dir) {
+                let div = 1.0 / 255.0;
                 let colorf32 = (
-                    star.color.0 as f32 / 255.0,
-                    star.color.1 as f32 / 255.0,
-                    star.color.2 as f32 / 255.0,
+                    star.color.0 as f32 * div,
+                    star.color.1 as f32 * div,
+                    star.color.2 as f32 * div,
                 );
 
                 let dist_squared = ((view_pos.0 - star.position.0).powi(2)
                     + (view_pos.1 - star.position.1).powi(2))
                 .max(0.2);
                 // distance squared law
+                let div = 1.0 / dist_squared;
                 let mut colorf32_0 = (
-                    colorf32.0 / dist_squared * occupancy,
-                    colorf32.1 / dist_squared * occupancy,
-                    colorf32.2 / dist_squared * occupancy,
+                    (colorf32.0 * div) * occupancy,
+                    (colorf32.1 * div) * occupancy,
+                    (colorf32.2 * div) * occupancy,
                 );
 
                 if affected_leds.contains_key(&id) {
@@ -127,14 +129,13 @@ impl StarController {
                     );
                 }
 
-                affected_leds.insert(id, colorf32_0);
-
-                if id + 1 < read.room_data.leds().len() {
+                // only apply anti-aliasing to distant stars...
+                if id + 1 < read.room_data.leds().len() && dist_squared > 0.33 {
                     let next_occ = 1.0 - occupancy;
                     let mut colorf32_1 = (
-                        colorf32.0 / dist_squared * next_occ,
-                        colorf32.1 / dist_squared * next_occ,
-                        colorf32.2 / dist_squared * next_occ,
+                        (colorf32.0 * div) * next_occ,
+                        (colorf32.1 * div) * next_occ,
+                        (colorf32.2 * div) * next_occ,
                     );
 
                     if affected_leds.contains_key(&(id + 1)) {
@@ -146,7 +147,15 @@ impl StarController {
                         );
                     }
                     affected_leds.insert(id + 1, colorf32_1);
+                } else {
+                    let div = 1.0 / occupancy;
+                    colorf32_0 = (
+                        colorf32_0.0 * div,
+                        colorf32_0.1 * div,
+                        colorf32_0.2 * div,
+                    );
                 }
+                affected_leds.insert(id, colorf32_0);
             }
         }
 
@@ -182,8 +191,8 @@ impl InputDevice for Warpspeed {
         thread::spawn(move || {
             let read = input_handle.read().unwrap();
             let spawn_center = (
-                read.room_data.view_pos().0 + movement_dir.0 * 4.5,
-                read.room_data.view_pos().1 + movement_dir.1 * 4.5,
+                read.room_data.view_pos().0 + movement_dir.0 * 7.5,
+                read.room_data.view_pos().1 + movement_dir.1 * 7.5,
             );
             drop(read);
 
