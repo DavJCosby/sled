@@ -1,5 +1,6 @@
 use rs_ws281x::*;
 use slc::prelude::*;
+use std::thread;
 use std::time::Instant;
 
 const REFRESH_TIMING: f32 = 1.0 / 144.0;
