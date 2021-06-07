@@ -14,10 +14,14 @@ pub struct Server {
 
 impl InputDevice for Server {
     fn start(&self, input_handle: RoomControllerInputHandle) {
-        let listener = TcpListener::bind(IP).unwrap();
+        let stop_watcher = Arc::new(self.stop);
+        thread::spawn(move || {
+            let listener = TcpListener::bind(IP).unwrap();
 
-        let stream = listener.accept();
-        self.handle_client(stream.unwrap().0, input_handle.clone());
+            for stream in listener.incoming() {
+                handle_client(stop_watcher.clone(), stream.unwrap(), input_handle.clone());
+            }
+        });
     }
 
     fn stop(&mut self) {
@@ -25,60 +29,63 @@ impl InputDevice for Server {
     }
 }
 
+fn handle_client(
+    stop_watcher: Arc<bool>,
+    mut stream: TcpStream,
+    input_handle: RoomControllerInputHandle,
+) {
+    thread::spawn(move || {
+        println!("got new client!");
+
+        let mut led_index = 0;
+        let mut local_stop = false;
+        while !(*stop_watcher || local_stop) {
+            let mut buffer = [0; 4];
+            let read_result = stream.read_exact(&mut buffer);
+            match read_result {
+                Err(e) => {
+                    println!("Error: {}", e);
+                    break;
+                }
+                Ok(_) => { /* success; do nothing */ }
+            }
+
+            let op = buffer[0];
+            let x = buffer[1];
+            let y = buffer[2];
+            let z = buffer[3];
+
+            match op {
+                0 => {
+                    let mut write = input_handle.write().unwrap();
+                    write.set(led_index, (x, y, z));
+                    drop(write);
+                    led_index += 1;
+                }
+                1 => {
+                    /* new frame */
+                    led_index = 0;
+                }
+                2 => {
+                    /* change brightness to x */
+                    let mut write = input_handle.write().unwrap();
+                    write.room_data.brightness = x;
+                    drop(write);
+                }
+                3 => {
+                    /* stop server */
+                    local_stop = true;
+                }
+                x => {
+                    println!("unexpected identifier: {}", x);
+                }
+            }
+        }
+    });
+}
+
 impl Server {
     pub fn new() -> Server {
         Server { stop: false }
-    }
-
-    fn handle_client(&self, mut stream: TcpStream, input_handle: RoomControllerInputHandle) {
-        let stop_watcher = Arc::new(self.stop);
-        thread::spawn(move || {
-            println!("got new client!");
-
-            let mut led_index = 0;
-            let mut local_stop = false;
-            while !(*stop_watcher || local_stop) {
-                let mut buffer = [0; 4];
-                let read_result = stream.read_exact(&mut buffer);
-                match read_result {
-                    Err(e) => {
-                        println!("Error: {}", e);
-                        break;
-                    }
-                    Ok(_) => { /* success; do nothing */ }
-                }
-
-                let op = buffer[0];
-                let x = buffer[1];
-                let y = buffer[2];
-                let z = buffer[3];
-
-                match op {
-                    0 => {
-                        let mut write = input_handle.write().unwrap();
-                        write.set(led_index, (x, y, z));
-                        drop(write);
-                        led_index += 1;
-                    }
-                    1 => {
-                        /* new frame */
-                        led_index = 0;
-                    }
-                    2 => {
-                        /* change brightness to x */
-                        let mut write = input_handle.write().unwrap();
-                        write.room_data.brightness = x;
-                        drop(write);
-                    }
-                    3 => {
-                        /* stop server */
-                        local_stop = true;
-                    }
-                    x => {
-                        println!("unexpected identifier: {}", x);
-                    }
-                }
-            }
-        });
     }
 }

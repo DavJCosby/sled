@@ -2316,6 +2316,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "networking"
+version = "0.1.0"
+dependencies = [
+ "slc",
+]
+
+[[package]]
 name = "nix"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2969,6 +2976,7 @@ version = "0.1.0"
 dependencies = [
  "calibration",
  "lab_rainbow",
+ "networking",
  "slc",
  "slc_gui",
  "sweep",
