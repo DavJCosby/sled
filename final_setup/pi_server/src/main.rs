@@ -8,7 +8,7 @@ use slc::prelude::*;
 use std::{thread, time::Duration};
 
 pub fn main() {
-    let room = Room::new("../../room_configs/myroom.rcfg");
+    let mut room = Room::new("../../room_configs/myroom.rcfg");
     // create a room_controller with a RwLock for safe multithreading
 
     // prepare input and output devices
