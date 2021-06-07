@@ -17,7 +17,7 @@ impl InputDevice for Server {
         let listener = TcpListener::bind(IP).unwrap();
 
         let stream = listener.accept();
-        self.handle_client(stream.unwrap(), input_handle.clone());
+        self.handle_client(stream.unwrap().0, input_handle.clone());
     }
 
     fn stop(&mut self) {
