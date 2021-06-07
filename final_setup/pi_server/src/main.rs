@@ -21,6 +21,6 @@ pub fn main() {
     // start input and output devices
     room.start();
     println!("post...");
-    //thread::sleep(Duration::from_secs(1000));
-    //room.stop();
+    thread::sleep(Duration::from_secs(1000));
+    room.stop();
 }
