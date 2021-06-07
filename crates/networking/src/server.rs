@@ -14,11 +14,13 @@ pub struct Server {
 
 impl InputDevice for Server {
     fn start(&self, input_handle: RoomControllerInputHandle) {
-        let listener = TcpListener::bind(IP).unwrap();
+        thread::spawn(move || {
+            let listener = TcpListener::bind(IP).unwrap();
 
-        for stream in listener.incoming() {
-            self.handle_client(stream.unwrap(), input_handle.clone());
-        }
+            for stream in listener.incoming() {
+                self.handle_client(stream.unwrap(), input_handle.clone());
+            }
+        });
     }
 
     fn stop(&mut self) {
