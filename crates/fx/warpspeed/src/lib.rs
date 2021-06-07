@@ -101,8 +101,8 @@ impl StarController {
         let mut affected_leds: HashMap<usize, (f32, f32, f32)> = HashMap::new();
         for star in &self.stars {
             let dir = (star.position.0 - view_pos.0, star.position.1 - view_pos.1);
-            if let Some(id) = read.get_led_at_room_dir(dir) {
-                let mut colorf32 = (
+            if let Some((id, occupancy)) = read.get_led_at_room_dir(dir) {
+                let colorf32 = (
                     star.color.0 as f32 / 255.0,
                     star.color.1 as f32 / 255.0,
                     star.color.2 as f32 / 255.0,
@@ -112,19 +112,41 @@ impl StarController {
                     + (view_pos.1 - star.position.1).powi(2))
                 .max(0.2);
                 // distance squared law
-                colorf32 = (
-                    colorf32.0 / dist_squared,
-                    colorf32.1 / dist_squared,
-                    colorf32.2 / dist_squared,
+                let mut colorf32_0 = (
+                    colorf32.0 / dist_squared * occupancy,
+                    colorf32.1 / dist_squared * occupancy,
+                    colorf32.2 / dist_squared * occupancy,
                 );
 
                 if affected_leds.contains_key(&id) {
-                    //println!("overlap");
                     let old = affected_leds[&id];
-                    colorf32 = (colorf32.0 + old.0, colorf32.1 + old.1, colorf32.2 + old.2);
+                    colorf32_0 = (
+                        colorf32_0.0 + old.0,
+                        colorf32_0.1 + old.1,
+                        colorf32_0.2 + old.2,
+                    );
                 }
 
-                affected_leds.insert(id, colorf32);
+                affected_leds.insert(id, colorf32_0);
+
+                if id + 1 < read.room_data.leds().len() {
+                    let next_occ = 1.0 - occupancy;
+                    let mut colorf32_1 = (
+                        colorf32.0 / dist_squared * next_occ,
+                        colorf32.1 / dist_squared * next_occ,
+                        colorf32.2 / dist_squared * next_occ,
+                    );
+
+                    if affected_leds.contains_key(&(id + 1)) {
+                        let old = affected_leds[&(id + 1)];
+                        colorf32_1 = (
+                            colorf32_1.0 + old.0,
+                            colorf32_1.1 + old.1,
+                            colorf32_1.2 + old.2,
+                        );
+                    }
+                    affected_leds.insert(id + 1, colorf32_1);
+                }
             }
         }
 

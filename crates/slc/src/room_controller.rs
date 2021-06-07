@@ -68,8 +68,10 @@ impl RoomController {
     }
 
     /// Casts a ray in the given direction, in room coordinate space, from the camera's position.
-    /// If it hits a wall, the in of the led closest to that wall position will be returned.
-    pub fn get_led_at_room_dir(&self, dir: Vector2D) -> Option<usize> {
+    /// If it hits a wall, the id of the led closest to that wall position will be returned, as well as the
+    /// "Occupancy" of that led, where 1.0 means the ray lands directly on the LED, and 0.5 means the ray is halfway
+    /// between that led and the next one up.
+    pub fn get_led_at_room_dir(&self, dir: Vector2D) -> Option<(usize, f32)> {
         let view_pos = self.room_data.view_pos();
         let dist = 100.0;
         let ray_end = (view_pos.0 + (dir.0 * dist), view_pos.1 + (dir.1 * dist));
@@ -98,23 +100,38 @@ impl RoomController {
         if led_count > 0.0 {
             led_count -= 1.0;
         }
-
-        Some(led_count as usize)
+        let occupancy = 1.0 - (led_count - led_count.floor());
+        Some((led_count as usize, occupancy))
     }
 
     /// Returns the color of the led at the given room-space direction.
     /// If no led exists in that direction, black is returned.
     pub fn get_color_at_room_dir(&self, dir: Vector2D) -> Color {
         match self.get_led_at_room_dir(dir) {
-            Some(id) => self.room_data.leds()[id],
+            Some((id, occupancy)) => self.room_data.leds()[id],
             None => (0, 0, 0),
         }
     }
 
     /// Uses get_led_at_room_dir() to color an led at a given room-space direction.
     pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color) {
-        if let Some(led_id) = self.get_led_at_room_dir(dir) {
-            self.set(led_id as usize, color);
+        if let Some((id, occupancy)) = self.get_led_at_room_dir(dir) {
+            let c0 = (
+                (color.0 as f32 * occupancy) as u8,
+                (color.1 as f32 * occupancy) as u8,
+                (color.2 as f32 * occupancy) as u8,
+            );
+            let next_occ = 1.0 - occupancy;
+            let c1 = (
+                (color.0 as f32 * next_occ) as u8,
+                (color.1 as f32 * next_occ) as u8,
+                (color.2 as f32 * next_occ) as u8,
+            );
+
+            self.set(id as usize, c0);
+            if id + 1 < self.room_data.leds().len() {
+                self.set(id as usize + 1, c1);
+            }
         }
     }
 
