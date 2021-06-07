@@ -7,7 +7,7 @@ use std::{
 use slc::prelude::*;
 
 const IP: &str = "192.168.1.234:11000";
-
+const BUFFER_SIZE: usize = 32;
 pub struct Server {
     stop: bool,
 }
@@ -34,7 +34,7 @@ fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle)
     let mut led_index = 0;
     let mut local_stop = false;
     while !(local_stop) {
-        let mut buffer = [0; 4];
+        let mut buffer = [0; BUFFER_SIZE];
         let read_result = stream.read_exact(&mut buffer);
 
         match read_result {
@@ -45,34 +45,36 @@ fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle)
             Ok(_) => { /* success; do nothing */ }
         }
 
-        let op = buffer[0];
-        let x = buffer[1];
-        let y = buffer[2];
-        let z = buffer[3];
+        for chunk in buffer.chunks(4) {
+            let op = chunk[0];
+            let x = chunk[1];
+            let y = chunk[2];
+            let z = chunk[3];
 
-        match op {
-            0 => {
-                let mut write = input_handle.write().unwrap();
-                write.set(led_index, (x, y, z));
-                drop(write);
-                led_index += 1;
-            }
-            1 => {
-                /* new frame */
-                led_index = 0;
-            }
-            2 => {
-                /* change brightness to x */
-                let mut write = input_handle.write().unwrap();
-                write.room_data.brightness = x;
-                drop(write);
-            }
-            3 => {
-                /* stop server */
-                local_stop = true;
-            }
-            x => {
-                println!("unexpected identifier: {}", x);
+            match op {
+                0 => {
+                    let mut write = input_handle.write().unwrap();
+                    write.set(led_index, (x, y, z));
+                    drop(write);
+                    led_index += 1;
+                }
+                1 => {
+                    /* new frame */
+                    led_index = 0;
+                }
+                2 => {
+                    /* change brightness to x */
+                    let mut write = input_handle.write().unwrap();
+                    write.room_data.brightness = x;
+                    drop(write);
+                }
+                3 => {
+                    /* stop server */
+                    local_stop = true;
+                }
+                x => {
+                    println!("unexpected identifier: {}", x);
+                }
             }
         }
     }
