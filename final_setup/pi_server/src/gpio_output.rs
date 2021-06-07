@@ -15,8 +15,8 @@ impl GPIOOutput {
 impl OutputDevice for GPIOOutput {
     fn start(&self, output_handle: RoomControllerOutputHandle) {
         let read = output_handle.read().unwrap();
-        let num_leds = read.room.leds().len() as i32;
-        let brightness = read.room.brightness;
+        let num_leds = read.room_data.leds().len() as i32;
+        let brightness = read.room_data.brightness;
         println!("booted room with {} leds.", num_leds);
         drop(read);
         let mut gpio_controller = ControllerBuilder::new()
@@ -43,11 +43,11 @@ impl OutputDevice for GPIOOutput {
             }
 
             let read = output_handle.read().unwrap();
-            gpio_controller.set_brightness(0, read.room.brightness);
+            gpio_controller.set_brightness(0, read.room_data.brightness);
 
             let leds = gpio_controller.leds_mut(0);
             let mut counter = 0;
-            for (r, g, b) in read.room.leds() {
+            for (r, g, b) in read.room_data.leds() {
                 leds[counter] = [*r, *g, *b, 0];
                 counter += 1;
             }
