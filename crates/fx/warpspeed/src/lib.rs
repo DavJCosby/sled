@@ -130,7 +130,7 @@ impl StarController {
                 }
 
                 // only apply anti-aliasing to distant stars...
-                if id + 1 < read.room_data.leds().len() && dist_squared > 0.33 {
+                if id + 1 < read.room_data.leds().len() && dist_squared > 0.2 {
                     let next_occ = 1.0 - occupancy;
                     let mut colorf32_1 = (
                         (colorf32.0 * div) * next_occ,

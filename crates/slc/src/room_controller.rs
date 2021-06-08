@@ -125,9 +125,11 @@ impl RoomController {
     pub fn set_at_room_dir(&mut self, dir: Vector2D, color: Color, enable_smoothing: bool) {
         if let Some((id, occupancy)) = self.get_led_at_room_dir(dir) {
             if enable_smoothing {
+                let old_col = self.room_data.leds()[id];
+                let old_col = (old_col.0 as f32, old_col.1 as f32, old_col.2 as f32);
                 let next_occ = 1.0 - occupancy;
                 let c0 = (
-                    (color.0 as f32 * occupancy) as u8,
+                    (old_col.0 + (color.0 as f32 - old_col.0) * occupancy) as u8,
                     (color.1 as f32 * occupancy) as u8,
                     (color.2 as f32 * occupancy) as u8,
                 );
