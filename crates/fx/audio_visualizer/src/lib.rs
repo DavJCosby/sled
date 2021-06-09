@@ -19,11 +19,12 @@ use cpal::{
     Stream,
 };
 
-const EXPECTED_SAMPLE_RATE: usize = 96_000;
-const SCAN_DURATION: f32 = 1.0 / 24.0;
+const EXPECTED_SAMPLE_RATE: usize = 48_000;
+const SCAN_DURATION: f32 = 1.0 / 30.0;
+const SAMPLE_CHUNK_SIZE: usize = 24;
 
-const NUM_BUCKETS: usize = 2;
-const SAMPLES_PER_BUCKET: usize = (EXPECTED_SAMPLE_RATE as f32 * SCAN_DURATION) as usize + 1;
+const NUM_BUCKETS: usize = 175;
+const SAMPLES_PER_BUCKET: usize = (EXPECTED_SAMPLE_RATE as f32 * SCAN_DURATION / SAMPLE_CHUNK_SIZE as f32) as usize + 1;
 
 #[derive(Copy, Clone)]
 struct Bucket {
@@ -98,7 +99,7 @@ fn process_audio(rx: &Receiver<(f32, f32)>, bucket_container: &mut BucketContain
             break;
         }
         let dir = right / (left + right);
-        let target_exact = (dir * NUM_BUCKETS as f32) - 1.0;
+        let target_exact = (dir * (NUM_BUCKETS + 1) as f32) - 1.0;
 
         let lower_bucket_index = target_exact.floor();
         let upper_bucket_index = target_exact.ceil();
@@ -111,7 +112,7 @@ fn process_audio(rx: &Receiver<(f32, f32)>, bucket_container: &mut BucketContain
             continue;
         }
 
-        if alpha < 0.99 {
+        if alpha < 0.99 && (upper_bucket_index < NUM_BUCKETS as f32) {
             let lower_bucket = &mut bucket_container.buckets[upper_bucket_index as usize];
             let lower_occupancy = 1.0 - alpha;
 
@@ -141,7 +142,7 @@ fn render_buckets(bucket_container: &BucketContainer, input_handle: &RoomControl
     let mut bucket_counter = 0;
     for bucket in bucket_container.buckets.iter() {
         let (hz, amplitude) = pitch::detect(&bucket.samples);
-        let vol = (amplitude * 255.0);
+        let vol = amplitude * 24.0;
         if vol > 0.0 {
             let expected_pan = (NUM_BUCKETS - 1 - bucket_counter) as f32 / (NUM_BUCKETS - 1) as f32;
             let true_pan = bucket.left_sum / (bucket.left_sum + bucket.right_sum);
@@ -233,19 +234,24 @@ where
 {
     let mut iter = input.into_iter();
     loop {
-        let l = iter.next();
-        if l.is_none() {
-            return;
+        let mut left = 0.0;
+        let mut right = 0.0;
+
+        for _ in 0..SAMPLE_CHUNK_SIZE {
+            let l = iter.next();
+            if l.is_none() {
+                return;
+            }
+            left += l.unwrap().to_f32();
+
+            let r = iter.next();
+            if r.is_none() {
+                return;
+            }
+
+            right += r.unwrap().to_f32();
         }
-        let left_sample = l.unwrap().to_f32();
 
-        let r = iter.next();
-        if r.is_none() {
-            return;
-        }
-
-        let right_sample = r.unwrap().to_f32();
-
-        sender.send((left_sample, right_sample)).unwrap();
+        sender.send((left, right)).unwrap();
     }
 }
