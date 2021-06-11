@@ -19,12 +19,13 @@ use cpal::{
     Stream,
 };
 
-const EXPECTED_SAMPLE_RATE: usize = 48_000;
+const EXPECTED_SAMPLE_RATE: usize = 96000;
 const SCAN_DURATION: f32 = 1.0 / 30.0;
-const SAMPLE_CHUNK_SIZE: usize = 24;
+const SAMPLE_CHUNK_SIZE: usize = 2;
 
-const NUM_BUCKETS: usize = 175;
-const SAMPLES_PER_BUCKET: usize = (EXPECTED_SAMPLE_RATE as f32 * SCAN_DURATION / SAMPLE_CHUNK_SIZE as f32) as usize + 1;
+const NUM_BUCKETS: usize = 99;
+const SAMPLES_PER_BUCKET: usize =
+    (EXPECTED_SAMPLE_RATE as f32 * SCAN_DURATION / SAMPLE_CHUNK_SIZE as f32) as usize + 1;
 
 #[derive(Copy, Clone)]
 struct Bucket {
@@ -59,11 +60,15 @@ impl InputDevice for AudioVisualizer {
             let (tx, rx) = sync_channel(1000000);
             let stream = get_stream(tx);
 
+            let mut ll = 0.0;
+            let mut lr = 0.0;
             loop {
                 let mut bucket_container = BucketContainer::new();
 
                 record_audio(&stream);
-                process_audio(&rx, &mut bucket_container);
+                let (last_left, last_right) = process_audio(&rx, ll, lr, &mut bucket_container);
+                ll = last_left;
+                lr = last_right;
                 render_buckets(&bucket_container, &input_handle);
 
                 for (_, _) in rx.try_iter() {
@@ -92,20 +97,60 @@ fn record_audio(stream: &Stream) {
     stream.pause().unwrap();
 }
 
-fn process_audio(rx: &Receiver<(f32, f32)>, bucket_container: &mut BucketContainer) {
+fn inv_lerp(a: f32, b: f32, c: f32) -> f32 {
+    (c - a) / (b - a)
+}
+
+fn process_audio(
+    rx: &Receiver<(f32, f32)>,
+    last_left: f32,
+    last_right: f32,
+    bucket_container: &mut BucketContainer,
+) -> (f32, f32) {
     let mut sample_counter = 0;
+
+    let mut previous_peak_l = last_left;
+    let mut previous_peak_r = last_right;
+
+    let mut previous_l = 0.0;
+    let mut previous_r = 0.0;
+
+    //println!();
+
     for (left, right) in rx.try_iter() {
         if sample_counter + 1 >= SAMPLES_PER_BUCKET {
             break;
         }
-        let dir = right / (left + right);
-        let target_exact = (dir * (NUM_BUCKETS + 1) as f32) - 1.0;
 
+        let l_abs = left.abs();
+        let r_abs = right.abs();
+
+        //if previous_peak_l == 0.0 {
+        //    previous_peak_l = l_abs;
+        // }
+
+        if previous_l > l_abs {
+            previous_peak_l = previous_l;
+        }
+
+        //if previous_peak_r == 0.0 {
+        //    previous_peak_r = r_abs;
+        //}
+
+        if previous_r > r_abs {
+            previous_peak_r = previous_r;
+        }
+
+        previous_l = l_abs;
+        previous_r = r_abs;
+
+        //println!("{}", alpha_l);
+
+        let dir = previous_peak_r / (previous_peak_l + previous_peak_r);
+        let target_exact = (dir * (NUM_BUCKETS + 1) as f32) - 1.0;
         let lower_bucket_index = target_exact.floor();
         let upper_bucket_index = target_exact.ceil();
-
         let alpha = target_exact - lower_bucket_index as f32;
-        // 0.0 = 100% lower, 1.0 = 100% upper
 
         if dir > 1.0 {
             sample_counter += 2;
@@ -116,8 +161,8 @@ fn process_audio(rx: &Receiver<(f32, f32)>, bucket_container: &mut BucketContain
             let lower_bucket = &mut bucket_container.buckets[upper_bucket_index as usize];
             let lower_occupancy = 1.0 - alpha;
 
-            lower_bucket.left_sum += left.abs() * lower_occupancy;
-            lower_bucket.right_sum += right.abs() * lower_occupancy;
+            lower_bucket.left_sum += previous_peak_l * lower_occupancy;
+            lower_bucket.right_sum += previous_peak_r * lower_occupancy;
             lower_bucket.samples[sample_counter] = left * lower_occupancy;
             lower_bucket.samples[sample_counter + 1] = right * lower_occupancy;
         }
@@ -125,38 +170,73 @@ fn process_audio(rx: &Receiver<(f32, f32)>, bucket_container: &mut BucketContain
         if alpha > 0.01 {
             let upper_bucket = &mut bucket_container.buckets[lower_bucket_index as usize];
 
-            upper_bucket.left_sum += left.abs() * alpha;
-            upper_bucket.right_sum += right.abs() * alpha;
+            upper_bucket.left_sum += previous_peak_l * alpha;
+            upper_bucket.right_sum += previous_peak_r * alpha;
             upper_bucket.samples[sample_counter] = left * alpha;
             upper_bucket.samples[sample_counter + 1] = right * alpha;
         }
 
         sample_counter += 2;
     }
+
+    return (previous_peak_l, previous_peak_r);
 }
 
 fn render_buckets(bucket_container: &BucketContainer, input_handle: &RoomControllerInputHandle) {
     let mut write = input_handle.write().unwrap();
     write.set_all((0, 0, 0));
 
-    let mut bucket_counter = 0;
-    for bucket in bucket_container.buckets.iter() {
-        let (hz, amplitude) = pitch::detect(&bucket.samples);
-        let vol = amplitude * 24.0;
-        if vol > 0.0 {
-            let expected_pan = (NUM_BUCKETS - 1 - bucket_counter) as f32 / (NUM_BUCKETS - 1) as f32;
-            let true_pan = bucket.left_sum / (bucket.left_sum + bucket.right_sum);
-            let angle = (expected_pan + true_pan) * PI * 0.5;
-            write.set_at_view_angle(angle, (vol as u8, vol as u8, vol as u8), true);
+    // let mut bucket_counter = 0;
+    // for bucket in bucket_container.buckets.iter() {
+    //     //let (hz, amplitude) = pitch::detect(&bucket.samples);
+    //     let vol = (bucket.left_sum + bucket.right_sum).powi(2); //.powi(2);
+    //     let vol = vol.powi(2) / (vol + 25.0).powi(2);
+    //     let vol = vol * 255.0;
+    //     if vol > 0.0 {
+    //         let expected_pan = (NUM_BUCKETS - 1 - bucket_counter) as f32 / (NUM_BUCKETS - 1) as f32;
+    //         let true_pan = bucket.left_sum / (bucket.left_sum + bucket.right_sum);
+    //         let angle = (true_pan) * PI;
+    //         write.set_at_view_angle(angle, (vol as u8, vol as u8, vol as u8), true);
+    //     }
+
+    //     //println!("{}", vol);
+
+    //     //total_left += bucket.left_sum;
+    //     //total_right += bucket.right_sum;
+    //     //println!("{}", bucket.right_sum + bucket.left_sum);
+    //     bucket_counter += 1;
+    // }
+
+    let map = |angle| {
+        if angle > PI || angle < 0.0 {
+            return (0, 0, 0);
+        }
+        let alpha: f32 = 1.0 - (angle / PI);
+
+        let target_exact = alpha * NUM_BUCKETS as f32;
+        let target_lower = target_exact.floor();
+        let mut target_upper = target_exact.ceil();
+
+        if target_upper as usize >= NUM_BUCKETS {
+            target_upper = target_lower;
         }
 
-        //println!("{}", vol);
+        let bucket_alpha = target_exact - target_lower;
 
-        //total_left += bucket.left_sum;
-        //total_right += bucket.right_sum;
-        //println!("{}", bucket.right_sum + bucket.left_sum);
-        bucket_counter += 1;
-    }
+        let lower_bucket = bucket_container.buckets[target_lower as usize];
+        let upper_bucket = bucket_container.buckets[target_upper as usize];
+
+        let v_lower = lower_bucket.left_sum + lower_bucket.right_sum.powi(2);
+        let v_lower = (v_lower.powi(2) / (v_lower + 25.0).powi(2)) * 255.0;
+
+        let v_upper = upper_bucket.left_sum + upper_bucket.right_sum.powi(2);
+        let v_upper = (v_upper.powi(2) / (v_upper + 25.0).powi(2)) * 255.0;
+
+        let v = v_lower + (v_upper - v_lower) * bucket_alpha;
+
+        (v as u8, v as u8, v as u8)
+    };
+    write.map_angle_to_color(&map);
 
     //println!("balance: {}", total_right / (total_left + total_right));
 }
