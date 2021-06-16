@@ -1,6 +1,5 @@
 mod pitch;
 
-//extern crate anyhow;
 extern crate clap;
 extern crate cpal;
 extern crate hound;
@@ -20,8 +19,8 @@ use cpal::{
 };
 
 const EXPECTED_SAMPLE_RATE: usize = 48000;
-const SCAN_DURATION: f32 = 1.0 / 45.0;
-const SAMPLE_CHUNK_SIZE: usize = 24;
+const SCAN_DURATION: f32 = 1.0 / 40.0;
+const SAMPLE_CHUNK_SIZE: usize = 16;
 
 const NUM_BUCKETS: usize = 75;
 const SAMPLES_PER_BUCKET: usize =
@@ -71,9 +70,9 @@ impl InputDevice for AudioVisualizer {
                 lr = last_r;
                 render_buckets(&bucket_container, &input_handle);
 
-                for (_, _) in rx.try_iter() {
-                    // flush leftover samples
-                }
+                //for (_, _) in rx.try_iter() {
+                // flush leftover samples
+                //}
             }
         });
     }
@@ -97,10 +96,6 @@ fn record_audio(stream: &Stream) {
     stream.pause().unwrap();
 }
 
-fn inv_lerp(a: f32, b: f32, c: f32) -> f32 {
-    (c - a) / (b - a)
-}
-
 fn process_audio(
     rx: &Receiver<(f32, f32)>,
     ll: f32,
@@ -118,54 +113,51 @@ fn process_audio(
     //println!();
 
     for (left, right) in rx.try_iter() {
-        if sample_counter + 1 >= SAMPLES_PER_BUCKET {
-            break;
-        }
-
         let l_abs = left.abs();
         let r_abs = right.abs();
 
         if previous_l > l_abs {
-            previous_peak_l = (2.0 * previous_peak_l + previous_l) / 3.0;
+            previous_peak_l = (previous_peak_l * 2.0 + previous_l) / 3.0;
         }
 
         if previous_r > r_abs {
-            previous_peak_r = (2.0 * previous_peak_r + previous_r) / 3.0;
+            previous_peak_r = (previous_peak_r * 2.0 + previous_r) / 3.0;
         }
 
         previous_l = l_abs;
         previous_r = r_abs;
 
-        let dir = previous_peak_r / (previous_peak_l + previous_peak_r);
-        let target_exact = (dir * (NUM_BUCKETS + 1) as f32) - 1.0;
-        let lower_bucket_index = target_exact.floor();
-        let upper_bucket_index = target_exact.ceil();
-        let alpha = target_exact - lower_bucket_index as f32;
+        if sample_counter + 1 < SAMPLES_PER_BUCKET {
+            let dir = previous_peak_r / (previous_peak_l + previous_peak_r);
+            let target_exact = (dir * (NUM_BUCKETS + 1) as f32) - 1.0;
+            let lower_bucket_index = target_exact.floor();
+            let upper_bucket_index = target_exact.ceil();
+            let alpha = target_exact - lower_bucket_index as f32;
 
-        if dir > 1.0 {
-            sample_counter += 2;
-            continue;
+            if dir > 1.0 {
+                sample_counter += 2;
+                continue;
+            }
+
+            if alpha < 0.99 && (upper_bucket_index < NUM_BUCKETS as f32) {
+                let lower_bucket = &mut bucket_container.buckets[upper_bucket_index as usize];
+                let lower_occupancy = 1.0 - alpha;
+
+                lower_bucket.left_sum += left * lower_occupancy;
+                lower_bucket.right_sum += right * lower_occupancy;
+                lower_bucket.samples[sample_counter] = left * lower_occupancy;
+                lower_bucket.samples[sample_counter + 1] = right * lower_occupancy;
+            }
+
+            if alpha > 0.01 {
+                let upper_bucket = &mut bucket_container.buckets[lower_bucket_index as usize];
+
+                upper_bucket.left_sum += previous_peak_l * alpha;
+                upper_bucket.right_sum += previous_peak_r * alpha;
+                upper_bucket.samples[sample_counter] = left * alpha;
+                upper_bucket.samples[sample_counter + 1] = right * alpha;
+            }
         }
-
-        if alpha < 0.99 && (upper_bucket_index < NUM_BUCKETS as f32) {
-            let lower_bucket = &mut bucket_container.buckets[upper_bucket_index as usize];
-            let lower_occupancy = 1.0 - alpha;
-
-            lower_bucket.left_sum += left * lower_occupancy;
-            lower_bucket.right_sum += right * lower_occupancy;
-            lower_bucket.samples[sample_counter] = left * lower_occupancy;
-            lower_bucket.samples[sample_counter + 1] = right * lower_occupancy;
-        }
-
-        if alpha > 0.01 {
-            let upper_bucket = &mut bucket_container.buckets[lower_bucket_index as usize];
-
-            upper_bucket.left_sum += previous_peak_l * alpha;
-            upper_bucket.right_sum += previous_peak_r * alpha;
-            upper_bucket.samples[sample_counter] = left * alpha;
-            upper_bucket.samples[sample_counter + 1] = right * alpha;
-        }
-
         sample_counter += 2;
     }
 
@@ -195,10 +187,10 @@ fn render_buckets(bucket_container: &BucketContainer, input_handle: &RoomControl
         let lower_bucket = bucket_container.buckets[target_lower as usize];
         let upper_bucket = bucket_container.buckets[target_upper as usize];
 
-        let v_lower = lower_bucket.left_sum + lower_bucket.right_sum.powi(2);
+        let v_lower = lower_bucket.left_sum + lower_bucket.right_sum;
         let v_lower = (v_lower / (v_lower + 35.0)) * 255.0;
 
-        let v_upper = upper_bucket.left_sum + upper_bucket.right_sum.powi(2);
+        let v_upper = upper_bucket.left_sum + upper_bucket.right_sum;
         let v_upper = (v_upper / (v_upper + 35.0)) * 255.0;
 
         let v = v_lower + (v_upper - v_lower) * bucket_alpha;
