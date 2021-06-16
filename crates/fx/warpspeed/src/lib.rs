@@ -210,7 +210,7 @@ impl InputDevice for Warpspeed {
 
                 if duration > next_spawn {
                     star_contoller.add_star(spawn_center, &mut rng);
-                    next_spawn = duration + rng.gen_range(0.1..0.15);
+                    next_spawn = duration + rng.gen_range(0.075..0.125);
                 }
 
                 star_contoller

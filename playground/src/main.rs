@@ -20,6 +20,6 @@ pub fn main() {
     room.set_input_device(input);
     room.add_output_device(output);
     room.start();
-    thread::sleep(Duration::from_secs(1));
-    room.stop();
+    //thread::sleep(Duration::from_secs(1000));
+    //room.stop();
 }

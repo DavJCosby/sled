@@ -10,5 +10,5 @@ cpal = "0.13.3"
 #anyhow = "1.0.12"
 hound = "3.4"
 #ringbuf = "0.2"
-clap = { version = "2.33.3", default-features = false }
+clap = { version = "2.33.2", default-features = false }
 slc = { path = "../../slc" }
