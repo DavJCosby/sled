@@ -12,3 +12,5 @@ hound = "3.4"
 #ringbuf = "0.2"
 clap = { version = "2.33.2", default-features = false }
 slc = { path = "../../slc" }
+lab = "0.10.0"
+pitch-detection = "0.2.0"
