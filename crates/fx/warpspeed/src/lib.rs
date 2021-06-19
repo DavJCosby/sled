@@ -4,7 +4,7 @@ use std::{collections::HashMap, sync::Arc, thread, time::Instant};
 
 use slc::prelude::*;
 
-const SPAWN_RADIUS: f32 = 0.6;
+const SPAWN_RADIUS: f32 = 1.6;
 const MIN_TEMP: i64 = 2950;
 const MAX_TEMP: i64 = 6350;
 

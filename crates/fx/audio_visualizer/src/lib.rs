@@ -28,7 +28,7 @@ use cpal::{
 };
 
 const EXPECTED_SAMPLE_RATE: usize = 48000;
-const SCAN_DURATION: f32 = 1.0 / 30.0;
+const SCAN_DURATION: f32 = 1.0 / 34.0;
 const SAMPLE_CHUNK_SIZE: usize = 12;
 
 const NUM_BUCKETS: usize = 69;
@@ -96,7 +96,7 @@ const REFRESH_TIMING: f32 = 1.0 / 240.0;
 impl InputDevice for AudioVisualizer {
     fn start(&self, input_handle: RoomControllerInputHandle) {
         // collect data
-        let default_spring_v = Spring::new(0.0, 0.05, 1.0);
+        let default_spring_v = Spring::new(0.0, 0.04, 1.0);
         let default_spring_p = Spring::new(0.0, 0.03, 1.0);
 
         let vol_springs = [default_spring_v; NUM_BUCKETS];
@@ -128,17 +128,20 @@ impl InputDevice for AudioVisualizer {
                 let mut c = 0;
                 for bucket in bucket_container.buckets {
                     //let signal = vec![bucket_container.buckets];
-                    let pitch = detector.get_pitch(&bucket.samples, EXPECTED_SAMPLE_RATE, 0.1, 0.1);
-
-                    match pitch {
-                        Some(p) => {
-                            //println!("{}", p.frequency);
-                            (*write_p)[c].targ = p.frequency;
-                        }
-                        None => {}
-                    };
-
+                    //println!("{}", bucket.peaks);
+                    if bucket.peaks > 4.0 {
+                        let pitch =
+                            detector.get_pitch(&bucket.samples, EXPECTED_SAMPLE_RATE, 0.1, 0.1);
+                        match pitch {
+                            Some(p) => {
+                                //println!("{}", p.frequency);
+                                (*write_p)[c].targ = p.frequency;
+                            }
+                            None => {}
+                        };
+                    }
                     (*write_v)[c].targ = bucket.left_sum + bucket.right_sum;
+
                     c += 1;
                 }
             }
@@ -255,7 +258,8 @@ fn process_audio(
 
                 let mut c = 0;
                 for sample in samples {
-                    lower_bucket.samples[sample_counter * SAMPLE_CHUNK_SIZE / 4 + c] = sample; // * lower_occupancy;
+                    lower_bucket.samples[sample_counter * SAMPLE_CHUNK_SIZE / 4 + c] =
+                        sample * lower_occupancy;
                     c += 1;
                 }
 
@@ -272,7 +276,8 @@ fn process_audio(
 
                 let mut c = 0;
                 for sample in samples {
-                    upper_bucket.samples[sample_counter * SAMPLE_CHUNK_SIZE / 4 + c] = sample; // * lower_occupancy;
+                    upper_bucket.samples[sample_counter * SAMPLE_CHUNK_SIZE / 4 + c] =
+                        sample * alpha;
                     c += 1;
                 }
 
@@ -304,11 +309,11 @@ fn lerp(a: (f32, f32, f32), b: (f32, f32, f32), t: f32) -> (f32, f32, f32) {
 }
 
 fn color_curve1(t: f32) -> (f32, f32, f32) {
-    let p1 = (125.0, 114.0, 44.0);
-    let p2 = (90.0, -118.0, 44.0);
-    let p3 = (14.0, 84.0, 44.0);
-    let p4 = (-10.0, -30.0, 44.0);
-    let p5 = (-86.0, 86.0, 100.0);
+    let p1 = (77.0, 61.0, 54.0);
+    let p2 = (57.0, -17.0, 70.0);
+    let p3 = (0.0, -23.0, 93.0);
+    let p4 = (-23.0, -28.0, 93.0);
+    let p5 = (-69.0, 31.0, 93.0);
 
     if t < 0.25 {
         return lerp(p1, p2, t * 4.0);
@@ -361,7 +366,7 @@ fn render_buckets(
         let p_upper = upper_bucket_p.val;
         let p = p_lower + (p_upper - p_lower) * bucket_alpha;
 
-        let p_zero_one = (p.powf(0.75) / 350.0).min(1.0);
+        let p_zero_one = (p / 1500.0).min(1.0);
 
         //let pit_alpha =
         let (a, b, l) = color_curve1(p_zero_one);
