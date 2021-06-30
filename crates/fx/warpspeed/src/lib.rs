@@ -149,11 +149,7 @@ impl StarController {
                     affected_leds.insert(id + 1, colorf32_1);
                 } else {
                     let div = 1.0 / occupancy;
-                    colorf32_0 = (
-                        colorf32_0.0 * div,
-                        colorf32_0.1 * div,
-                        colorf32_0.2 * div,
-                    );
+                    colorf32_0 = (colorf32_0.0 * div, colorf32_0.1 * div, colorf32_0.2 * div);
                 }
                 affected_leds.insert(id, colorf32_0);
             }
