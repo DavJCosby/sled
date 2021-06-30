@@ -1,17 +1,18 @@
 // CLIENT
+use networking::Client;
 use std::{thread, time::Duration};
 #[allow(unused_imports)]
 use {
     audio_visualizer::AudioVisualizer, calibration::Calibration, lab_rainbow::Rainbow,
-    slc::prelude::*, slc_gui::Gui, sweep::Sweep, warpspeed::Warpspeed,
+    slc::prelude::*, sweep::Sweep, warpspeed::Warpspeed,
 };
 
 // new
 pub fn main() {
     let mut room = Room::new("../../room_configs/myroom.rcfg");
 
-    //let input = Warpspeed::new((-0.00062, 1.0), 0.5);
-    let input = Rainbow::new(1.0, 1.0);
+    let input = Warpspeed::new((-0.00062, 1.0), 0.5);
+    //let input = Rainbow::new(1.0, 1.0);
     //let input = Sweep::new(0.8);
     //let input = Canvas::new();
     //let input = Calibration::new();

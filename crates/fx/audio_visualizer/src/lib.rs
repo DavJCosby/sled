@@ -6,7 +6,6 @@ extern crate hound;
 
 use pitch_detection::detector::autocorrelation::AutocorrelationDetector;
 use pitch_detection::detector::PitchDetector;
-use pitch_detection::float::Float;
 
 use slc::prelude::*;
 
@@ -465,7 +464,7 @@ fn write_input_data<T, U>(
         let mut samples = [0.0; SAMPLE_CHUNK_SIZE * 2];
 
         let mut c = 0;
-        for i in 0..SAMPLE_CHUNK_SIZE {
+        for _ in 0..SAMPLE_CHUNK_SIZE {
             let l = iter.next();
             if l.is_none() {
                 return;

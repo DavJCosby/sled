@@ -9,11 +9,11 @@ pub fn main() {
 
     let input = Server::new("192.168.1.234:11000");
     let output = GPIOOutput::new();
-    
+
     room.set_input_device(input);
     room.add_output_device(output);
 
     room.start();
-    thread::sleep(Duration::from_secs(1000));
+    thread::sleep(Duration::from_secs(10_000));
     room.stop();
 }
