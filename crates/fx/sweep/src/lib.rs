@@ -22,13 +22,13 @@ impl Sweep {
 impl InputDevice for Sweep {
     fn start(&self, input_handle: RoomControllerInputHandle) {
         let spin_speed = self.spin_speed;
-        let stop_watcher = Arc::new(self.stop);
+        let stop = Arc::new(self.stop);
 
         thread::spawn(move || {
             let start = Instant::now();
             let mut last = 0.0;
 
-            while !*stop_watcher {
+            while !*stop {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;

@@ -187,7 +187,7 @@ impl InputDevice for Warpspeed {
         let mut star_contoller = StarController { stars: vec![] };
         let movement_dir = self.movement_dir;
         let movement_speed = self.movement_speed;
-        let stop_watcher = Arc::new(self.stop);
+        let stop = Arc::new(self.stop);
         thread::spawn(move || {
             let read = input_handle.read().unwrap();
             let spawn_center = (
@@ -202,7 +202,7 @@ impl InputDevice for Warpspeed {
             let mut last = 0.0;
             let mut next_spawn = 0.0;
 
-            while !*stop_watcher {
+            while !*stop {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;
