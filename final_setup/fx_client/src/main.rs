@@ -6,6 +6,7 @@ use lab_rainbow::Rainbow;
 use networking::Client;
 use slc::prelude::*;
 use sweep::Sweep;
+use light_painting::Canvas;
 use warpspeed::Warpspeed;
 use audio_visualizer::AudioVisualizer;
 
@@ -16,6 +17,8 @@ pub fn main() {
     //let input = Warpspeed::new((-0.00062, 1.0), 0.5);
     //let input = Rainbow::new(1.0, 1.0);
     //let input = Sweep::new(0.8);
+    //let input = Canvas::new();
+
     //let input = Calibration::new();
     let input = AudioVisualizer;
     let output = Client::new();

@@ -375,6 +375,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "light_painting"
+version = "0.1.0"
+dependencies = [
+ "lab",
+ "slc",
+]
+
+[[package]]
 name = "lock_api"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -767,6 +775,7 @@ dependencies = [
  "audio_visualizer",
  "calibration",
  "lab_rainbow",
+ "light_painting",
  "networking",
  "slc",
  "sweep",

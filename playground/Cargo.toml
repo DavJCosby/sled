@@ -10,6 +10,7 @@ edition = "2018"
 slc = { path = "../crates/slc" }
 slc_gui = { path = "../crates/slc_gui" }
 sweep = { path = "../crates/fx/sweep" }
+light_painting = { path = "../crates/fx/light_painting" }
 lab_rainbow = { path = "../crates/fx/lab_rainbow" }
 calibration = { path = "../crates/fx/calibration" }
 warpspeed = { path = "../crates/fx/warpspeed" }
