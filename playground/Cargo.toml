@@ -19,3 +19,4 @@ networking = { path = "../crates/networking" }
 
 [profile.release]
 #lto =  "fat"
+#codegen-units = 1

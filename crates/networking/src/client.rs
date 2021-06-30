@@ -1,26 +1,31 @@
 use slc::devices::*;
 use std::{
     io::Write,
-    net::TcpStream,
+    net::{SocketAddr, TcpStream},
+    sync::Arc,
     thread,
     time::{Duration, Instant},
 };
 
-const IP: &str = "192.168.1.234:11000";
 const SEND_TIMING: f32 = 1.0 / 240.0;
 
-pub struct Client;
+pub struct Client {
+    ip: SocketAddr,
+}
 
 impl Client {
-    pub fn new() -> Self {
-        Client
+    pub fn new(ip: &str) -> Self {
+        Client {
+            ip: ip.parse().unwrap(),
+        }
     }
 }
 
 impl OutputDevice for Client {
     fn start(&self, output_handle: RoomControllerOutputHandle) {
+        let ip_ref = Arc::new(self.ip);
         thread::spawn(move || {
-            if let Ok(mut stream) = TcpStream::connect(IP) {
+            if let Ok(mut stream) = TcpStream::connect(*ip_ref) {
                 println!("connected to the server!");
 
                 let start = Instant::now();

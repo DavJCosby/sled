@@ -1,21 +1,22 @@
-use std::io::Read;
 use std::{
-    net::{TcpListener, TcpStream},
+    io::Read,
+    net::{SocketAddr, TcpListener, TcpStream},
+    sync::Arc,
     thread,
 };
 
 use slc::prelude::*;
 
-const IP: &str = "192.168.1.234:11000";
 const BUFFER_SIZE: usize = 128;
 pub struct Server {
-    stop: bool,
+    ip: SocketAddr,
 }
 
 impl InputDevice for Server {
     fn start(&self, input_handle: RoomControllerInputHandle) {
+        let ip_ref = Arc::new(self.ip);
         thread::spawn(move || {
-            let listener = TcpListener::bind(IP).unwrap();
+            let listener = TcpListener::bind(*ip_ref).unwrap();
 
             for stream in listener.incoming() {
                 handle_client(stream.unwrap(), input_handle.clone());
@@ -23,9 +24,7 @@ impl InputDevice for Server {
         });
     }
 
-    fn stop(&mut self) {
-        self.stop = true;
-    }
+    fn stop(&mut self) {}
 }
 
 fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle) {
@@ -81,7 +80,9 @@ fn handle_client(mut stream: TcpStream, input_handle: RoomControllerInputHandle)
 }
 
 impl Server {
-    pub fn new() -> Server {
-        Server { stop: false }
+    pub fn new(ip: &str) -> Server {
+        Server {
+            ip: ip.parse().unwrap(),
+        }
     }
 }
