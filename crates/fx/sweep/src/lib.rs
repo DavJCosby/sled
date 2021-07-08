@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{thread, time::Instant};
 
@@ -6,14 +7,14 @@ use slc::prelude::*;
 const UPDATE_TIMING: f32 = 1.0 / 240.0;
 
 pub struct Sweep {
-    stop: bool,
+    alive: Arc<AtomicBool>,
     spin_speed: f32,
 }
 
 impl Sweep {
     pub fn new(spin_speed: f32) -> Sweep {
         Sweep {
-            stop: false,
+            alive: Arc::new(AtomicBool::new(false)),
             spin_speed,
         }
     }
@@ -21,14 +22,15 @@ impl Sweep {
 
 impl InputDevice for Sweep {
     fn start(&self, input_handle: RoomControllerInputHandle) {
+        self.alive.store(true, Ordering::SeqCst);
+        let alive = self.alive.clone();
         let spin_speed = self.spin_speed;
-        let stop = Arc::new(self.stop);
 
         thread::spawn(move || {
             let start = Instant::now();
             let mut last = 0.0;
 
-            while !*stop {
+            while alive.load(Ordering::SeqCst) {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;
@@ -46,6 +48,6 @@ impl InputDevice for Sweep {
     }
 
     fn stop(&mut self) {
-        self.stop = true;
+        self.alive.store(false, Ordering::SeqCst);
     }
 }

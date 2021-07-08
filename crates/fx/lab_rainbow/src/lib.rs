@@ -1,11 +1,18 @@
 use lab::Lab;
 use slc::prelude::*;
-use std::{sync::Arc, thread, time::Instant};
+use std::{
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    thread,
+    time::Instant,
+};
 
 const UPDATE_TIMING: f32 = 1.0 / 144.0;
 
 pub struct Rainbow {
-    stop: bool,
+    alive: Arc<AtomicBool>,
     spin_speed: f32,
     scale: f32,
 }
@@ -13,7 +20,7 @@ pub struct Rainbow {
 impl Rainbow {
     pub fn new(spin_speed: f32, scale: f32) -> Rainbow {
         Rainbow {
-            stop: false,
+            alive: Arc::new(AtomicBool::new(false)),
             spin_speed,
             scale,
         }
@@ -22,15 +29,16 @@ impl Rainbow {
 
 impl InputDevice for Rainbow {
     fn start(&self, input_handle: RoomControllerInputHandle) {
+        self.alive.store(true, Ordering::SeqCst);
+        let alive = self.alive.clone();
+
         let scale = self.scale;
         let spin_speed = self.spin_speed;
-        let stop = Arc::new(self.stop);
-
         thread::spawn(move || {
             let start = Instant::now();
             let mut last = 0.0;
 
-            while !*stop {
+            while alive.load(Ordering::SeqCst) {
                 let duration = start.elapsed().as_secs_f32();
                 if duration - last < UPDATE_TIMING {
                     continue;
@@ -58,6 +66,6 @@ impl InputDevice for Rainbow {
     }
 
     fn stop(&mut self) {
-        self.stop = true;
+        self.alive.store(false, Ordering::SeqCst);
     }
 }

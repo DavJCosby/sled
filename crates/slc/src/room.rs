@@ -4,8 +4,8 @@ use crate::prelude::*;
 
 pub struct Room<'a> {
     rc_lock: Arc<RwLock<RoomController>>,
-    input_device: Option<Box<dyn InputDevice + 'a>>,
-    output_devices: Vec<Box<dyn OutputDevice + 'a>>,
+    input_device: Option<Box<dyn InputDevice + 'a + Send + Sync>>,
+    output_devices: Vec<Box<dyn OutputDevice + 'a + Send + Sync>>,
     running: bool,
 }
 
@@ -22,11 +22,14 @@ impl<'a> Room<'a> {
         }
     }
 
-    pub fn set_input_device<I: InputDevice + 'a>(&mut self, input: I) {
-        self.input_device = Some(Box::new(input));
+    pub fn set_input_device<I: InputDevice + 'a + Send + Sync>(&mut self, input: Option<I>) {
+        self.input_device = match input {
+            Some(device) => Some(Box::new(device)),
+            None => None,
+        }
     }
 
-    pub fn add_output_device<O: OutputDevice + 'a>(&mut self, output: O) {
+    pub fn add_output_device<O: OutputDevice + 'a + Send + Sync>(&mut self, output: O) {
         self.output_devices.push(Box::new(output));
     }
 

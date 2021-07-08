@@ -2,7 +2,7 @@ use slc::devices::*;
 use std::{
     io::Write,
     net::{SocketAddr, TcpStream},
-    sync::Arc,
+    sync::{Arc, Mutex},
     thread,
     time::{Duration, Instant},
 };
@@ -11,12 +11,14 @@ const SEND_TIMING: f32 = 1.0 / 240.0;
 
 pub struct Client {
     ip: SocketAddr,
+    connected: Arc<Mutex<bool>>,
 }
 
 impl Client {
     pub fn new(ip: &str) -> Self {
         Client {
             ip: ip.parse().unwrap(),
+            connected: Arc::new(Mutex::new(false)),
         }
     }
 }
@@ -24,9 +26,16 @@ impl Client {
 impl OutputDevice for Client {
     fn start(&self, output_handle: RoomControllerOutputHandle) {
         let ip_ref = Arc::new(self.ip);
+        let connected = self.connected.clone();
+        if *connected.lock().unwrap() == true {
+            return;
+        }
         thread::spawn(move || {
             if let Ok(mut stream) = TcpStream::connect(*ip_ref) {
                 println!("connected to the server!");
+                let mut guard = connected.lock().unwrap();
+                *guard = true;
+                drop(guard);
 
                 let start = Instant::now();
                 let mut last = 0.0;
@@ -53,7 +62,14 @@ impl OutputDevice for Client {
                     }
 
                     // write colors
-                    stream.write(&buffer).unwrap();
+                    match stream.write(&buffer) {
+                        Ok(_) => {}
+                        Err(_) => {
+                            println!("disconnected");
+                            *connected.lock().unwrap() = false;
+                            return;
+                        }
+                    }
                     // write end of frame marker
                     stream.write(&[1, 0, 0, 0]).unwrap();
 
