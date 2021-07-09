@@ -22,11 +22,12 @@ impl<'a> Room<'a> {
         }
     }
 
-    pub fn set_input_device<I: InputDevice + 'a + Send + Sync>(&mut self, input: Option<I>) {
-        self.input_device = match input {
-            Some(device) => Some(Box::new(device)),
-            None => None,
-        }
+    pub fn set_input_device<I: InputDevice + 'a + Send + Sync>(&mut self, input: I) {
+        self.input_device = Some(Box::new(input));
+    }
+
+    pub fn get_input_device(&self) -> &Box<dyn InputDevice + 'a + Send + Sync> {
+        return &self.input_device.as_ref().unwrap();
     }
 
     pub fn add_output_device<O: OutputDevice + 'a + Send + Sync>(&mut self, output: O) {

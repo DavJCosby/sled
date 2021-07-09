@@ -3,12 +3,19 @@
 version = 3
 
 [[package]]
-name = "slc"
-version = "0.1.0"
+name = "lab"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a4951f42286540a90992685527c4a7940d63d3ae1a750d057ae7c60ef0ccab24"
 
 [[package]]
-name = "slc_sweep"
+name = "light_painting"
 version = "0.1.0"
 dependencies = [
+ "lab",
  "slc",
 ]
+
+[[package]]
+name = "slc"
+version = "0.1.0"

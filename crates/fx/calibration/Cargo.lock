@@ -3,12 +3,12 @@
 version = 3
 
 [[package]]
-name = "slc"
-version = "0.1.0"
-
-[[package]]
-name = "sweep"
+name = "calibration"
 version = "0.1.0"
 dependencies = [
  "slc",
 ]
+
+[[package]]
+name = "slc"
+version = "0.1.0"
