@@ -47,7 +47,7 @@ impl InputDevice for Rainbow {
                 let color_map = |r: f32| {
                     let (dy, dx) = (r * scale + duration * spin_speed).sin_cos();
                     let lab = Lab {
-                        l: 36.67,
+                        l: 45.0,
                         a: dx * 100.0,
                         b: dy * 100.0,
                     };
