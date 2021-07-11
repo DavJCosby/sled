@@ -14,6 +14,7 @@ pub fn main() {
     room.add_output_device(output);
 
     room.start();
-    thread::sleep(Duration::from_secs(10_000));
-    room.stop();
+    loop {
+        thread::sleep(Duration::from_secs(1_000));
+    }
 }
