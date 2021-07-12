@@ -23,6 +23,9 @@ impl<'a> Room<'a> {
     }
 
     pub fn set_input_device<I: InputDevice + 'a + Send + Sync>(&mut self, input: I) {
+        if let Some(input_device) = &mut self.input_device {
+            input_device.stop();
+        }
         self.input_device = Some(Box::new(input));
     }
 

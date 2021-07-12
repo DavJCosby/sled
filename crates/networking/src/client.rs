@@ -7,7 +7,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-const SEND_TIMING: f32 = 1.0 / 240.0;
+const SEND_TIMING: f32 = 1.0 / 250.0;
 
 pub struct Client {
     ip: SocketAddr,
