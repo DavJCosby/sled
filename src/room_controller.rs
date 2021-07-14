@@ -2,10 +2,9 @@ use std::f32::consts::TAU;
 
 use crate::prelude::*;
 
-
 pub struct RoomController {
     pub room_data: RoomData,
-    angle_dir_led_index_triplets: Vec<(f32, Vector2D, usize)>,
+    angle_dir_displ_index_quads: Vec<(f32, Vector2D, Vector2D, usize)>,
 }
 
 impl RoomController {
@@ -14,7 +13,7 @@ impl RoomController {
     pub fn new(filepath: &str) -> RoomController {
         let room_data = RoomData::new_from_file(filepath);
 
-        let mut angle_dir_led_index_triplets: Vec<(f32, Vector2D, usize)> = vec![];
+        let mut angle_dir_displ_index_quads: Vec<(f32, Vector2D, Vector2D, usize)> = vec![];
 
         let led_count = room_data.leds().len();
         let view = room_data.view_pos();
@@ -24,22 +23,40 @@ impl RoomController {
             let p = room_data.get_pos_at_t(t);
             let d = (p.0 - view.0, p.1 - view.1);
             let angle = d.1.atan2(d.0);
-            angle_dir_led_index_triplets.push((
+            angle_dir_displ_index_quads.push((
                 (angle + TAU) % TAU,
                 (angle.cos(), angle.sin()),
+                d,
                 index,
             ));
         }
 
         RoomController {
             room_data,
-            angle_dir_led_index_triplets,
+            angle_dir_displ_index_quads,
         }
     }
 
     /// Sets the color of a given led
     pub fn set(&mut self, index: usize, color: Color) {
         self.room_data.set_led(index, color);
+    }
+
+    /// Sets all LEDs belonging the a given strip the same color. Will panic if strip_index is larger than `room_data.strip().len()`
+    pub fn set_strip(&mut self, strip_index: usize, color: Color) {
+        let mut floor_index = 0.0;
+        let density = self.room_data.density();
+        let strips = self.room_data.strips();
+
+        for i in 0..strip_index {
+            floor_index += strips[i].len() * density;
+        }
+
+        let ceil_index = floor_index + strips[strip_index].len() * density;
+
+        for index in (floor_index as usize)..(ceil_index as usize) {
+            self.room_data.set_led(index, color);
+        }
     }
 
     /// Sets the color of all leds in the room
@@ -50,6 +67,7 @@ impl RoomController {
     }
 
     /// Sets the color of the pixel in a given direction, relative to the view.
+    /// If enable_smoothing is true, anti-aliasing will occur between the two LEDs closest to that direction.
     pub fn set_at_view_dir(&mut self, dir: Vector2D, color: Color, enable_smoothing: bool) {
         self.set_at_room_dir(
             self.room_data.view_dir_to_room_dir(dir),
@@ -59,6 +77,7 @@ impl RoomController {
     }
 
     /// Sets the color of the pixel at a given angle, relative to the view.
+    /// If enable_smoothing is true, anti-aliasing will occur between the two LEDs closest to that direction.
     pub fn set_at_view_angle(&mut self, angle: f32, color: Color, enable_smoothing: bool) {
         self.set_at_room_angle(
             self.room_data.view_angle_to_room_angle(angle),
@@ -68,6 +87,7 @@ impl RoomController {
     }
 
     /// Sets the color of the pixel at a given angle, relative to the room.
+    /// If enable_smoothing is true, anti-aliasing will occur between the two LEDs closest to that direction.
     pub fn set_at_room_angle(&mut self, angle: f32, color: Color, enable_smoothing: bool) {
         let room_dir = (angle.cos(), angle.sin());
         self.set_at_room_dir(room_dir, color, enable_smoothing);
@@ -150,7 +170,7 @@ impl RoomController {
 
     /// Allows the user to pass in a Color-returning function to calculate the color of each led, given its angle.
     pub fn map_angle_to_color(&mut self, map: &dyn Fn(f32) -> Color) {
-        for (angle, _dir, led_index) in &self.angle_dir_led_index_triplets {
+        for (angle, _dir, _, led_index) in &self.angle_dir_displ_index_quads {
             let color = map(*angle);
             self.room_data.set_led(*led_index, color);
         }
@@ -167,7 +187,7 @@ impl RoomController {
         let adjusted_max = (max_angle + TAU) % TAU;
         let crosses_wraparound = min_angle < 0.0 && max_angle > 0.0;
 
-        for (angle, _dir, led_index) in &self.angle_dir_led_index_triplets {
+        for (angle, _dir, _, led_index) in &self.angle_dir_displ_index_quads {
             let deref_angle = *angle;
             // if this angle doesn't fit in the arc, skip it
             if crosses_wraparound {
@@ -186,7 +206,7 @@ impl RoomController {
 
     /// Allows the user to pass in a Color-returning function to calculate the color of each led, given its direction.
     pub fn map_dir_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
-        for (_angle, dir, led_index) in &self.angle_dir_led_index_triplets {
+        for (_angle, dir, _, led_index) in &self.angle_dir_displ_index_quads {
             let color = map(*dir);
             self.room_data.set_led(*led_index, color);
         }
@@ -203,7 +223,7 @@ impl RoomController {
         let adjusted_max = (max_angle + TAU) % TAU;
         let crosses_wraparound = min_angle < 0.0 && max_angle > 0.0;
 
-        for (angle, dir, led_index) in &self.angle_dir_led_index_triplets {
+        for (angle, dir, _, led_index) in &self.angle_dir_displ_index_quads {
             let deref_angle = *angle;
             // if this angle doesn't fit in the arc, skip it
             if crosses_wraparound {
@@ -217,6 +237,14 @@ impl RoomController {
             }
 
             self.room_data.set_led(*led_index, map(*dir));
+        }
+    }
+
+    /// Allows the user to pass in a Color-returning function to calculate the color of each led within, given its displacement from the view position.
+    pub fn map_displacement_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
+        for (_, _, displ, led_index) in &self.angle_dir_displ_index_quads {
+            let color = map(*displ);
+            self.room_data.set_led(*led_index, color);
         }
     }
 }

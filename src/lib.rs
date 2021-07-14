@@ -22,13 +22,13 @@
 //!     fn start(&self, input_handle: RoomControllerInputHandle) {
 //!         let mut room_controller = input_handle.write().unwrap();
 //!         // set all pixels white
-//!         room_controller.set_all((255, 255, 255));
+//!         room_controller.set_all((255, 255, 255), false);
 //!         // set the LED leftmost to the camera red
-//!         controller_write.set_at_view_angle(PI, (255, 0, 0));
+//!         controller_write.set_at_view_angle(PI, (255, 0, 0), false);
 //!         // set the LED rightmost to the camera green
-//!         controller_write.set_at_view_dir((1.0, 0.0), (0, 255, 0));
+//!         controller_write.set_at_view_dir((1.0, 0.0), (0, 255, 0), false);
 //!         // set the northmost LED blue (relative to the room's coordinate space)
-//!         room_controller.set_at_room_dir((0.0, 1.0), (0, 0, 255));
+//!         room_controller.set_at_room_dir((0.0, 1.0), (0, 0, 255), false);
 //!     }
 //!
 //!     fn stop(&mut self) {}
@@ -37,7 +37,7 @@
 //! impl OutputDevice for CustomOutput {
 //!     fn start(&self, output_handle: RoomControllerOutputHandle) {
 //!         let room_controller = output_handle.read().unwrap();
-//!
+//!         // print the color of each LED in the room
 //!         for led in room_controller.room_data.leds() {
 //!             println!("{:?}", led);
 //!         }
@@ -56,20 +56,28 @@
 //! OutputDevices should only access the RoomController in read-only fashion. The RoomControllerOutputHandle passed in through the start method is actually just a RwLock around a RoomController, which helps us keep our mutability straight.
 //! ### `MyInputDevice.start()`
 //! ```
-//! // --snip--
 //! let mut controller_write_access = input_handle.write().unwrap();
-//! println!("Our LED strips have a density of {} LEDs/meter.", controller_write_access.room_data.density); // also okay
 //!
-//! controller_write_access.set(0, (0, 255, 0)); // okay
+//! //okay
+//! println!(
+//!     "Our LED strips have a density of {} LEDs/meter.",
+//!     controller_write_access.room_data.density
+//! );
+//! // also okay
+//! controller_write_access.set(0, (0, 255, 0));
 //! ```
 //!
 //! ### `MyOutputDevice.start()`
 //! ```
-//! // --snip--
 //! let mut controller_read_access = input_handle.read().unwrap();
 //!
-//! println!("Color of the 1st LED: {:?}", controller_read_access.room_data.leds()[1]); // okay
-//! controller_read_access.set(0, (0, 255, 0)); // illegal, will not compile
+//! // okay
+//! println!(
+//!     "Color of the 1st LED: {:?}",
+//!     controller_read_access.room_data.leds()[1]
+//! );
+//! // illegal, will not compile
+//! controller_read_access.set(0, (0, 255, 0)); 
 //! ```
 //!
 //! InputDevices are required to inplement a `.stop()` method, while OutputDevices do not. This is because you likely will want to swap out visual effects at run-time, but you are unlikely to need to swap out display methods on-the-go.
@@ -110,6 +118,11 @@
 //! ```
 //! let map = |(dx, dy): (f32, f32)| { ... };
 //! room_controller.map_dir_to_color_clamped(&map, 0.0, PI / 4.0);
+//! ```
+//! You can also map LEDs by their displacement from the view position.
+//! ```rs
+//! let map = |(delta_x, delta_y): (f32, f32)| { ... };
+//! room_controller.map_displacement_to_color(&map);
 //! ```
 //!
 //! See the [docs](http://davidcosbyuofu.github.io/doc/slc/room_controller) for a full list of mapping methods.
