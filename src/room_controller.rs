@@ -240,12 +240,36 @@ impl RoomController {
         }
     }
 
-    /// Allows the user to pass in a Color-returning function to calculate the color of each led within, given its displacement from the view position.
-    pub fn map_displacement_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
+    /// Allows the user to pass in a Color-returning function to calculate
+    /// the color of each led within, given its displacement from the view position.
+    pub fn map_view_pos_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
         for (_, _, displ, led_index) in &self.angle_dir_displ_index_quads {
             let color = map(*displ);
             self.room_data.set_led(*led_index, color);
         }
+    }
+
+    /// Allows the user to pass in a Color-returning function to calculate
+    /// the color of each led within, given its absolute position in the room.
+    pub fn map_room_pos_to_color(&mut self, map: &dyn Fn(Vector2D) -> Color) {
+        let view_pos = self.room_data.view_pos();
+        for (_, _, displ, led_index) in &self.angle_dir_displ_index_quads {
+            let adjusted = (displ.0 + view_pos.0, displ.1 + view_pos.1);
+            let color = map(adjusted);
+            self.room_data.set_led(*led_index, color);
+        }
+    }
+
+    /// Returns the position of the requested LED, relative to the view position
+    pub fn get_led_view_pos(&self, led_index: usize) -> (f32, f32) {
+        (&self.angle_dir_displ_index_quads)[led_index].2
+    }
+
+    /// Returns the position of the requeested LED, relative to the room
+    pub fn get_led_room_pos(&self, led_index: usize) -> (f32, f32) {
+        let view_space = (&self.angle_dir_displ_index_quads)[led_index].2;
+        let view_pos = self.room_data.view_pos();
+        (view_space.0 + view_pos.0, view_space.1 + view_pos.1)
     }
 }
 
