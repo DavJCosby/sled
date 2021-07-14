@@ -64,7 +64,7 @@ impl<'a> Room<'a> {
         }
     }
 
-    /// stops all connected input devicces.
+    /// stops all connected input devices.
     pub fn stop(&mut self) {
         if let Some(input_device) = &mut self.input_device {
             input_device.stop();
