@@ -1,4 +1,8 @@
 # SLC - Spatial Lighting Controller
+```toml
+slc = { git = "https://github.com/DavidCosbyUofU/slc" }
+```
+
 Spatial Lighting Controller is a project I've started to give myself advanced control over the
 individually-addressable LED strip lights in my room. What separates SLC (pronounced silk) from other LED controller is that it allows you to map out the user's room in 2D space, imagine a camera within that room, and light up LEDs using that camera's coordinate space.
 

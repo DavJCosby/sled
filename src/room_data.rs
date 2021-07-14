@@ -1,13 +1,12 @@
 use crate::util::*;
 use std::fs;
 
-/// Settings and data for a Room, to be consumed by a [RoomController](../room_controller/struct.RoomController.html).
 pub struct RoomData {
-    /// Number of leds / meter.
+    /// Number of LEDs / meter.
     density: f32,
     /// expected position of the observer (meters, meters).
     view_pos: Point,
-    /// expected rotation of the observer in degrees (automaticallly converted to radians).
+    /// expected rotation of the observer in radians (automatically converted from degrees on construction).
     view_rot: f32,
     /// collection of [LineSegments](LineSegment) that represent LED strips.
     strips: Vec<Strip>,

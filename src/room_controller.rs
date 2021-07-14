@@ -2,17 +2,15 @@ use std::f32::consts::TAU;
 
 use crate::prelude::*;
 
-/// Contains methods for reading and writing room data.
-/// Upon construction, comsumes the [Room](../room/struct.Room.html).
-/// Should be packed into a [RwLock](std::sync::RwLock) using [new_thread_safe()](#method.new_thread_safe).
-/// The RwLock's write lock should only be obtained by an [InputDevice](../devices/trait.InputDevice.html).
+
 pub struct RoomController {
     pub room_data: RoomData,
     angle_dir_led_index_triplets: Vec<(f32, Vector2D, usize)>,
 }
 
 impl RoomController {
-    /// Creates a RoomController by consuming room, and then wrap the RoomController for thread safety.
+    /// Creates a RoomController by first creating and consuming a RoomData struct.
+    /// Also precalculates the angle, direction, and position of each LED, relative to the view position.
     pub fn new(filepath: &str) -> RoomController {
         let room_data = RoomData::new_from_file(filepath);
 
