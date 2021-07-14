@@ -50,7 +50,7 @@ The SLC crate is not in charge of interfacing with GPIO pins or activating any r
 In my setup, my PC does all the calculations for InputDevices and then streams the LEDS over to my Raspberry Pi via a TCP OutputDevice. The Pi listens to that TCP connection via an InputDevice, and then displays them on the real LEDs via a GPIO OutputDevice. See [this repository](https://github.com/DavidCosbyUofU/slc_tcp) for more information. 
 
 # Basic API
-All mentioned features have documentation, which you can read [here]().
+All mentioned features have documentation, which you can read [here]((davidcosbyuofu.github.io/doc/slc)).
 
 ## IO
 Input and Output Devices should implement the traits [InputDevice and OutputDevice](crates/slc/src/devices.rs), respectively. Since we have created thread-safe input and output handles in the example above, you are encouraged to run continuous code in the `.start()` methods on a separate thread.
@@ -90,7 +90,7 @@ Constructing a Room creates a RoomData struct behind the scenes, which can be ac
 
 Running `Room::new(filepath)` will parse through this data to create RoomData. Using the density and strip coordinates provided, it calculates the number of LEDs in the room and uses that number to create a vector of (u8, u8, u8) tuples. Each tuple represents an LED's color in the room.
 
-Calling `.start()` on a Room will run the `.start()` method on each connected Input and Output devices. Each device receives either a RoomControllerInputHandle or a RoomControllerOutputHandle, a thread-safe wrapper equivalent to `Arc<RwLock<RoomController>>`.
+Rooms can be given an InputDevice and multiple OutputDevices via its `set_input_device()` and `add_output_device()` methods. Calling `.start()` on a Room will run the `.start()` method on each connected Input and Output devices. Each device receives either a RoomControllerInputHandle or a RoomControllerOutputHandle, a thread-safe wrapper equivalent to `Arc<RwLock<RoomController>>`.
 
 ## Mapping
 The "set at view/direction" methods showcased earlier are good for when you need a color at a precise
@@ -114,7 +114,7 @@ let map = |(dx, dy): (f32, f32)| { ... };
 room_controller.map_dir_to_color_clamped(&map, 0.0, PI / 4.0);
 ```
 
-See  the docs for a full list of mapping methods.
+See the [docs](davidcosbyuofu.github.io/doc/slc/room_controller) for a full list of mapping methods.
 
 # Examples
 Below are some examples to get you started building your own input and output devices.
