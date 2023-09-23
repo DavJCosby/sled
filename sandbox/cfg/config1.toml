@@ -1,0 +1,17 @@
+[settings]
+center_point = [25.0, 25.0]
+
+[line_segments.0]
+start = [0.0, 0.0]
+end = [25.0, 0.0]
+density = 30.0
+
+[line_segments.1]
+start = [25.0, 0.0]
+end = [25.0, 50.0]
+density = 30.0
+
+[line_segments.2]
+start = [25.0, 50.0]
+end = [0.0, 50.0]
+density = 30.0

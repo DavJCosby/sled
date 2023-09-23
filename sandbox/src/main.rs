@@ -1,3 +1,5 @@
+use sled::*;
+
 fn main() {
-    println!("Hello, world!");
+    let sled = SLED::new("./cfg/config1.scfg");
 }
