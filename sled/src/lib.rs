@@ -1,38 +1,55 @@
+use std::{error::Error, fmt};
+
+mod internal;
+use internal::config::Config;
 use palette::Srgb;
 
+#[allow(dead_code)]
 pub struct SLED {
     leds: LEDs,
 }
 
+#[allow(dead_code)]
 pub struct LEDs {
     leds: Vec<Srgb>,
 }
 
 impl SLED {
-    pub fn new(config_file_path: &str) -> Self {
-        // 1. deserialize config file
-
-        // 2. process led segments
-
-        // 3. find sum led count. Now that we have that we know how many color values to initialize
-        let num_leds = 50;
-        let leds = vec![Srgb::new(0.0, 0.0, 0.0); num_leds];
-        // 4. create various utility maps to help us track down the specific led we are looking for.
+    pub fn new(config_file_path: &str) -> Result<Self, SLEDError> {
+        let config = Config::from_toml_file(config_file_path)?;
+        let leds = vec![Srgb::new(0.0, 0.0, 0.0); config.num_leds()];
+        // 4. create various utility maps to help us out later when we need to track down the specific leds.
 
         // 5. construct
-        SLED {
+        Ok(SLED {
             leds: LEDs { leds },
+        })
+    }
+}
+
+#[derive(Debug)]
+pub struct SLEDError {
+    message: String,
+}
+
+impl SLEDError {
+    pub fn new(message: &str) -> Self {
+        SLEDError {
+            message: message.to_string(),
+        }
+    }
+
+    pub fn from_error(e: impl Error) -> Self {
+        SLEDError {
+            message: e.to_string(),
         }
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+impl fmt::Display for SLEDError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.message)
+    }
+}
 
-//     #[test]
-//     fn it_works() {
-//         let result = add(2, 2);
-//         assert_eq!(result, 4);
-//     }
-// }
+impl Error for SLEDError {} // seems we can't have both. Might not be the best design; reconsider.

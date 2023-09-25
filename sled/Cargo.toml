@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+glam = { version = "0.24.2", features = ["serde"] }
+serde = "1.0.188"
 palette = { version = "0.7.3", default-features = false, features = [
     "serializing",
     "std",
     "approx",
 ] }
-serde = "1.0.188"
+toml = "0.8.0"
