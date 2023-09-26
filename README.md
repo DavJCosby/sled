@@ -1,3 +1,6 @@
+# NOTICE: Project Under Massive Rework
+This repository has lots of old, ugly proof of concept code from when I was still learning rust. In the [0.2.0-proto branch](https://github.com/DavJCosby/slc/tree/0.2.0-proto), I'm working on rebuilding this into a much more viable and performant product. See the [rework tracker](https://github.com/DavJCosby/slc/issues/2) for more information.
+
 # SLC - Spatial Lighting Controller
 ```toml
 slc = { git = "https://github.com/DavidCosbyUofU/slc" }
