@@ -9,7 +9,6 @@ static mut DEFAULT_DENSITY: f32 = 0.0;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub center_point: Vec2,
-
     #[serde(rename = "density")]
     #[serde(deserialize_with = "Config::set_default_density")]
     pub default_density: f32,
@@ -30,14 +29,6 @@ impl Config {
         let file_contents = fs::read_to_string(path).map_err(SLEDError::from_error)?;
         let config = toml::from_str(&file_contents).map_err(SLEDError::from_error)?;
         Ok(config)
-    }
-
-    // not 100% on the idea of this being a responsibility of config, may change later.
-    pub fn num_leds(&self) -> usize {
-        self.line_segments
-            .iter()
-            .map(|line| line.length() * line.density)
-            .sum::<f32>() as usize
     }
 
     fn set_default_density<'de, D>(des: D) -> Result<f32, D::Error>
