@@ -18,6 +18,7 @@ impl SLED {
     pub fn new(config_file_path: &str) -> Result<Self, SLEDError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds = vec![Srgb::new(0.0, 0.0, 0.0); config.num_leds()];
+
         // 4. create various utility maps to help us out later when we need to track down the specific leds.
 
         // 5. construct
