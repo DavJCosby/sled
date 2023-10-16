@@ -7,3 +7,9 @@ edition = "2021"
 
 [dependencies]
 sled = { path = "../sled" }
+palette = { version = "0.7.3", default-features = false, features = [
+    "serializing",
+    "std",
+    "approx",
+] }
+colored = "2.0.4"
