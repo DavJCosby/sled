@@ -7,14 +7,6 @@ use palette::Srgb;
 
 #[allow(dead_code)]
 pub struct Sled {
-    leds: LEDs,
-    //canvas: Canvas,
-}
-
-pub struct Canvas {}
-
-#[allow(dead_code)]
-pub struct LEDs {
     center_point: Vec2,
     leds: Vec<Srgb>,
     line_segments: Vec<LineSegment>,
@@ -35,12 +27,28 @@ impl Sled {
 
         // 5. construct
         Ok(Sled {
-            leds: LEDs {
-                center_point: config.center_point,
-                line_segments: config.line_segments,
-                leds,
-            },
+            center_point: config.center_point,
+            line_segments: config.line_segments,
+            leds,
         })
+    }
+}
+
+impl Sled {
+    pub fn set_all(&mut self, color: Srgb) {
+        for led_color in self.leds.iter_mut() {
+            *led_color = color;
+        }
+    }
+
+    pub fn get_colors(&self) -> Vec<(u8, u8, u8)> {
+        let mut output: Vec<(u8, u8, u8)> = vec![];
+
+        for color in &self.leds {
+            output.push(color.into_format().into_components());
+        }
+
+        return output;
     }
 }
 
