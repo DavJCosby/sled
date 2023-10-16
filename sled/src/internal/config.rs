@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::SLEDError;
+use crate::SledError;
 use glam::Vec2;
 use serde::{Deserialize, Deserializer, Serialize};
 
@@ -25,9 +25,9 @@ pub struct LineSegment {
 }
 
 impl Config {
-    pub fn from_toml_file(path: &str) -> Result<Self, SLEDError> {
-        let file_contents = fs::read_to_string(path).map_err(SLEDError::from_error)?;
-        let config = toml::from_str(&file_contents).map_err(SLEDError::from_error)?;
+    pub fn from_toml_file(path: &str) -> Result<Self, SledError> {
+        let file_contents = fs::read_to_string(path).map_err(SledError::from_error)?;
+        let config = toml::from_str(&file_contents).map_err(SledError::from_error)?;
         Ok(config)
     }
 

@@ -1,7 +1,7 @@
-use sled::{SLEDError, SLED};
+use sled::{SledError, Sled};
 
-fn main() -> Result<(), SLEDError> {
-    let _sled = SLED::new("./cfg/config1.toml")?;
+fn main() -> Result<(), SledError> {
+    let _sled = Sled::new("./cfg/config1.toml")?;
 
     Ok(())
 }

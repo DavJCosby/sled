@@ -6,9 +6,12 @@ use internal::config::{Config, LineSegment};
 use palette::Srgb;
 
 #[allow(dead_code)]
-pub struct SLED {
+pub struct Sled {
     leds: LEDs,
+    //canvas: Canvas,
 }
+
+pub struct Canvas {}
 
 #[allow(dead_code)]
 pub struct LEDs {
@@ -17,8 +20,8 @@ pub struct LEDs {
     line_segments: Vec<LineSegment>,
 }
 
-impl SLED {
-    pub fn new(config_file_path: &str) -> Result<Self, SLEDError> {
+impl Sled {
+    pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_strip = config
             .line_segments
@@ -26,12 +29,12 @@ impl SLED {
             .map(|line| line.length() * line.density);
 
         let total_leds = leds_per_strip.sum::<f32>() as usize;
-        
+
         let leds = vec![Srgb::new(0.0, 0.0, 0.0); total_leds];
         // 4. create various utility maps to help us out later when we need to track down the specific leds.
 
         // 5. construct
-        Ok(SLED {
+        Ok(Sled {
             leds: LEDs {
                 center_point: config.center_point,
                 line_segments: config.line_segments,
@@ -42,28 +45,28 @@ impl SLED {
 }
 
 #[derive(Debug)]
-pub struct SLEDError {
+pub struct SledError {
     message: String,
 }
 
-impl SLEDError {
+impl SledError {
     pub fn new(message: &str) -> Self {
-        SLEDError {
+        SledError {
             message: message.to_string(),
         }
     }
 
     pub fn from_error(e: impl Error) -> Self {
-        SLEDError {
+        SledError {
             message: e.to_string(),
         }
     }
 }
 
-impl fmt::Display for SLEDError {
+impl fmt::Display for SledError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
     }
 }
 
-impl Error for SLEDError {} // seems we can't have both. Might not be the best design; reconsider.
+impl Error for SledError {} // seems we can't have both. Might not be the best design; reconsider.
