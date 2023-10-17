@@ -3,7 +3,9 @@ use std::{error::Error, fmt};
 mod internal;
 use glam::Vec2;
 use internal::config::{Config, LineSegment};
-use palette::Srgb;
+
+use color::Srgb;
+pub use palette as color;
 
 #[allow(dead_code)]
 pub struct Sled {
@@ -41,11 +43,14 @@ impl Sled {
         }
     }
 
-    pub fn get_colors(&self) -> Vec<(u8, u8, u8)> {
-        let mut output: Vec<(u8, u8, u8)> = vec![];
+    pub fn get_colors<T>(&self) -> Vec<Srgb<T>>
+    where
+        f32: color::stimulus::IntoStimulus<T>,
+    {
+        let mut output = vec![];
 
         for color in &self.leds {
-            output.push(color.into_format().into_components());
+            output.push(color.into_format());
         }
 
         return output;

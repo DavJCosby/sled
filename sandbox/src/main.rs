@@ -1,6 +1,5 @@
 use colored::Colorize;
-use palette::Srgb;
-use sled::{Sled, SledError};
+use sled::{color::Srgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
     let mut sled = Sled::new("./cfg/config1.toml")?;
@@ -8,7 +7,7 @@ fn main() -> Result<(), SledError> {
 
     let new_colors = sled.get_colors();
     for color in new_colors {
-        print!("{}", "⬤ ".truecolor(color.0, color.1, color.2));
+        print!("{}", "⬤ ".truecolor(color.red, color.green, color.blue));
     }
 
     Ok(())
