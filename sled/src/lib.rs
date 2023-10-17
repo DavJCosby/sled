@@ -1,4 +1,4 @@
-use std::{error::Error, fmt, usize};
+use std::{error::Error, fmt, ops::Range, usize};
 
 mod internal;
 use glam::Vec2;
@@ -52,17 +52,24 @@ impl Sled {
         output
     }
 
-    pub fn get_color(&self, index: usize) -> Option<&Rgb> {
+    pub fn get(&self, index: usize) -> Option<&Rgb> {
         self.leds.get(index)
     }
 
-    pub fn get_color_mut(&mut self, index: usize) -> Option<&mut Rgb> {
+    pub fn get_mut(&mut self, index: usize) -> Option<&mut Rgb> {
         self.leds.get_mut(index)
     }
 
-    pub fn set<T: Into<usize>>(&mut self, index: T, color: Rgb) -> Result<(), SledError> {
-        let index = index.into();
-        let led = self.get_color_mut(index);
+    pub fn get_range(&self, range: Range<usize>) -> &[Rgb] {
+        &self.leds[range]
+    }
+
+    pub fn get_range_mut(&mut self, range: Range<usize>) -> &mut [Rgb] {
+        &mut self.leds[range]
+    }
+
+    pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
+        let led = self.get_mut(index);
         match led {
             Some(rgb) => *rgb = color,
             None => {
@@ -81,11 +88,7 @@ impl Sled {
         }
     }
 
-    pub fn set_range(
-        &mut self,
-        range: std::ops::Range<usize>,
-        color: Rgb,
-    ) -> Result<(), SledError> {
+    pub fn set_range(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         for index in range {
             match self.set(index, color) {
                 Ok(_) => continue,
