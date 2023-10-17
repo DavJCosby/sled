@@ -75,12 +75,12 @@ impl Sled {
         self.leds.get_mut(index)
     }
 
-    pub fn get_range(&self, range: Range<usize>) -> &[Rgb] {
-        &self.leds[range]
+    pub fn get_range(&self, index_range: Range<usize>) -> &[Rgb] {
+        &self.leds[index_range]
     }
 
-    pub fn get_range_mut(&mut self, range: Range<usize>) -> &mut [Rgb] {
-        &mut self.leds[range]
+    pub fn get_range_mut(&mut self, index_range: Range<usize>) -> &mut [Rgb] {
+        &mut self.leds[index_range]
     }
 
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
@@ -103,8 +103,8 @@ impl Sled {
         }
     }
 
-    pub fn set_range(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
-        for index in range {
+    pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
+        for index in index_range {
             match self.set(index, color) {
                 Ok(_) => continue,
                 Err(e) => return Err(e),
