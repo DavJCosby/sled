@@ -43,17 +43,23 @@ impl Sled {
         }
     }
 
-    pub fn get_colors<T>(&self) -> Vec<Srgb<T>>
+    pub fn read<T>(&self) -> Vec<Srgb<T>>
     where
         f32: color::stimulus::IntoStimulus<T>,
     {
         let mut output = vec![];
-
         for color in &self.leds {
             output.push(color.into_format());
         }
+        output
+    }
 
-        return output;
+    pub fn get_color(&self, index: usize) -> Option<&Srgb> {
+        self.leds.get(index)
+    }
+
+    pub fn get_color_mut<T>(&mut self, index: usize) -> Option<&mut Srgb> {
+        self.leds.get_mut(index)
     }
 }
 
