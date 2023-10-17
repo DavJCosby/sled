@@ -16,27 +16,42 @@ pub struct Sled {
     center_point: Vec2,
     leds: Vec<Rgb>,
     line_segments: Vec<LineSegment>,
+    line_segment_to_index_map: Vec<Vec<usize>>,
 }
 
 impl Sled {
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
-        let leds_per_strip = config
-            .line_segments
-            .iter()
-            .map(|line| line.length() * line.density);
+        let leds_per_strip = Sled::leds_per_strip(&config);
 
-        let total_leds = leds_per_strip.sum::<f32>() as usize;
-
-        let leds = vec![Rgb::new(0.0, 0.0, 0.0); total_leds];
-        // 4. create various utility maps to help us out later when we need to track down the specific leds.
-
+        let leds = vec![Rgb::new(0.0, 0.0, 0.0); leds_per_strip.iter().sum()];
+        let line_segment_to_index_map = Sled::line_segment_to_index_map(leds_per_strip);
         // 5. construct
         Ok(Sled {
             center_point: config.center_point,
             line_segments: config.line_segments,
             leds,
+            line_segment_to_index_map,
         })
+    }
+
+    fn leds_per_strip(config: &Config) -> Vec<usize> {
+        config
+            .line_segments
+            .iter()
+            .map(|line| (line.length() * line.density).round() as usize)
+            .collect()
+    }
+
+    fn line_segment_to_index_map(leds_per_strip: Vec<usize>) -> Vec<Vec<usize>> {
+        let mut line_segment_to_index_map = vec![];
+        let mut last_index = 0;
+        for num_leds in &leds_per_strip {
+            line_segment_to_index_map.push((last_index..(last_index + num_leds)).collect());
+            last_index += num_leds;
+        }
+
+        return line_segment_to_index_map;
     }
 }
 
