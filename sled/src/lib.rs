@@ -58,7 +58,7 @@ impl Sled {
         self.leds.get(index)
     }
 
-    pub fn get_color_mut<T>(&mut self, index: usize) -> Option<&mut Srgb> {
+    pub fn get_color_mut(&mut self, index: usize) -> Option<&mut Srgb> {
         self.leds.get_mut(index)
     }
 }
