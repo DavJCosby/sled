@@ -88,9 +88,9 @@ impl Sled {
         match led {
             Some(rgb) => *rgb = color,
             None => {
-                return Err(SledError::new(
-                    format!("LED at index {} does not exist.", index).as_str(),
-                ))
+                return Err(SledError {
+                    message: format!("LED at index {} does not exist.", index),
+                })
             }
         }
 
@@ -120,12 +120,6 @@ pub struct SledError {
 }
 
 impl SledError {
-    pub fn new(message: &str) -> Self {
-        SledError {
-            message: message.to_string(),
-        }
-    }
-
     pub fn from_error(e: impl Error) -> Self {
         SledError {
             message: e.to_string(),
