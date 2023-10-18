@@ -16,7 +16,7 @@ pub struct Sled {
     center_point: Vec2,
     leds: Vec<Rgb>,
     line_segments: Vec<LineSegment>,
-    line_segment_to_index_map: Vec<Vec<usize>>,
+    line_segment_endpoint_indices: Vec<(usize, usize)>,
 }
 
 impl Sled {
@@ -25,37 +25,16 @@ impl Sled {
         let leds_per_strip = Sled::leds_per_strip(&config);
 
         let leds = vec![Rgb::new(0.0, 0.0, 0.0); leds_per_strip.iter().sum()];
-        let line_segment_to_index_map = Sled::line_segment_to_index_map(leds_per_strip);
+        let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(leds_per_strip);
         // 5. construct
         Ok(Sled {
             center_point: config.center_point,
             line_segments: config.line_segments,
             leds,
-            line_segment_to_index_map,
+            line_segment_endpoint_indices,
         })
     }
 
-    fn leds_per_strip(config: &Config) -> Vec<usize> {
-        config
-            .line_segments
-            .iter()
-            .map(|line| (line.length() * line.density).round() as usize)
-            .collect()
-    }
-
-    fn line_segment_to_index_map(leds_per_strip: Vec<usize>) -> Vec<Vec<usize>> {
-        let mut line_segment_to_index_map = vec![];
-        let mut last_index = 0;
-        for num_leds in &leds_per_strip {
-            line_segment_to_index_map.push((last_index..(last_index + num_leds)).collect());
-            last_index += num_leds;
-        }
-
-        return line_segment_to_index_map;
-    }
-}
-
-impl Sled {
     pub fn read<T>(&self) -> Vec<Srgb<T>>
     where
         f32: color::stimulus::IntoStimulus<T>,
@@ -67,6 +46,28 @@ impl Sled {
         output
     }
 
+    fn leds_per_strip(config: &Config) -> Vec<usize> {
+        config
+            .line_segments
+            .iter()
+            .map(|line| (line.length() * line.density).round() as usize)
+            .collect()
+    }
+
+    fn line_segment_endpoint_indices(leds_per_strip: Vec<usize>) -> Vec<(usize, usize)> {
+        let mut line_segment_endpoint_indices = vec![];
+        let mut last_index = 0;
+        for num_leds in &leds_per_strip {
+            line_segment_endpoint_indices.push((last_index, last_index + num_leds));
+            last_index += num_leds;
+        }
+
+        return line_segment_endpoint_indices;
+    }
+}
+
+// index-based accessors
+impl Sled {
     pub fn get(&self, index: usize) -> Option<&Rgb> {
         self.leds.get(index)
     }
@@ -110,6 +111,51 @@ impl Sled {
                 Err(e) => return Err(e),
             }
         }
+        Ok(())
+    }
+}
+
+// line-segment based accessors
+impl Sled {
+    pub fn get_segment(&self, segment_index: usize) -> Option<&[Rgb]> {
+        let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
+        match queried_segment {
+            Some(indices) => {
+                let first = indices.0;
+                let last = indices.1;
+                return Some(self.get_range(first..last));
+            }
+            None => return None,
+        }
+    }
+
+    pub fn get_segment_mut(&mut self, segment_index: usize) -> Option<&mut [Rgb]> {
+        let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
+        match queried_segment {
+            Some(indices) => {
+                let first = indices.0;
+                let last = indices.1;
+                return Some(self.get_range_mut(first..last));
+            }
+            None => return None,
+        }
+    }
+
+    pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
+        let leds = self.get_segment_mut(segment_index);
+        match leds {
+            Some(leds) => {
+                for led in leds {
+                    *led = color;
+                }
+            }
+            None => {
+                return Err(SledError {
+                    message: format!("No line segment of index {} exists.", segment_index),
+                });
+            }
+        }
+
         Ok(())
     }
 }
