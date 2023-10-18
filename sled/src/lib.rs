@@ -22,6 +22,7 @@ pub struct Sled {
     vertex_indices: Vec<usize>,
 }
 
+/// Construction, output, and basic sled info.
 impl Sled {
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
@@ -45,6 +46,18 @@ impl Sled {
             output.push(color.into_format());
         }
         output
+    }
+
+    pub fn num_leds(&self) -> usize {
+        self.leds.len()
+    }
+
+    pub fn num_segments(&self) -> usize {
+        self.line_segments.len()
+    }
+
+    pub fn num_vertices(&self) -> usize {
+        self.vertex_indices.len()
     }
 
     fn leds_per_strip(config: &Config) -> Vec<usize> {
@@ -87,12 +100,8 @@ impl Sled {
     }
 }
 
-// index-based accessors
+// Index-based read and write methods.
 impl Sled {
-    pub fn num_leds(&self) -> usize {
-        self.leds.len()
-    }
-
     pub fn get(&self, index: usize) -> Option<&Rgb> {
         self.leds.get(index)
     }
@@ -140,12 +149,8 @@ impl Sled {
     }
 }
 
-// line-segment based accessors
+/// LineSegment-based read and write methods.
 impl Sled {
-    pub fn num_segments(&self) -> usize {
-        self.line_segments.len()
-    }
-
     pub fn get_segment(&self, segment_index: usize) -> Option<&[Rgb]> {
         let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
         match queried_segment {
@@ -189,11 +194,8 @@ impl Sled {
     }
 }
 
+/// Vertex-based read and write methods.
 impl Sled {
-    pub fn num_vertices(&self) -> usize {
-        self.vertex_indices.len()
-    }
-
     pub fn get_vertex(&self, vertex_index: usize) -> Option<&Rgb> {
         let led_index = self.vertex_indices.get(vertex_index);
         match led_index {
