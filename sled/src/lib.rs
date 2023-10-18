@@ -17,6 +17,7 @@ pub struct Sled {
     leds: Vec<Rgb>,
     line_segments: Vec<LineSegment>,
     line_segment_endpoint_indices: Vec<(usize, usize)>,
+    vertex_indices: Vec<usize>,
 }
 
 impl Sled {
@@ -24,14 +25,12 @@ impl Sled {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_strip = Sled::leds_per_strip(&config);
 
-        let leds = vec![Rgb::new(0.0, 0.0, 0.0); leds_per_strip.iter().sum()];
-        let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(leds_per_strip);
-        // 5. construct
         Ok(Sled {
+            leds: vec![Rgb::new(0.0, 0.0, 0.0); leds_per_strip.iter().sum()],
+            line_segment_endpoint_indices: Sled::line_segment_endpoint_indices(leds_per_strip),
+            vertex_indices: Sled::vertex_indices(&config),
             center_point: config.center_point,
             line_segments: config.line_segments,
-            leds,
-            line_segment_endpoint_indices,
         })
     }
 
@@ -54,6 +53,26 @@ impl Sled {
             .collect()
     }
 
+    fn vertex_indices(config: &Config) -> Vec<usize> {
+        let mut vertex_indices = vec![];
+
+        let mut last_end_point: Option<Vec2> = None;
+        let mut last_index = 0;
+        for line in &config.line_segments {
+            if Some(line.start) != last_end_point {
+                vertex_indices.push(last_index);
+            }
+
+            let num_leds = line.num_leds();
+            vertex_indices.push(last_index + num_leds - 1);
+
+            last_index += num_leds;
+            last_end_point = Some(line.end);
+        }
+
+        vertex_indices
+    }
+
     fn line_segment_endpoint_indices(leds_per_strip: Vec<usize>) -> Vec<(usize, usize)> {
         let mut line_segment_endpoint_indices = vec![];
         let mut last_index = 0;
@@ -62,12 +81,16 @@ impl Sled {
             last_index += num_leds;
         }
 
-        return line_segment_endpoint_indices;
+        line_segment_endpoint_indices
     }
 }
 
 // index-based accessors
 impl Sled {
+    pub fn num_leds(&self) -> usize {
+        self.leds.len()
+    }
+
     pub fn get(&self, index: usize) -> Option<&Rgb> {
         self.leds.get(index)
     }
@@ -117,15 +140,19 @@ impl Sled {
 
 // line-segment based accessors
 impl Sled {
+    pub fn num_segments(&self) -> usize {
+        self.line_segments.len()
+    }
+
     pub fn get_segment(&self, segment_index: usize) -> Option<&[Rgb]> {
         let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
         match queried_segment {
             Some(indices) => {
                 let first = indices.0;
                 let last = indices.1;
-                return Some(self.get_range(first..last));
+                Some(self.get_range(first..last))
             }
-            None => return None,
+            None => None,
         }
     }
 
@@ -135,9 +162,9 @@ impl Sled {
             Some(indices) => {
                 let first = indices.0;
                 let last = indices.1;
-                return Some(self.get_range_mut(first..last));
+                Some(self.get_range_mut(first..last))
             }
-            None => return None,
+            None => None,
         }
     }
 
@@ -157,6 +184,26 @@ impl Sled {
         }
 
         Ok(())
+    }
+
+    pub fn num_vertices(&self) -> usize {
+        self.vertex_indices.len()
+    }
+
+    pub fn get_vertex(&self, vertex_index: usize) -> Option<&Rgb> {
+        let led_index = self.vertex_indices.get(vertex_index);
+        match led_index {
+            Some(i) => self.get(*i),
+            None => None,
+        }
+    }
+
+    pub fn get_vertex_mut(&mut self, vertex_index: usize) -> Option<&mut Rgb> {
+        let led_index = self.vertex_indices.get(vertex_index);
+        match led_index {
+            Some(i) => self.get_mut(*i),
+            None => None,
+        }
     }
 }
 
