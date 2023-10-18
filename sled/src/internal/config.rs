@@ -1,8 +1,7 @@
-use std::fs;
-
 use crate::SledError;
 use glam::Vec2;
 use serde::{Deserialize, Deserializer, Serialize};
+use std::fs;
 
 static mut DEFAULT_DENSITY: f32 = 0.0;
 
