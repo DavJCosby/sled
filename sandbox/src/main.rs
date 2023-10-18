@@ -3,10 +3,10 @@ use sled::{color::Rgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
     let mut sled = Sled::new("./cfg/config1.toml")?;
+    sled.set_all(Rgb::new(1.0, 1.0, 1.0));
 
-    for i in 0..sled.num_vertices() {
-        let led = sled.get_vertex_mut(i).unwrap();
-        *led = Rgb::new(i as f32 * 0.25, 1.0, 1.0);
+    for led in sled.get_vertices_mut() {
+        *led += Rgb::new(0.0, 0.0, 1.0);
     }
 
     let new_colors = sled.read();

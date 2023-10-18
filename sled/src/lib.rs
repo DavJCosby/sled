@@ -119,16 +119,11 @@ impl Sled {
     }
 
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_mut(index);
-        match led {
-            Some(rgb) => *rgb = color,
-            None => {
-                return Err(SledError {
-                    message: format!("LED at index {} does not exist.", index),
-                })
-            }
-        }
+        let led = self.get_mut(index).ok_or(SledError {
+            message: format!("LED at index {} does not exist.", index),
+        })?;
 
+        *led = color;
         Ok(())
     }
 
@@ -140,10 +135,7 @@ impl Sled {
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         for index in index_range {
-            match self.set(index, color) {
-                Ok(_) => continue,
-                Err(e) => return Err(e),
-            }
+            self.set(index, color)?
         }
         Ok(())
     }
@@ -152,42 +144,22 @@ impl Sled {
 /// LineSegment-based read and write methods.
 impl Sled {
     pub fn get_segment(&self, segment_index: usize) -> Option<&[Rgb]> {
-        let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
-        match queried_segment {
-            Some(indices) => {
-                let first = indices.0;
-                let last = indices.1;
-                Some(self.get_range(first..last))
-            }
-            None => None,
-        }
+        let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
+        Some(self.get_range(start..end))
     }
 
     pub fn get_segment_mut(&mut self, segment_index: usize) -> Option<&mut [Rgb]> {
-        let queried_segment = self.line_segment_endpoint_indices.get(segment_index);
-        match queried_segment {
-            Some(indices) => {
-                let first = indices.0;
-                let last = indices.1;
-                Some(self.get_range_mut(first..last))
-            }
-            None => None,
-        }
+        let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
+        Some(self.get_range_mut(start..end))
     }
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
-        let leds = self.get_segment_mut(segment_index);
-        match leds {
-            Some(leds) => {
-                for led in leds {
-                    *led = color;
-                }
-            }
-            None => {
-                return Err(SledError {
-                    message: format!("No line segment of index {} exists.", segment_index),
-                });
-            }
+        let leds = self.get_segment_mut(segment_index).ok_or(SledError {
+            message: format!("No line segment of index {} exists.", segment_index),
+        })?;
+
+        for led in leds {
+            *led = color;
         }
 
         Ok(())
@@ -197,18 +169,53 @@ impl Sled {
 /// Vertex-based read and write methods.
 impl Sled {
     pub fn get_vertex(&self, vertex_index: usize) -> Option<&Rgb> {
-        let led_index = self.vertex_indices.get(vertex_index);
-        match led_index {
-            Some(i) => self.get(*i),
-            None => None,
-        }
+        let led_index = self.vertex_indices.get(vertex_index)?;
+        self.get(*led_index)
     }
 
     pub fn get_vertex_mut(&mut self, vertex_index: usize) -> Option<&mut Rgb> {
-        let led_index = self.vertex_indices.get(vertex_index);
-        match led_index {
-            Some(i) => self.get_mut(*i),
-            None => None,
+        let led_index = self.vertex_indices.get(vertex_index)?;
+        self.get_mut(*led_index)
+    }
+
+    pub fn get_vertices(&self) -> Vec<&Rgb> {
+        let mut led_references: Vec<&Rgb> = vec![];
+        for led_index in &self.vertex_indices {
+            led_references.push(self.get(*led_index).unwrap());
+        }
+
+        led_references
+    }
+
+    pub fn get_vertices_mut(&mut self) -> Vec<&mut Rgb> {
+        // a bit of an ugly solution, but it works. Take a vector of references to everything, then delete the ones you don't need.
+        let mut everything = self.leds.iter_mut().collect::<Vec<&mut Rgb>>();
+        let mut vertices = vec![];
+        for i in self.vertex_indices.iter().rev() {
+            vertices.push(everything.swap_remove(*i));
+        }
+        vertices.reverse();
+        vertices
+    }
+
+    pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
+        let led = self.get_vertex_mut(vertex_index).ok_or(SledError {
+            message: format!("Vertex with index {} does not exist.", vertex_index),
+        })?;
+
+        *led = color;
+        Ok(())
+    }
+
+    pub fn set_vertices(&mut self, color: Rgb) {
+        for i in self.vertex_indices.clone() {
+            self.set(i, color).unwrap();
+        }
+    }
+
+    pub fn for_each_vertex<F: FnMut(&mut Rgb)>(&mut self, mut f: F) {
+        for i in &self.vertex_indices {
+            f(&mut self.leds[*i])
         }
     }
 }
