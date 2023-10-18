@@ -24,6 +24,12 @@ pub struct LineSegment {
     pub density: f32,
 }
 
+impl LineSegment {
+    pub fn num_leds(&self) -> usize {
+        return (self.length() * self.density).round() as usize;
+    }
+}
+
 impl Config {
     pub fn from_toml_file(path: &str) -> Result<Self, SledError> {
         let file_contents = fs::read_to_string(path).map_err(SledError::from_error)?;

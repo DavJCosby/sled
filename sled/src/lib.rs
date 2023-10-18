@@ -50,7 +50,7 @@ impl Sled {
         config
             .line_segments
             .iter()
-            .map(|line| (line.length() * line.density).round() as usize)
+            .map(|line| line.num_leds())
             .collect()
     }
 
