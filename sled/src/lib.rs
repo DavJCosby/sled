@@ -164,6 +164,32 @@ impl Sled {
 
         Ok(())
     }
+
+    pub fn for_each_in_segment<F: FnMut(&mut Rgb, f32)>(
+        &mut self,
+        segment_index: usize,
+        mut f: F,
+    ) -> Result<(), SledError> {
+        let segment = self.get_segment_mut(segment_index).ok_or(SledError {
+            message: format!("No line segment of index {} exists.", segment_index),
+        })?;
+
+        let mut index = 0;
+        let length = segment.len();
+        
+        let led_alpha_pairs: Vec<(&mut Rgb, f32)> = segment
+            .iter_mut()
+            .map(|led| {
+                let pair = (led, index as f32 / length as f32);
+                index += 1;
+                pair
+            })
+            .collect();
+        for (led, alpha) in led_alpha_pairs {
+            f(led, alpha)
+        }
+        Ok(())
+    }
 }
 
 /// Vertex-based read and write methods.
