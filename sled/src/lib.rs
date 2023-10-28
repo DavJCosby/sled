@@ -118,24 +118,6 @@ impl Sled {
         &mut self.leds[index_range]
     }
 
-    pub fn for_each<F: FnMut(&mut Rgb, usize)>(&mut self, mut func: F) {
-        for (index, led) in self.leds.iter_mut().enumerate() {
-            func(led, index);
-        }
-    }
-
-    pub fn for_each_in_range<F: FnMut(&mut Rgb, usize)>(
-        &mut self,
-        index_range: Range<usize>,
-        mut func: F,
-    ) {
-        let lower_bound = index_range.start;
-        let range = self.get_range_mut(index_range);
-        for (index, led) in range.iter_mut().enumerate() {
-            func(led, lower_bound + index);
-        }
-    }
-
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
         let led = self.get_mut(index).ok_or(SledError {
             message: format!("LED at index {} does not exist.", index),
@@ -151,11 +133,29 @@ impl Sled {
         }
     }
 
+    pub fn for_each<F: FnMut(&mut Rgb, usize)>(&mut self, mut func: F) {
+        for (index, led) in self.leds.iter_mut().enumerate() {
+            func(led, index);
+        }
+    }
+
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         for index in index_range {
             self.set(index, color)?
         }
         Ok(())
+    }
+
+    pub fn for_each_in_range<F: FnMut(&mut Rgb, usize)>(
+        &mut self,
+        index_range: Range<usize>,
+        mut func: F,
+    ) {
+        let lower_bound = index_range.start;
+        let range = self.get_range_mut(index_range);
+        for (index, led) in range.iter_mut().enumerate() {
+            func(led, lower_bound + index);
+        }
     }
 }
 
