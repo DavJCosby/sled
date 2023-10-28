@@ -118,6 +118,18 @@ impl Sled {
         &mut self.leds[index_range]
     }
 
+    pub fn for_each_in_range<F: FnMut(&mut Rgb, usize)>(
+        &mut self,
+        index_range: Range<usize>,
+        mut func: F,
+    ) {
+        let lower_bound = index_range.start;
+        let range = self.get_range_mut(index_range);
+        for (index, led) in range.iter_mut().enumerate() {
+            func(led, lower_bound + index);
+        }
+    }
+
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
         let led = self.get_mut(index).ok_or(SledError {
             message: format!("LED at index {} does not exist.", index),
@@ -168,26 +180,18 @@ impl Sled {
     pub fn for_each_in_segment<F: FnMut(&mut Rgb, f32)>(
         &mut self,
         segment_index: usize,
-        mut f: F,
+        mut func: F,
     ) -> Result<(), SledError> {
         let segment = self.get_segment_mut(segment_index).ok_or(SledError {
             message: format!("No line segment of index {} exists.", segment_index),
         })?;
 
-        let mut index = 0;
-        let length = segment.len();
-        
-        let led_alpha_pairs: Vec<(&mut Rgb, f32)> = segment
-            .iter_mut()
-            .map(|led| {
-                let pair = (led, index as f32 / length as f32);
-                index += 1;
-                pair
-            })
-            .collect();
-        for (led, alpha) in led_alpha_pairs {
-            f(led, alpha)
+        let num_leds_f32 = segment.len() as f32;
+        for (index, led) in segment.iter_mut().enumerate() {
+            let alpha = index as f32 / num_leds_f32;
+            func(led, alpha);
         }
+
         Ok(())
     }
 }
