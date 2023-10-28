@@ -36,15 +36,18 @@ impl Sled {
         })
     }
 
+    pub fn read(&self) -> Vec<Led> {
+        self.leds.clone()
+    }
+
     pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
     where
         f32: color::stimulus::IntoStimulus<T>,
     {
-        let mut output = vec![];
-        for led in &self.leds {
-            output.push(led.color.into_format());
-        }
-        output
+        self.leds
+            .iter()
+            .map(|led| led.color.into_format())
+            .collect()
     }
 
     pub fn num_leds(&self) -> usize {
@@ -74,7 +77,12 @@ impl Sled {
                 let a = i as f32 / (segment_size - 1) as f32;
                 let segment = &line_segments[segment_index];
                 let pos = segment.start.lerp(segment.end, a);
-                leds.push(Led::new(Rgb::new(0.0, 0.0, 0.0), pos, segment_index));
+                leds.push(Led::new(
+                    Rgb::new(0.0, 0.0, 0.0),
+                    pos,
+                    leds.len(),
+                    segment_index,
+                ));
             }
         }
         leds
@@ -137,9 +145,9 @@ impl Sled {
         }
     }
 
-    pub fn for_each<F: FnMut(&mut Led, usize)>(&mut self, mut func: F) {
-        for (index, led) in self.leds.iter_mut().enumerate() {
-            func(led, index);
+    pub fn for_each<F: FnMut(&mut Led)>(&mut self, mut func: F) {
+        for led in self.leds.iter_mut() {
+            func(led);
         }
     }
 }
@@ -161,15 +169,14 @@ impl Sled {
         Ok(())
     }
 
-    pub fn for_each_in_range<F: FnMut(&mut Led, usize)>(
+    pub fn for_each_in_range<F: FnMut(&mut Led)>(
         &mut self,
         index_range: Range<usize>,
         mut func: F,
     ) {
-        let lower_bound = index_range.start;
         let range = self.get_range_mut(index_range);
-        for (index, led) in range.iter_mut().enumerate() {
-            func(led, lower_bound + index);
+        for led in range.iter_mut() {
+            func(led);
         }
     }
 }
@@ -208,8 +215,8 @@ impl Sled {
         })?;
 
         let num_leds_f32 = segment.len() as f32;
-        for (index, led) in segment.iter_mut().enumerate() {
-            let alpha = index as f32 / num_leds_f32;
+        for led in segment.iter_mut() {
+            let alpha = led.index() as f32 / num_leds_f32;
             func(led, alpha);
         }
 

@@ -6,8 +6,8 @@ fn main() -> Result<(), SledError> {
 
     let max = sled.num_leds();
 
-    sled.for_each(|led, index| {
-        led.color = Rgb::new(index as f32 / max as f32, 0.5, 0.5);
+    sled.for_each(|led| {
+        led.color = Rgb::new(led.index() as f32 / max as f32, 0.5, 0.5);
     });
 
     // sled.for_each_in_segment(1, |led, alpha| {
