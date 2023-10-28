@@ -118,6 +118,12 @@ impl Sled {
         &mut self.leds[index_range]
     }
 
+    pub fn for_each<F: FnMut(&mut Rgb, usize)>(&mut self, mut func: F) {
+        for (index, led) in self.leds.iter_mut().enumerate() {
+            func(led, index);
+        }
+    }
+
     pub fn for_each_in_range<F: FnMut(&mut Rgb, usize)>(
         &mut self,
         index_range: Range<usize>,
