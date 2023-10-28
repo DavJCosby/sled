@@ -7,7 +7,7 @@ fn main() -> Result<(), SledError> {
     let max = sled.num_leds();
 
     sled.for_each(|led, index| {
-        *led = Rgb::new(index as f32 / max as f32, 0.5, 0.5);
+        led.color = Rgb::new(index as f32 / max as f32, 0.5, 0.5);
     });
 
     // sled.for_each_in_segment(1, |led, alpha| {
@@ -18,7 +18,7 @@ fn main() -> Result<(), SledError> {
     //     *led += Rgb::new(0.0, 1.0 - alpha, 0.0);
     // })?;
 
-    let new_colors = sled.read();
+    let new_colors = sled.read_colors();
     for color in new_colors {
         print!("{}", "⬤ ".truecolor(color.red, color.green, color.blue));
     }

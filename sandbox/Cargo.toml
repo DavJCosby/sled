@@ -8,3 +8,13 @@ edition = "2021"
 [dependencies]
 sled = { path = "../sled" }
 colored = "2.0.4"
+bevy = { version = "0.11.3", features = ["dynamic_linking"] }
+
+[workspace]
+resolver = "2"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

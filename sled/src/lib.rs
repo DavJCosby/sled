@@ -24,21 +24,13 @@ impl Sled {
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_segment = Sled::leds_per_segment(&config);
-        let mut leds = vec![];
-
-        for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
-            for i in 0..*segment_size {
-                let a = i as f32 / (segment_size - 1) as f32;
-                let segment = &config.line_segments[segment_index];
-                let pos = segment.start.lerp(segment.end, a);
-                leds.push(Led::new(Rgb::new(0.0, 0.0, 0.0), pos, segment_index));
-            }
-        }
-
+        let leds = Sled::build_led_list(&leds_per_segment, &config.line_segments);
+        let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
+        let vertex_indices = Sled::vertex_indices(&config);
         Ok(Sled {
             leds,
-            line_segment_endpoint_indices: Sled::line_segment_endpoint_indices(leds_per_segment),
-            vertex_indices: Sled::vertex_indices(&config),
+            line_segment_endpoint_indices,
+            vertex_indices,
             center_point: config.center_point,
             line_segments: config.line_segments,
         })
@@ -75,6 +67,30 @@ impl Sled {
             .collect()
     }
 
+    fn build_led_list(leds_per_segment: &Vec<usize>, line_segments: &Vec<LineSegment>) -> Vec<Led> {
+        let mut leds = vec![];
+        for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
+            for i in 0..*segment_size {
+                let a = i as f32 / (segment_size - 1) as f32;
+                let segment = &line_segments[segment_index];
+                let pos = segment.start.lerp(segment.end, a);
+                leds.push(Led::new(Rgb::new(0.0, 0.0, 0.0), pos, segment_index));
+            }
+        }
+        leds
+    }
+
+    fn line_segment_endpoint_indices(leds_per_segment: &Vec<usize>) -> Vec<(usize, usize)> {
+        let mut line_segment_endpoint_indices = vec![];
+        let mut last_index = 0;
+        for num_leds in leds_per_segment {
+            line_segment_endpoint_indices.push((last_index, last_index + num_leds));
+            last_index += num_leds;
+        }
+
+        line_segment_endpoint_indices
+    }
+
     fn vertex_indices(config: &Config) -> Vec<usize> {
         let mut vertex_indices = vec![];
 
@@ -93,17 +109,6 @@ impl Sled {
         }
 
         vertex_indices
-    }
-
-    fn line_segment_endpoint_indices(leds_per_strip: Vec<usize>) -> Vec<(usize, usize)> {
-        let mut line_segment_endpoint_indices = vec![];
-        let mut last_index = 0;
-        for num_leds in &leds_per_strip {
-            line_segment_endpoint_indices.push((last_index, last_index + num_leds));
-            last_index += num_leds;
-        }
-
-        line_segment_endpoint_indices
     }
 }
 
