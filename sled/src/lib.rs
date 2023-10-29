@@ -215,8 +215,9 @@ impl Sled {
         })?;
 
         let num_leds_f32 = segment.len() as f32;
+        let lower_bound = segment[0].index();
         for led in segment.iter_mut() {
-            let alpha = led.index() as f32 / num_leds_f32;
+            let alpha = (led.index() - lower_bound) as f32 / num_leds_f32;
             func(led, alpha);
         }
 
@@ -260,7 +261,7 @@ impl Sled {
         let led = self.get_vertex_mut(vertex_index).ok_or(SledError {
             message: format!("Vertex with index {} does not exist.", vertex_index),
         })?;
-
+        
         led.color = color;
         Ok(())
     }
