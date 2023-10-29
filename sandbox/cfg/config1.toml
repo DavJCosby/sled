@@ -3,16 +3,16 @@ density = 30.0
 
 [[line_segment]]
 start = [0.0, 0.0]
-end = [2.5, 0.0]
+end = [5, 0.0]
 
 [[line_segment]]
-start = [2.5, 0.0]
-end = [2.5, 5.0]
+start = [5, 0.0]
+end = [3.0, 2.5]
 
 [[line_segment]]
-start = [2.5, 5.0]
-end = [0.0, 5.0]
+start = [3.0, 2.5]
+end = [0.0, 2.5]
 
 [[line_segment]]
-start = [0.0, 5.0]
+start = [0.0, 2.5]
 end = [0.0, 0.0]
