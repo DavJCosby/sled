@@ -6,15 +6,20 @@ use glam::Vec2;
 pub struct Led {
     pub color: Rgb,
     position: Vec2,
+    direction: Vec2,
+    angle: f32,
     index: usize,
     segment: usize,
 }
 
 impl Led {
-    pub fn new(color: Rgb, position: Vec2, index: usize, segment: usize) -> Self {
+    pub fn new(color: Rgb, position: Vec2, direction: Vec2, index: usize, segment: usize) -> Self {
+        let angle = direction.angle_between(Vec2::new(0.0, 1.0));
         Led {
             color,
             position,
+            direction,
+            angle,
             index,
             segment,
         }
@@ -22,6 +27,14 @@ impl Led {
 
     pub fn position(&self) -> Vec2 {
         self.position
+    }
+
+    pub fn direction(&self) -> Vec2 {
+        self.direction
+    }
+
+    pub fn angle(&self) -> f32 {
+        self.angle
     }
 
     pub fn index(&self) -> usize {

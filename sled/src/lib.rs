@@ -17,21 +17,9 @@ pub struct Sled {
     center_point: Vec2,
     leds: Vec<Led>,
     line_segments: Vec<LineSegment>,
+    // utility lookup tables
     line_segment_endpoint_indices: Vec<(usize, usize)>,
     vertex_indices: Vec<usize>,
-    angle_index_pairs: Vec<(f32, usize)>,
-}
-
-fn compare_f32(a: &f32, b: &f32) -> std::cmp::Ordering {
-    match a.partial_cmp(&b) {
-        Some(ord) => ord,
-        None => match (a.is_nan(), b.is_nan()) {
-            (true, true) => std::cmp::Ordering::Equal,
-            (true, _) => std::cmp::Ordering::Greater,
-            (_, true) => std::cmp::Ordering::Less,
-            (_, _) => std::cmp::Ordering::Equal, // should never happen
-        },
-    }
 }
 
 /// Construction, output, and basic sled info.
@@ -39,18 +27,21 @@ impl Sled {
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_segment = Sled::leds_per_segment(&config);
-        let leds = Sled::build_led_list(&leds_per_segment, &config.line_segments);
+        let leds = Sled::build_led_list(
+            &leds_per_segment,
+            &config.line_segments,
+            &config.center_point,
+        );
         let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
         let vertex_indices = Sled::vertex_indices(&config);
-        let angle_index_pairs = Sled::angle_index_pairs(&leds, config.center_point);
         println!("{}", config.center_point);
         Ok(Sled {
+            center_point: config.center_point,
             leds,
+            line_segments: config.line_segments,
+            // utility lookup tables
             line_segment_endpoint_indices,
             vertex_indices,
-            angle_index_pairs,
-            center_point: config.center_point,
-            line_segments: config.line_segments,
         })
     }
 
@@ -92,19 +83,24 @@ impl Sled {
             .collect()
     }
 
-    fn build_led_list(leds_per_segment: &Vec<usize>, line_segments: &Vec<LineSegment>) -> Vec<Led> {
+    fn build_led_list(
+        leds_per_segment: &Vec<usize>,
+        line_segments: &Vec<LineSegment>,
+        center_point: &Vec2,
+    ) -> Vec<Led> {
         let mut leds = vec![];
+        let default_color = Rgb::new(0.0, 0.0, 0.0);
+
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
                 let segment = &line_segments[segment_index];
-                let a = i as f32 / (segment_size - 1) as f32;
-                let pos = segment.start.lerp(segment.end, a);
-                leds.push(Led::new(
-                    Rgb::new(0.0, 0.0, 0.0),
-                    pos,
-                    leds.len(),
-                    segment_index,
-                ));
+                let alpha = i as f32 / (segment_size - 1) as f32;
+
+                let pos = segment.start.lerp(segment.end, alpha);
+                let dir = (pos - *center_point).normalize();
+
+                let led = Led::new(default_color, pos, dir, leds.len(), segment_index);
+                leds.push(led);
             }
         }
         leds
@@ -139,29 +135,6 @@ impl Sled {
         }
 
         vertex_indices
-    }
-
-    fn angle_index_pairs(leds: &Vec<Led>, center_point: Vec2) -> Vec<(f32, usize)> {
-        let mut angle_index_pairs: Vec<(f32, usize)> = vec![];
-        for led in leds {
-            let offset = led.position() - center_point;
-            let dir = offset.normalize();
-            let angle = ensure_positive_degrees(dir.y.atan2(dir.x).to_degrees());
-            angle_index_pairs.push((angle, led.index()));
-        }
-
-        angle_index_pairs.sort_by(|(angle_0, _), (angle_1, _)| compare_f32(angle_0, angle_1));
-
-        angle_index_pairs
-    }
-}
-
-fn ensure_positive_degrees(degrees: f32) -> f32 {
-    let degrees = degrees % 360.0;
-    if degrees < 0.0 {
-        360.0 + degrees
-    } else {
-        degrees
     }
 }
 
