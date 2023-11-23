@@ -27,6 +27,30 @@ impl LineSegment {
     pub fn num_leds(&self) -> usize {
         return (self.length() * self.density).round() as usize;
     }
+
+    pub fn intersects(&self, other_start: Vec2, other_end: Vec2) -> Option<Vec2> {
+        let s1_x = self.end.x - self.start.x;
+        let s1_y = self.end.y - self.start.y;
+        let s2_x = other_end.x - other_start.x;
+        let s2_y = other_end.y - other_start.y;
+
+        let denom = 1.0 / (-s2_x * s1_y + s1_x * s2_y);
+
+        let s = (-s1_y * (self.start.x - other_start.x) + s1_x * (self.start.y - other_start.y))
+            * denom;
+        let t =
+            (s2_x * (self.start.y - other_start.y) - s2_y * (self.start.x - other_start.x)) * denom;
+
+        if s >= 0.0 && s <= 1.0 && t >= 0.0 && t <= 1.0 {
+            // collision detected
+            Some(Vec2::new(
+                self.start.x + (t * s1_x),
+                self.start.y + (t * s1_y),
+            ))
+        } else {
+            None
+        }
+    }
 }
 
 impl Config {

@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 sled = { path = "../sled" }
 colored = "2.0.4"
-bevy = { version = "0.11.3", features = ["dynamic_linking"] }
+bevy = { version = "0.12", features = ["dynamic_linking"] }
 
 [workspace]
 resolver = "2"

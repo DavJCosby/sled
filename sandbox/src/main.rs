@@ -19,11 +19,37 @@ fn main() -> Result<(), SledError> {
 }
 
 fn update_colors(mut sled: ResMut<SledResource>, time: Res<Time>) {
-    let elapsed = time.elapsed_seconds_wrapped();
+    let elapsed = time.elapsed_seconds_wrapped() * 70.0;
     sled.0.for_each(|led| {
-        let pos = led.position();
-        led.color = Rgb::new((pos.x + elapsed).sin(), (pos.y + elapsed).sin(), 0.0);
+        led.color *= Rgb::new(0.92, 0.975, 0.98);
     });
+
+    sled.0
+        .set_at_angle(
+            elapsed % 360.0,
+            Rgb::new(1.0, 1.0, 1.0),
+        )
+        .unwrap();
+    sled.0
+        .set_at_angle(
+            (elapsed + 90.0) % 360.0,
+            Rgb::new(1.0, 1.0, 1.0),
+        )
+        .unwrap();
+
+        sled.0
+        .set_at_angle(
+            (elapsed + 180.0) % 360.0,
+            Rgb::new(1.0, 1.0, 1.0),
+        )
+        .unwrap();
+
+        sled.0
+        .set_at_angle(
+            (elapsed + 270.0) % 360.0,
+            Rgb::new(1.0, 1.0, 1.0),
+        )
+        .unwrap();
 }
 
 fn setup(
@@ -36,7 +62,7 @@ fn setup(
 
     for led in sled.0.read() {
         let (r, g, b) = led.color.into_components();
-        let position = led.position() * 150.0 - Vec2::new(350.0, 200.0);
+        let position = led.position() * 150.0;
         commands.spawn((
             MaterialMesh2dBundle {
                 mesh: meshes.add(shape::Circle::new(3.).into()).into(),
@@ -47,6 +73,15 @@ fn setup(
             LedIndex(led.index()),
         ));
     }
+
+    let center = sled.0.center_point() * 150.0;
+
+    commands.spawn(MaterialMesh2dBundle {
+        mesh: meshes.add(shape::Circle::new(16.).into()).into(),
+        material: materials.add(ColorMaterial::from(Color::rgb(0.25, 0.25, 0.25))),
+        transform: Transform::from_translation(Vec3::new(center.x, center.y, 0.)),
+        ..default()
+    });
     // Circle
 }
 

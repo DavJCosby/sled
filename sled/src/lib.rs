@@ -1,3 +1,5 @@
+const MAX_ANGLE_DISCREPANCY: f32 = 5.0;
+
 mod internal;
 
 pub use internal::color;
@@ -17,6 +19,19 @@ pub struct Sled {
     line_segments: Vec<LineSegment>,
     line_segment_endpoint_indices: Vec<(usize, usize)>,
     vertex_indices: Vec<usize>,
+    angle_index_pairs: Vec<(f32, usize)>,
+}
+
+fn compare_f32(a: &f32, b: &f32) -> std::cmp::Ordering {
+    match a.partial_cmp(&b) {
+        Some(ord) => ord,
+        None => match (a.is_nan(), b.is_nan()) {
+            (true, true) => std::cmp::Ordering::Equal,
+            (true, _) => std::cmp::Ordering::Greater,
+            (_, true) => std::cmp::Ordering::Less,
+            (_, _) => std::cmp::Ordering::Equal, // should never happen
+        },
+    }
 }
 
 /// Construction, output, and basic sled info.
@@ -27,10 +42,13 @@ impl Sled {
         let leds = Sled::build_led_list(&leds_per_segment, &config.line_segments);
         let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
         let vertex_indices = Sled::vertex_indices(&config);
+        let angle_index_pairs = Sled::angle_index_pairs(&leds, config.center_point);
+        println!("{}", config.center_point);
         Ok(Sled {
             leds,
             line_segment_endpoint_indices,
             vertex_indices,
+            angle_index_pairs,
             center_point: config.center_point,
             line_segments: config.line_segments,
         })
@@ -48,6 +66,10 @@ impl Sled {
             .iter()
             .map(|led| led.color.into_format())
             .collect()
+    }
+
+    pub fn center_point(&self) -> Vec2 {
+        self.center_point
     }
 
     pub fn num_leds(&self) -> usize {
@@ -74,8 +96,8 @@ impl Sled {
         let mut leds = vec![];
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
-                let a = i as f32 / (segment_size - 1) as f32;
                 let segment = &line_segments[segment_index];
+                let a = i as f32 / (segment_size - 1) as f32;
                 let pos = segment.start.lerp(segment.end, a);
                 leds.push(Led::new(
                     Rgb::new(0.0, 0.0, 0.0),
@@ -117,6 +139,29 @@ impl Sled {
         }
 
         vertex_indices
+    }
+
+    fn angle_index_pairs(leds: &Vec<Led>, center_point: Vec2) -> Vec<(f32, usize)> {
+        let mut angle_index_pairs: Vec<(f32, usize)> = vec![];
+        for led in leds {
+            let offset = led.position() - center_point;
+            let dir = offset.normalize();
+            let angle = ensure_positive_degrees(dir.y.atan2(dir.x).to_degrees());
+            angle_index_pairs.push((angle, led.index()));
+        }
+
+        angle_index_pairs.sort_by(|(angle_0, _), (angle_1, _)| compare_f32(angle_0, angle_1));
+
+        angle_index_pairs
+    }
+}
+
+fn ensure_positive_degrees(degrees: f32) -> f32 {
+    let degrees = degrees % 360.0;
+    if degrees < 0.0 {
+        360.0 + degrees
+    } else {
+        degrees
     }
 }
 
@@ -261,7 +306,7 @@ impl Sled {
         let led = self.get_vertex_mut(vertex_index).ok_or(SledError {
             message: format!("Vertex with index {} does not exist.", vertex_index),
         })?;
-        
+
         led.color = color;
         Ok(())
     }
@@ -277,4 +322,77 @@ impl Sled {
             f(&mut self.leds[*i])
         }
     }
+}
+
+fn reverse_lerp(a: Vec2, b: Vec2, c: Vec2) -> f32 {
+    if a.x != b.x {
+        (c.x - a.x) / (b.x - a.x)
+    } else {
+        (c.y - a.y) / (b.y - a.y)
+    }
+}
+
+/// directional read and write methods
+impl Sled {
+    #[cfg(not(feature = "anti-aliasing"))]
+
+    fn closest_index_at_angle(&self, angle: f32) -> Option<usize> {
+        let center = self.center_point;
+        let dist = 100_000.0;
+        let dir = Vec2::from_angle(angle);
+        let ray_end = center + dir * dist;
+        let mut led_count = 0;
+
+        // (position of intersection, index of intersected strip)
+        let mut intersection: Option<(Vec2, usize)> = None;
+        for (index, strip) in self.line_segments.iter().enumerate() {
+            if let Some(point) = strip.intersects(center, ray_end) {
+                intersection = Some((point, index));
+                break;
+            }
+            led_count += strip.num_leds();
+        }
+
+        let intersection = intersection?;
+        let intersected_strip = &self.line_segments[intersection.1];
+        let tx = reverse_lerp(
+            intersected_strip.start,
+            intersected_strip.end,
+            intersection.0,
+        );
+
+        led_count += (tx * intersected_strip.num_leds() as f32).round() as usize;
+        if led_count > 0 {
+            led_count -= 1;
+        }
+
+        Some(led_count)
+    }
+
+    pub fn get_at_angle(&self, angle: f32) -> Option<&Led> {
+        //let angle = ensure_positive_degrees(angle).to_radians();
+        let index_of_closest = self.closest_index_at_angle(angle)?;
+        Some(self.get(index_of_closest).unwrap())
+    }
+
+    pub fn get_at_angle_mut(&mut self, angle: f32) -> Option<&mut Led> {
+        let angle = angle.to_radians();
+        let index_of_closest = self.closest_index_at_angle(angle)?;
+        Some(self.get_mut(index_of_closest)?)
+    }
+
+    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
+        let led = self.get_at_angle_mut(angle).ok_or(SledError {
+            message: format!(
+                "No LED within {} degrees of target angle: {}",
+                MAX_ANGLE_DISCREPANCY, angle
+            ),
+        })?;
+
+        led.color = color;
+        Ok(())
+    }
+
+    #[cfg(feature = "anti-aliasing")]
+    fn set_at_direction() {}
 }
