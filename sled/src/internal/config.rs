@@ -29,24 +29,23 @@ impl LineSegment {
     }
 
     pub fn intersects(&self, other_start: Vec2, other_end: Vec2) -> Option<Vec2> {
-        let s1_x = self.end.x - self.start.x;
-        let s1_y = self.end.y - self.start.y;
-        let s2_x = other_end.x - other_start.x;
-        let s2_y = other_end.y - other_start.y;
+        let s1 = self.end - self.start;
+        let s2 = other_end - other_start;
+        let start_dif = self.start - other_start;
 
-        let denom = 1.0 / (-s2_x * s1_y + s1_x * s2_y);
+        let denom = s1.x * s2.y - s2.x * s1.y;
 
-        let s = (-s1_y * (self.start.x - other_start.x) + s1_x * (self.start.y - other_start.y))
-            * denom;
-        let t =
-            (s2_x * (self.start.y - other_start.y) - s2_y * (self.start.x - other_start.x)) * denom;
+        // check if parallel
+        if denom.abs() < f32::EPSILON {
+            return None;
+        }
 
-        if s >= 0.0 && s <= 1.0 && t >= 0.0 && t <= 1.0 {
-            // collision detected
-            Some(Vec2::new(
-                self.start.x + (t * s1_x),
-                self.start.y + (t * s1_y),
-            ))
+        let inv_denom = 1.0 / denom;
+        let s = (-s1.y * start_dif.x + s1.x * start_dif.y) * inv_denom;
+        let t = (s2.x * start_dif.y - s2.y * start_dif.x) * inv_denom;
+
+        if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
+            Some(self.start + s1 * t)
         } else {
             None
         }
