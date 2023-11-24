@@ -1,5 +1,3 @@
-const MAX_ANGLE_DISCREPANCY: f32 = 5.0;
-
 mod internal;
 
 pub use internal::color;
@@ -307,19 +305,14 @@ fn reverse_lerp(a: Vec2, b: Vec2, c: Vec2) -> f32 {
 
 /// directional read and write methods
 impl Sled {
-    #[cfg(not(feature = "anti-aliasing"))]
-
-    fn closest_index_at_angle(&self, angle: f32) -> Option<usize> {
-        let center = self.center_point;
+    fn raycast_for_index(&self, origin: Vec2, dir: Vec2) -> Option<usize> {
         let dist = 100_000.0;
-        let dir = Vec2::from_angle(angle);
-        let ray_end = center + dir * dist;
-        let mut led_count = 0;
+        let ray_end = origin + dir * dist;
 
-        // (position of intersection, index of intersected strip)
+        let mut led_count = 0;
         let mut intersection: Option<(Vec2, usize)> = None;
         for (index, strip) in self.line_segments.iter().enumerate() {
-            if let Some(point) = strip.intersects(center, ray_end) {
+            if let Some(point) = strip.intersects(origin, ray_end) {
                 intersection = Some((point, index));
                 break;
             }
@@ -327,45 +320,70 @@ impl Sled {
         }
 
         let intersection = intersection?;
-        let intersected_strip = &self.line_segments[intersection.1];
-        let tx = reverse_lerp(
-            intersected_strip.start,
-            intersected_strip.end,
-            intersection.0,
-        );
+        let segment = &self.line_segments[intersection.1];
+        let alpha = reverse_lerp(segment.start, segment.end, intersection.0);
 
-        led_count += (tx * intersected_strip.num_leds() as f32).round() as usize;
+        led_count += (alpha * segment.num_leds() as f32).round() as usize;
         if led_count > 0 {
-            led_count -= 1;
+            return Some(led_count - 1);
+        } else {
+            return Some(led_count);
         }
+    }
 
-        Some(led_count)
+    pub fn get_at_dir_from(&self, center_point: Vec2, dir: Vec2) -> Option<&Led> {
+        let index_of_closest = self.raycast_for_index(center_point, dir)?;
+        Some(self.get(index_of_closest)?)
+    }
+
+    pub fn get_at_angle_from(&self, center_point: Vec2, angle: f32) -> Option<&Led> {
+        let dir = Vec2::from_angle(angle);
+        self.get_at_dir_from(center_point, dir)
+    }
+
+    pub fn get_at_dir(&self, dir: Vec2) -> Option<&Led> {
+        self.get_at_dir_from(self.center_point, dir)
     }
 
     pub fn get_at_angle(&self, angle: f32) -> Option<&Led> {
-        //let angle = ensure_positive_degrees(angle).to_radians();
-        let index_of_closest = self.closest_index_at_angle(angle)?;
-        Some(self.get(index_of_closest).unwrap())
+        let dir = Vec2::from_angle(angle);
+        self.get_at_dir(dir)
     }
 
-    pub fn get_at_angle_mut(&mut self, angle: f32) -> Option<&mut Led> {
-        let angle = angle.to_radians();
-        let index_of_closest = self.closest_index_at_angle(angle)?;
+    pub fn get_at_dir_from_mut(&mut self, center_point: Vec2, dir: Vec2) -> Option<&mut Led> {
+        let index_of_closest = self.raycast_for_index(center_point, dir)?;
         Some(self.get_mut(index_of_closest)?)
     }
 
-    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_at_angle_mut(angle).ok_or(SledError {
-            message: format!(
-                "No LED within {} degrees of target angle: {}",
-                MAX_ANGLE_DISCREPANCY, angle
-            ),
+    pub fn get_at_angle_from_mut(&mut self, center_point: Vec2, angle: f32) -> Option<&mut Led> {
+        let dir = Vec2::from_angle(angle);
+        self.get_at_dir_from_mut(center_point, dir)
+    }
+
+    pub fn get_at_dir_mut(&mut self, dir: Vec2) -> Option<&mut Led> {
+        let index_of_closest = self.raycast_for_index(self.center_point, dir)?;
+        self.get_mut(index_of_closest)
+    }
+
+    pub fn get_at_angle_mut(&mut self, angle: f32) -> Option<&mut Led> {
+        self.get_at_angle_from_mut(self.center_point, angle)
+    }
+
+    pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> Result<(), SledError> {
+        let led = self.get_at_dir_mut(dir).ok_or(SledError {
+            message: format!("No LED in directon: {}", dir),
         })?;
 
         led.color = color;
         Ok(())
     }
 
-    #[cfg(feature = "anti-aliasing")]
-    fn set_at_direction() {}
+    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
+        let led = self.get_at_angle_mut(angle).ok_or(SledError {
+            message: format!("No LED at angle: {}", angle),
+        })?;
+
+        led.color = color;
+        Ok(())
+    }
 }

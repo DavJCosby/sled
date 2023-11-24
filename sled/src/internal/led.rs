@@ -14,7 +14,7 @@ pub struct Led {
 
 impl Led {
     pub fn new(color: Rgb, position: Vec2, direction: Vec2, index: usize, segment: usize) -> Self {
-        let angle = direction.angle_between(Vec2::new(0.0, 1.0));
+        let angle = direction.angle_between(Vec2::new(1.0, 0.0));
         Led {
             color,
             position,

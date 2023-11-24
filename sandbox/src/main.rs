@@ -19,34 +19,26 @@ fn main() -> Result<(), SledError> {
 }
 
 fn update_colors(mut sled: ResMut<SledResource>, time: Res<Time>) {
-    let elapsed = time.elapsed_seconds_wrapped() * 70.0;
+    let elapsed = time.elapsed_seconds_wrapped() * 100.0;
+
     sled.0.for_each(|led| {
         led.color *= Rgb::new(0.92, 0.975, 0.98);
     });
 
     sled.0
-        .set_at_angle(
-            elapsed % 360.0,
-            Rgb::new(1.0, 1.0, 1.0),
-        )
+        .set_at_angle((elapsed % 360.0).to_radians(), Rgb::new(1.0, 1.0, 1.0))
         .unwrap();
+
     sled.0
         .set_at_angle(
-            (elapsed + 90.0) % 360.0,
+            ((elapsed + 120.0) % 360.0).to_radians(),
             Rgb::new(1.0, 1.0, 1.0),
         )
         .unwrap();
 
-        sled.0
+    sled.0
         .set_at_angle(
-            (elapsed + 180.0) % 360.0,
-            Rgb::new(1.0, 1.0, 1.0),
-        )
-        .unwrap();
-
-        sled.0
-        .set_at_angle(
-            (elapsed + 270.0) % 360.0,
+            ((elapsed + 240.0) % 360.0).to_radians(),
             Rgb::new(1.0, 1.0, 1.0),
         )
         .unwrap();
