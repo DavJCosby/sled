@@ -1,6 +1,12 @@
-use sled::{color::Rgb, Sled, SledError};
+use sled::{
+    color::{chromatic_adaptation::AdaptInto, Rgb},
+    Sled, SledError,
+};
 
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{
+    audio::AudioPlugin, diagnostic::DiagnosticsPlugin, gltf::GltfPlugin, log::LogPlugin,
+    prelude::*, scene::ScenePlugin, sprite::MaterialMesh2dBundle, text::TextPlugin, ui::UiPlugin,
+};
 
 #[derive(Component)]
 struct LedIndex(usize);
@@ -9,7 +15,22 @@ fn main() -> Result<(), SledError> {
     let sled = Sled::new("./cfg/config1.toml")?;
 
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(
+            DefaultPlugins
+                .build()
+                .disable::<LogPlugin>()
+                .disable::<HierarchyPlugin>()
+                .disable::<DiagnosticsPlugin>()
+                .disable::<GilrsPlugin>()
+                .disable::<UiPlugin>()
+                .disable::<ScenePlugin>()
+                .disable::<TextPlugin>()
+                .disable::<UiPlugin>()
+                .disable::<GltfPlugin>()
+                .disable::<AudioPlugin>()
+                .disable::<GilrsPlugin>()
+                .disable::<AnimationPlugin>(),
+        )
         .insert_resource(SledResource(sled))
         .add_systems(Startup, setup)
         .add_systems(Update, (update_colors, display_colors))
@@ -18,30 +39,30 @@ fn main() -> Result<(), SledError> {
     Ok(())
 }
 
-fn update_colors(mut sled: ResMut<SledResource>, time: Res<Time>) {
-    let elapsed = time.elapsed_seconds_wrapped() * 100.0;
+const NUM_FAIRIES: usize = 12;
 
-    sled.0.for_each(|led| {
-        led.color *= Rgb::new(0.92, 0.975, 0.98);
+fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
+    sled.for_each(|led| {
+        led.color *= Rgb::new(0.95, 0.955, 0.96);
     });
 
-    sled.0
-        .set_at_angle((elapsed % 360.0).to_radians(), Rgb::new(1.0, 1.0, 1.0))
-        .unwrap();
+    for i in 0..NUM_FAIRIES {
+        let c = sled::color::Oklch::new(1.0, 0.9, elapsed + 20.0 * i as f32).adapt_into();
 
-    sled.0
-        .set_at_angle(
-            ((elapsed + 120.0) % 360.0).to_radians(),
-            Rgb::new(1.0, 1.0, 1.0),
-        )
-        .unwrap();
+        sled.set_at_angle(
+            (elapsed + (360.0 / NUM_FAIRIES as f32) * i as f32 % 360.0).to_radians(),
+            c,
+        )?;
+    }
 
-    sled.0
-        .set_at_angle(
-            ((elapsed + 240.0) % 360.0).to_radians(),
-            Rgb::new(1.0, 1.0, 1.0),
-        )
-        .unwrap();
+    Ok(())
+}
+
+fn update_colors(mut sled: ResMut<SledResource>, time: Res<Time>) {
+    let elapsed = time.elapsed_seconds_wrapped() * 80.0;
+    let sled = &mut sled.0;
+
+    step(sled, elapsed).unwrap();
 }
 
 fn setup(
