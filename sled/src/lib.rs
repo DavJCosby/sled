@@ -495,7 +495,14 @@ impl Sled {
 }
 
 /// Maps
-impl Sled {}
+impl Sled {
+    pub fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
+        // consider parallelizing, adding a map_parallel method, or making parallelization an opt-in compiler feature.
+        for led in &mut self.leds {
+            led.color = led_to_color_map(led);
+        }
+    }
+}
 
 pub trait CollectionOfLeds {
     // Some methods that might make sense:

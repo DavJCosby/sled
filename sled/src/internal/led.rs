@@ -31,7 +31,6 @@ impl Led {
 
         let distance = position.distance(center_point);
 
-        println!("{}", angle);
         Led {
             color,
             position,

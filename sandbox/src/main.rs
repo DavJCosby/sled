@@ -43,14 +43,19 @@ const NUM_FAIRIES: usize = 12;
 
 fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
     sled.for_each(|led| {
-        led.color *= Rgb::new(0.95, 0.955, 0.96);
+        led.color *= Rgb::new(0.9, 0.93, 0.99);
     });
 
-    let within_range = sled.filter_by_dist_mut(|a| a <= 1.7 && a > 1.6);
-    //println!("{}", within_range.len());
-    for led in within_range {
-        led.color = Rgb::new(1.0, 1.0, 1.0);
-    }
+    let center = sled.center_point();
+    let dist = (elapsed / 30.0) % 4.0;
+    sled.map(|led| {
+        let d = led.position().distance(center);
+        let dd = d - dist;
+        if (0.0..=0.05).contains(&dd) {
+            return Rgb::new(0.0, 1.0, 0.5);
+        }
+        led.color
+    });
 
     // for i in 0..NUM_FAIRIES {
     //     let c = sled::color::Oklch::new(1.0, 0.9, elapsed + 20.0 * i as f32).adapt_into();
