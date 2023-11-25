@@ -493,3 +493,26 @@ impl Sled {
         todo!()
     }
 }
+
+/// Maps
+impl Sled {}
+
+pub trait CollectionOfLeds {
+    // Some methods that might make sense:
+    // - get_closest_to(), get_furthest_from()
+    // - filter() for chaining
+    // - etc
+
+    // Indices, ranges, and some others might not make sense.
+}
+
+pub trait CollectionOfLedsMut {
+    // A lot of normal set methods probably don't make the most sense here. More likely use cases are:
+    // - set_all()
+    // - filter_mut() for chaining
+    // - mapping methods
+    // - etc
+}
+
+impl CollectionOfLeds for Vec<&Led> {}
+impl CollectionOfLedsMut for Vec<&mut Led> {}
