@@ -46,14 +46,20 @@ fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
         led.color *= Rgb::new(0.95, 0.955, 0.96);
     });
 
-    for i in 0..NUM_FAIRIES {
-        let c = sled::color::Oklch::new(1.0, 0.9, elapsed + 20.0 * i as f32).adapt_into();
-
-        sled.set_at_angle(
-            (elapsed + (360.0 / NUM_FAIRIES as f32) * i as f32 % 360.0).to_radians(),
-            c,
-        )?;
+    let within_range = sled.filter_by_dist_mut(|a| a <= 1.7 && a > 1.6);
+    //println!("{}", within_range.len());
+    for led in within_range {
+        led.color = Rgb::new(1.0, 1.0, 1.0);
     }
+
+    // for i in 0..NUM_FAIRIES {
+    //     let c = sled::color::Oklch::new(1.0, 0.9, elapsed + 20.0 * i as f32).adapt_into();
+
+    //     sled.set_at_angle(
+    //         (elapsed + (360.0 / NUM_FAIRIES as f32) * i as f32 % 360.0).to_radians(),
+    //         c,
+    //     )?;
+    // }
 
     Ok(())
 }

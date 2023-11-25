@@ -32,7 +32,7 @@ impl Sled {
         );
         let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
         let vertex_indices = Sled::vertex_indices(&config);
-        println!("{}", config.center_point);
+
         Ok(Sled {
             center_point: config.center_point,
             leds,
@@ -97,7 +97,14 @@ impl Sled {
                 let pos = segment.start.lerp(segment.end, alpha);
                 let dir = (pos - *center_point).normalize();
 
-                let led = Led::new(default_color, pos, dir, leds.len(), segment_index);
+                let led = Led::new(
+                    default_color,
+                    pos,
+                    dir,
+                    leds.len(),
+                    segment_index,
+                    *center_point,
+                );
                 leds.push(led);
             }
         }
@@ -385,5 +392,104 @@ impl Sled {
 
         led.color = color;
         Ok(())
+    }
+}
+
+/// position-based read and write methods
+impl Sled {
+    pub fn get_closest_to(&self, pos: Vec2) -> &Led {
+        todo!()
+    }
+
+    pub fn get_closest_to_mut(&mut self, pos: Vec2) -> &mut Led {
+        todo!()
+    }
+
+    pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) -> Result<(), SledError> {
+        todo!()
+    }
+
+    pub fn get_at_distance(&self, dist: f32) -> Option<&Led> {
+        todo!()
+    }
+
+    pub fn get_at_distance_mut(&mut self, dist: f32) -> Option<&mut Led> {
+        todo!()
+    }
+
+    pub fn set_at_distance(&self, dist: f32, color: Rgb) -> Result<(), SledError> {
+        todo!()
+    }
+
+    pub fn get_at_distance_from(&self, pos: Vec2, dist: f32) -> Option<&mut Led> {
+        todo!()
+    }
+
+    pub fn get_at_distance_from_mut(&mut self, pos: Vec2, dist: f32) -> Option<&Led> {
+        todo!()
+    }
+
+    pub fn set_at_distance_from(
+        &mut self,
+        pos: Vec2,
+        dist: f32,
+        color: Rgb,
+    ) -> Result<(), SledError> {
+        todo!()
+    }
+}
+
+/// Filters
+impl Sled {
+    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
+        return self.leds.iter().filter(|led| filter(led)).collect();
+    }
+
+    pub fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led> {
+        return self.leds.iter_mut().filter(|led| filter(led)).collect();
+    }
+
+    pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
+        self.filter(|led| angle_filter(led.angle()))
+    }
+
+    pub fn filter_by_angle_mut(&mut self, angle_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
+        self.filter_mut(|led| angle_filter(led.angle()))
+    }
+
+    pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Vec<&Led> {
+        self.filter(|led| dir_filter(led.direction()))
+    }
+
+    pub fn filter_by_dir_mut(&mut self, dir_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
+        self.filter_mut(|led| dir_filter(led.direction()))
+    }
+
+    pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Vec<&Led> {
+        self.filter(|led| pos_filter(led.position()))
+    }
+
+    pub fn filter_by_pos_mut(&mut self, pos_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
+        self.filter_mut(|led| pos_filter(led.position()))
+    }
+
+    pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
+        self.filter(|led| dist_filter(led.distance()))
+    }
+
+    pub fn filter_by_dist_mut(&mut self, dist_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
+        self.filter_mut(|led| dist_filter(led.distance()))
+    }
+
+    pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
+        todo!()
+    }
+
+    pub fn filter_by_dist_from_mut(
+        &mut self,
+        pos: Vec2,
+        dist_filter: impl Fn(f32) -> bool,
+    ) -> Vec<&mut Led> {
+        todo!()
     }
 }

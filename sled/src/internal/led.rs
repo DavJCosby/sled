@@ -1,3 +1,5 @@
+use std::f32::consts::PI;
+
 use crate::internal::color;
 use color::Rgb;
 use glam::Vec2;
@@ -8,18 +10,34 @@ pub struct Led {
     position: Vec2,
     direction: Vec2,
     angle: f32,
+    distance: f32,
     index: usize,
     segment: usize,
 }
 
 impl Led {
-    pub fn new(color: Rgb, position: Vec2, direction: Vec2, index: usize, segment: usize) -> Self {
-        let angle = direction.angle_between(Vec2::new(1.0, 0.0));
+    pub fn new(
+        color: Rgb,
+        position: Vec2,
+        direction: Vec2,
+        index: usize,
+        segment: usize,
+        center_point: Vec2,
+    ) -> Self {
+        let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
+        if angle < 0.0 {
+            angle = (2.0 * PI) + angle;
+        }
+
+        let distance = position.distance(center_point);
+
+        println!("{}", angle);
         Led {
             color,
             position,
             direction,
             angle,
+            distance,
             index,
             segment,
         }
@@ -35,6 +53,10 @@ impl Led {
 
     pub fn angle(&self) -> f32 {
         self.angle
+    }
+
+    pub fn distance(&self) -> f32 {
+        self.distance
     }
 
     pub fn index(&self) -> usize {
