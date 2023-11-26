@@ -302,13 +302,13 @@ impl Sled {
     }
 }
 
-fn reverse_lerp(a: Vec2, b: Vec2, c: Vec2) -> f32 {
-    if a.x != b.x {
-        (c.x - a.x) / (b.x - a.x)
-    } else {
-        (c.y - a.y) / (b.y - a.y)
-    }
-}
+// fn reverse_lerp(a: Vec2, b: Vec2, c: Vec2) -> f32 {
+//     if a.x != b.x {
+//         (c.x - a.x) / (b.x - a.x)
+//     } else {
+//         (c.y - a.y) / (b.y - a.y)
+//     }
+// }
 
 /// directional read and write methods
 impl Sled {
@@ -317,19 +317,17 @@ impl Sled {
         let ray_end = origin + dir * dist;
 
         let mut led_count = 0;
-        let mut intersection: Option<(Vec2, usize)> = None;
-        for (index, strip) in self.line_segments.iter().enumerate() {
-            if let Some(point) = strip.intersects(origin, ray_end) {
-                intersection = Some((point, index));
+        let mut intersection: Option<(f32, usize)> = None;
+        for (index, segment) in self.line_segments.iter().enumerate() {
+            if let Some(t) = segment.intersects(origin, ray_end) {
+                intersection = Some((t, index));
                 break;
             }
-            led_count += strip.num_leds();
+            led_count += segment.num_leds();
         }
 
-        let intersection = intersection?;
-        let segment = &self.line_segments[intersection.1];
-        let alpha = reverse_lerp(segment.start, segment.end, intersection.0);
-
+        let (alpha, segment_index) = intersection?;
+        let segment = &self.line_segments[segment_index];
         led_count += (alpha * segment.num_leds() as f32).round() as usize;
         if led_count > 0 {
             return Some(led_count - 1);
@@ -397,23 +395,48 @@ impl Sled {
 
 /// position-based read and write methods
 impl Sled {
+    pub fn get_index_of_closest_to(&self, pos: Vec2) -> usize {
+        let mut led_count = 0;
+        let mut per_segment_closest_info: Vec<(f32, f32, usize, usize)> = vec![];
+        for (index, segment) in self.line_segments.iter().enumerate() {
+            let (closest, alpha) = segment.closest_to_point(pos);
+            let dist_sq = closest.distance_squared(pos);
+
+            per_segment_closest_info.push((alpha, dist_sq, index, led_count));
+            led_count += segment.num_leds();
+        }
+
+        let (alpha, _dist_sq, segment_index, leds_prior_to_segment) = per_segment_closest_info
+            .iter()
+            .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+            .unwrap();
+
+        let segment = &self.line_segments[*segment_index];
+        let target_index =
+            leds_prior_to_segment + (alpha * segment.num_leds() as f32).round() as usize;
+
+        (target_index - 1).max(0)
+    }
+
     pub fn get_closest_to(&self, pos: Vec2) -> &Led {
-        todo!()
+        let index_of_closest = self.get_index_of_closest_to(pos);
+        self.get(index_of_closest).unwrap()
     }
 
     pub fn get_closest_to_mut(&mut self, pos: Vec2) -> &mut Led {
+        let index_of_closest = self.get_index_of_closest_to(pos);
+        self.get_mut(index_of_closest).unwrap()
+    }
+
+    pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
+        self.get_closest_to_mut(pos).color = color;
+    }
+
+    pub fn get_at_distance(&self, dist: f32) -> Option<Vec<&Led>> {
         todo!()
     }
 
-    pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) -> Result<(), SledError> {
-        todo!()
-    }
-
-    pub fn get_at_distance(&self, dist: f32) -> Option<&Led> {
-        todo!()
-    }
-
-    pub fn get_at_distance_mut(&mut self, dist: f32) -> Option<&mut Led> {
+    pub fn get_at_distance_mut(&mut self, dist: f32) -> Option<Vec<&mut Led>> {
         todo!()
     }
 
@@ -421,11 +444,11 @@ impl Sled {
         todo!()
     }
 
-    pub fn get_at_distance_from(&self, pos: Vec2, dist: f32) -> Option<&mut Led> {
+    pub fn get_at_distance_from(&self, pos: Vec2, dist: f32) -> Option<Vec<&mut Led>> {
         todo!()
     }
 
-    pub fn get_at_distance_from_mut(&mut self, pos: Vec2, dist: f32) -> Option<&Led> {
+    pub fn get_at_distance_from_mut(&mut self, pos: Vec2, dist: f32) -> Option<Vec<&Led>> {
         todo!()
     }
 

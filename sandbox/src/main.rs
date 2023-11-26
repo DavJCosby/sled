@@ -57,6 +57,9 @@ fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
         led.color
     });
 
+    let closest = sled.get_closest_to_mut(center);
+    closest.color = Rgb::new(1.0, 1.0, 1.0);
+
     // for i in 0..NUM_FAIRIES {
     //     let c = sled::color::Oklch::new(1.0, 0.9, elapsed + 20.0 * i as f32).adapt_into();
 

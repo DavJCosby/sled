@@ -28,7 +28,7 @@ impl LineSegment {
         return (self.length() * self.density).round() as usize;
     }
 
-    pub fn intersects(&self, other_start: Vec2, other_end: Vec2) -> Option<Vec2> {
+    pub fn intersects(&self, other_start: Vec2, other_end: Vec2) -> Option<f32> {
         let s1 = self.end - self.start;
         let s2 = other_end - other_start;
         let start_dif = self.start - other_start;
@@ -45,10 +45,21 @@ impl LineSegment {
         let t = (s2.x * start_dif.y - s2.y * start_dif.x) * inv_denom;
 
         if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
-            Some(self.start + s1 * t)
+            // Some((self.start + s1 * t, t))
+            Some(t)
         } else {
             None
         }
+    }
+
+    pub fn closest_to_point(&self, point: Vec2) -> (Vec2, f32) {
+        let atob = self.end - self.start;
+        let atop = point - self.start;
+        let len_sq = atob.length_squared();
+        let dot = atop.dot(atob);
+        let t = (dot / len_sq).max(0.0).min(1.0);
+
+        (self.start + atob * t, t)
     }
 }
 
