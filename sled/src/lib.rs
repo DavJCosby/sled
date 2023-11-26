@@ -502,6 +502,34 @@ impl Sled {
             led.color = led_to_color_map(led);
         }
     }
+
+    pub fn map_by_index(&mut self, index_to_color_map: impl Fn(usize) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_segment(&mut self, segment_index_to_color_map: impl Fn(usize) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_pos(&mut self, pos_to_color_map: impl Fn(Vec2) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_dir(&mut self, dir_to_color_map: impl Fn(Vec2) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_angle(&mut self, angle_to_color_map: impl Fn(f32) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_distance(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
+        todo!()
+    }
+
+    pub fn map_by_distance_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Rgb) {
+        todo!()
+    }
 }
 
 pub trait CollectionOfLeds {
