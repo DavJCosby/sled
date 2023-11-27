@@ -632,7 +632,10 @@ impl Sled {
     }
 
     pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
-        todo!()
+        self.filter(|led| {
+            let dist = pos.distance(led.position());
+            dist_filter(dist)
+        })
     }
 
     pub fn filter_by_dist_from_mut(
@@ -640,7 +643,10 @@ impl Sled {
         pos: Vec2,
         dist_filter: impl Fn(f32) -> bool,
     ) -> Vec<&mut Led> {
-        todo!()
+        self.filter_mut(|led| {
+            let dist = pos.distance(led.position());
+            dist_filter(dist)
+        })
     }
 }
 
@@ -700,7 +706,35 @@ pub trait CollectionOfLedsMut {
     // - filter_mut() for chaining
     // - mapping methods
     // - etc
+
+    fn set_all(&mut self, color: Rgb);
+
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led>;
+
+    fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led>;
+
+    fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb);
 }
 
-impl CollectionOfLeds for Vec<&Led> {}
-impl CollectionOfLedsMut for Vec<&mut Led> {}
+impl CollectionOfLeds for Vec<&Led> {
+}
+
+impl CollectionOfLedsMut for Vec<&mut Led> {
+    fn set_all(&mut self, color: Rgb) {
+        for led in self {
+            led.color = color;
+        }
+    }
+
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
+        todo!()
+    }
+
+    fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led> {
+        todo!()
+    }
+
+    fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
+        todo!()
+    }
+}
