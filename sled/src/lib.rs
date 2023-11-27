@@ -654,31 +654,34 @@ impl Sled {
     }
 
     pub fn map_by_index(&mut self, index_to_color_map: impl Fn(usize) -> Rgb) {
-        todo!()
+        self.map(|led| index_to_color_map(led.index()));
     }
 
     pub fn map_by_segment(&mut self, segment_index_to_color_map: impl Fn(usize) -> Rgb) {
-        todo!()
+        self.map(|led| segment_index_to_color_map(led.segment()));
     }
 
     pub fn map_by_pos(&mut self, pos_to_color_map: impl Fn(Vec2) -> Rgb) {
-        todo!()
+        self.map(|led| pos_to_color_map(led.position()));
     }
 
     pub fn map_by_dir(&mut self, dir_to_color_map: impl Fn(Vec2) -> Rgb) {
-        todo!()
+        self.map(|led| dir_to_color_map(led.direction()));
     }
 
     pub fn map_by_angle(&mut self, angle_to_color_map: impl Fn(f32) -> Rgb) {
-        todo!()
+        self.map(|led| angle_to_color_map(led.angle()));
     }
 
     pub fn map_by_distance(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
-        todo!()
+        self.map(|led| dist_to_color_map(led.distance()));
     }
 
     pub fn map_by_distance_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Rgb) {
-        todo!()
+        self.map(|led| {
+            let dist = pos.distance(led.position());
+            dist_to_color_map(dist)
+        });
     }
 }
 
