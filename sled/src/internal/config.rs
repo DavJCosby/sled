@@ -28,7 +28,11 @@ impl LineSegment {
         return (self.length() * self.density).round() as usize;
     }
 
-    pub fn intersects(&self, other_start: Vec2, other_end: Vec2) -> Option<f32> {
+    pub fn length(&self) -> f32 {
+        self.start.distance(self.end)
+    }
+
+    pub fn intersects_line(&self, other_start: Vec2, other_end: Vec2) -> Option<f32> {
         let s1 = self.end - self.start;
         let s2 = other_end - other_start;
         let start_dif = self.start - other_start;
@@ -52,12 +56,77 @@ impl LineSegment {
         }
     }
 
+    pub fn intersects_circle(&self, circle_center: Vec2, circle_radius: f32) -> Vec<f32> {
+        let v1 = self.end - self.start;
+        let v2 = self.start - circle_center;
+
+        let b = -2.0 * v1.dot(v2);
+        let c = 2.0 * v1.length_squared();
+        let mut return_values: Vec<f32> = vec![];
+
+        let mut d = b * b - 2.0 * c * (v2.length_squared() - circle_radius.powi(2));
+        if d < 0.0 {
+            return return_values;
+        }
+
+        d = d.sqrt();
+
+        let t1 = (b - d) / c;
+        let t2 = (b + d) / c;
+
+        if (0.0..=1.0).contains(&t1) {
+            return_values.push(t1);
+        }
+        if (0.0..=1.0).contains(&t2) {
+            return_values.push(t2);
+        }
+
+        return return_values;
+    }
+
+    // similar to intersects circle, but includes anywhere
+    // the line is inside the circle, rather than passes through it.
+    pub fn intersects_solid_circle(&self, circle_center: Vec2, circle_radius: f32) -> Vec<f32> {
+        let mut return_values: Vec<f32> = vec![];
+        let radius_sq = circle_radius.powi(2);
+        let v1 = self.end - self.start;
+        // LineSegment should probably just have its length stored
+        let v1_lensq = v1.length_squared();
+
+        // if fully enclosed, we can skip some steps
+        if v1_lensq <= radius_sq {
+            if self.start.distance_squared(circle_center) <= radius_sq
+                && self.end.distance_squared(circle_center) <= radius_sq
+            {
+                return vec![0.0, 1.0];
+            }
+        }
+
+        let v2 = self.start - circle_center;
+        let b = -2.0 * v1.dot(v2);
+        let c = 2.0 * v1_lensq;
+
+        let mut d = b * b - 2.0 * c * (v2.length_squared() - radius_sq);
+        if d < 0.0 {
+            return return_values;
+        }
+
+        d = d.sqrt();
+
+        let alpha1 = ((b - d) / c).clamp(0.0, 1.0);
+        let alpha2 = ((b + d) / c).clamp(0.0, 1.0);
+
+        return_values.push(alpha1);
+        return_values.push(alpha2);
+        return return_values;
+    }
+
     pub fn closest_to_point(&self, point: Vec2) -> (Vec2, f32) {
         let atob = self.end - self.start;
         let atop = point - self.start;
         let len_sq = atob.length_squared();
         let dot = atop.dot(atob);
-        let t = (dot / len_sq).max(0.0).min(1.0);
+        let t = (dot / len_sq).clamp(0.0, 1.0);
 
         (self.start + atob * t, t)
     }
@@ -82,11 +151,5 @@ impl Config {
 
     fn get_default_density() -> f32 {
         return unsafe { DEFAULT_DENSITY };
-    }
-}
-
-impl LineSegment {
-    pub fn length(&self) -> f32 {
-        self.start.distance(self.end)
     }
 }

@@ -43,19 +43,13 @@ const NUM_FAIRIES: usize = 12;
 
 fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
     sled.for_each(|led| {
-        led.color *= Rgb::new(0.9, 0.93, 0.99);
+        led.color *= Rgb::new(0.9, 0.94, 0.99);
     });
 
     let center = sled.center_point();
     let dist = (elapsed / 30.0) % 4.0;
-    sled.map(|led| {
-        let d = led.position().distance(center);
-        let dd = d - dist;
-        if (0.0..=0.05).contains(&dd) {
-            return Rgb::new(0.0, 1.0, 0.5);
-        }
-        led.color
-    });
+
+    sled.set_at_dist(dist, Rgb::new(1.0, 1.0, 1.0));
 
     let closest = sled.get_closest_to_mut(center);
     closest.color = Rgb::new(1.0, 1.0, 1.0);
@@ -73,7 +67,7 @@ fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
 }
 
 fn update_colors(mut sled: ResMut<SledResource>, time: Res<Time>) {
-    let elapsed = time.elapsed_seconds_wrapped() * 80.0;
+    let elapsed = time.elapsed_seconds_wrapped() * 20.0;
     let sled = &mut sled.0;
 
     step(sled, elapsed).unwrap();

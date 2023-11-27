@@ -312,28 +312,33 @@ impl Sled {
 
 /// directional read and write methods
 impl Sled {
-    fn raycast_for_index(&self, origin: Vec2, dir: Vec2) -> Option<usize> {
-        let dist = 100_000.0;
-        let ray_end = origin + dir * dist;
+    fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
+        let segment = &self.line_segments[segment_index];
+        let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
+        let leds_in_segment = segment.num_leds() as f32;
 
-        let mut led_count = 0;
+        let target = startpoint_index + (segment_alpha * leds_in_segment).floor() as usize;
+        if target > self.num_leds() {
+            target
+        } else {
+            target
+        }
+    }
+
+    fn raycast_for_index(&self, start: Vec2, dir: Vec2) -> Option<usize> {
+        let dist = 100_000.0;
+        let end = start + dir * dist;
+
         let mut intersection: Option<(f32, usize)> = None;
         for (index, segment) in self.line_segments.iter().enumerate() {
-            if let Some(t) = segment.intersects(origin, ray_end) {
+            if let Some(t) = segment.intersects_line(start, end) {
                 intersection = Some((t, index));
                 break;
             }
-            led_count += segment.num_leds();
         }
 
         let (alpha, segment_index) = intersection?;
-        let segment = &self.line_segments[segment_index];
-        led_count += (alpha * segment.num_leds() as f32).round() as usize;
-        if led_count > 0 {
-            return Some(led_count - 1);
-        } else {
-            return Some(led_count);
-        }
+        return Some(self.alpha_to_index(alpha, segment_index));
     }
 
     pub fn get_at_dir_from(&self, center_point: Vec2, dir: Vec2) -> Option<&Led> {
@@ -396,26 +401,21 @@ impl Sled {
 /// position-based read and write methods
 impl Sled {
     pub fn get_index_of_closest_to(&self, pos: Vec2) -> usize {
-        let mut led_count = 0;
-        let mut per_segment_closest_info: Vec<(f32, f32, usize, usize)> = vec![];
-        for (index, segment) in self.line_segments.iter().enumerate() {
-            let (closest, alpha) = segment.closest_to_point(pos);
-            let dist_sq = closest.distance_squared(pos);
-
-            per_segment_closest_info.push((alpha, dist_sq, index, led_count));
-            led_count += segment.num_leds();
-        }
-
-        let (alpha, _dist_sq, segment_index, leds_prior_to_segment) = per_segment_closest_info
+        // get the closest point on each segment and bundle relevant info,
+        // then find the closest of those points
+        let (alpha, _dist_sq, segment_index) = self
+            .line_segments
             .iter()
+            .enumerate()
+            .map(|(index, segment)| {
+                let (closest, alpha) = segment.closest_to_point(pos);
+                let dist_sq = closest.distance_squared(pos);
+                (alpha, dist_sq, index)
+            })
             .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
             .unwrap();
 
-        let segment = &self.line_segments[*segment_index];
-        let target_index =
-            leds_prior_to_segment + (alpha * segment.num_leds() as f32).round() as usize;
-
-        (target_index - 1).max(0)
+        self.alpha_to_index(alpha, segment_index)
     }
 
     pub fn get_closest_to(&self, pos: Vec2) -> &Led {
@@ -432,33 +432,160 @@ impl Sled {
         self.get_closest_to_mut(pos).color = color;
     }
 
-    pub fn get_at_distance(&self, dist: f32) -> Option<Vec<&Led>> {
-        todo!()
+    pub fn get_at_dist_from(&self, pos: Vec2, dist: f32) -> Vec<&Led> {
+        let mut all_at_distance: Vec<&Led> = vec![];
+
+        for (segment_index, segment) in self.line_segments.iter().enumerate() {
+            for alpha in segment.intersects_circle(pos, dist) {
+                let index = self.alpha_to_index(alpha, segment_index);
+                let led = self.get(index).unwrap();
+                all_at_distance.push(led);
+            }
+        }
+
+        all_at_distance
     }
 
-    pub fn get_at_distance_mut(&mut self, dist: f32) -> Option<Vec<&mut Led>> {
-        todo!()
+    pub fn get_at_dist_from_mut(&mut self, pos: Vec2, dist: f32) -> Vec<&mut Led> {
+        // not happy with this solution, but best I could think of.
+        // Do things the "easy" way by using get_at_dist, and then
+        // filter out a new list of mutable references by index to narrow
+        // down to just those
+
+        let mut indices: Vec<usize> = self
+            .get_at_dist_from(pos, dist)
+            .iter()
+            .map(|led| led.index())
+            .collect();
+
+        let filtered: Vec<&mut Led> = self
+            .leds
+            .iter_mut()
+            .filter(|led| {
+                let search = indices.iter().position(|i| *i == led.index());
+                match search {
+                    Some(i) => {
+                        indices.remove(i);
+                        return true;
+                    }
+                    None => return false,
+                }
+            })
+            .collect();
+
+        filtered
     }
 
-    pub fn set_at_distance(&self, dist: f32, color: Rgb) -> Result<(), SledError> {
-        todo!()
+    pub fn set_at_dist_from(&mut self, pos: Vec2, dist: f32, color: Rgb) -> Result<(), SledError> {
+        let leds_at_dist = self.get_at_dist_from_mut(pos, dist);
+
+        if leds_at_dist.is_empty() {
+            return Err(SledError {
+                message: format!(
+                    "No LEDs exist at a distance of {} from the center point.",
+                    dist
+                ),
+            });
+        }
+
+        for led in leds_at_dist {
+            led.color = color;
+        }
+        Ok(())
     }
 
-    pub fn get_at_distance_from(&self, pos: Vec2, dist: f32) -> Option<Vec<&mut Led>> {
-        todo!()
+    pub fn get_at_dist(&self, dist: f32) -> Vec<&Led> {
+        self.get_at_dist_from(self.center_point, dist)
     }
 
-    pub fn get_at_distance_from_mut(&mut self, pos: Vec2, dist: f32) -> Option<Vec<&Led>> {
-        todo!()
+    pub fn get_at_dist_mut(&mut self, dist: f32) -> Vec<&mut Led> {
+        self.get_at_dist_from_mut(self.center_point, dist)
     }
 
-    pub fn set_at_distance_from(
+    pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
+        self.set_at_dist_from(self.center_point, dist, color)
+    }
+
+    pub fn get_within_dist_from(&self, pos: Vec2, dist: f32) -> Vec<&Led> {
+        let mut all_within_distance: Vec<&Led> = vec![];
+
+        for (segment_index, segment) in self.line_segments.iter().enumerate() {
+            let intersections = segment.intersects_solid_circle(pos, dist);
+            let first = intersections.get(0);
+            let second = intersections.get(1);
+
+            if first.is_some() && second.is_some() {
+                let first = self.alpha_to_index(*first.unwrap(), segment_index);
+                let second = self.alpha_to_index(*second.unwrap(), segment_index);
+                let range = first.min(second)..first.max(second);
+                for i in range {
+                    all_within_distance.push(self.get(i).unwrap());
+                }
+            }
+        }
+
+        all_within_distance
+    }
+
+    pub fn get_within_dist_from_mut(&mut self, pos: Vec2, dist: f32) -> Vec<&mut Led> {
+        // This is even worse than get_at_dist_from_mut as there are going to be way more matching indices
+        let mut indices: Vec<usize> = self
+            .get_within_dist_from(pos, dist)
+            .iter()
+            .map(|led| led.index())
+            .collect();
+
+        let filtered: Vec<&mut Led> = self
+            .leds
+            .iter_mut()
+            .filter(|led| {
+                let search = indices.iter().position(|i| *i == led.index());
+                match search {
+                    Some(i) => {
+                        indices.remove(i);
+                        return true;
+                    }
+                    None => return false,
+                }
+            })
+            .collect();
+
+        filtered
+    }
+
+    pub fn set_within_dist_from(
         &mut self,
         pos: Vec2,
         dist: f32,
         color: Rgb,
     ) -> Result<(), SledError> {
-        todo!()
+        let leds_within_dist = self.get_within_dist_from_mut(pos, dist);
+
+        if leds_within_dist.is_empty() {
+            return Err(SledError {
+                message: format!(
+                    "No LEDs exist within a distance of {} from the center point.",
+                    dist
+                ),
+            });
+        }
+
+        for led in leds_within_dist {
+            led.color = color;
+        }
+        Ok(())
+    }
+
+    pub fn get_within_dist(&self, dist: f32) -> Vec<&Led> {
+        self.get_within_dist_from(self.center_point, dist)
+    }
+
+    pub fn get_within_dist_mut(&mut self, dist: f32) -> Vec<&mut Led> {
+        self.get_within_dist_from_mut(self.center_point, dist)
+    }
+
+    pub fn set_within_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
+        self.set_within_dist_from(self.center_point, dist, color)
     }
 }
 

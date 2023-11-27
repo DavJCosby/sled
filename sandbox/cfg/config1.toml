@@ -1,4 +1,4 @@
-center_point = [0.5, 1.25]
+center_point = [1.5, 1.05]
 density = 30.0
 
 [[line_segment]]
@@ -18,7 +18,7 @@ start = [0.0, 2]
 end = [-1.0, 0.0]
 
 [[line_segment]]
-start = [0.25, 0.75]
+start = [0.25, 1.75]
 end = [2.5, 0.75]
 
 [[line_segment]]
