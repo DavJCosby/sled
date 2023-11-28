@@ -704,6 +704,7 @@ pub trait CollectionOfLedsMut {
     // A lot of normal set methods probably don't make the most sense here. More likely use cases are:
     // - set_all()
     // - filter_mut() for chaining
+    // - for_each()
     // - mapping methods
     // - etc
 

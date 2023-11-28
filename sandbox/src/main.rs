@@ -86,7 +86,7 @@ fn setup(
         let position = led.position() * 150.0;
         commands.spawn((
             MaterialMesh2dBundle {
-                mesh: meshes.add(shape::Circle::new(3.).into()).into(),
+                mesh: meshes.add(shape::Circle::new(2.5).into()).into(),
                 material: materials.add(ColorMaterial::from(Color::rgb(r, g, b))),
                 transform: Transform::from_translation(Vec3::new(position.x, position.y, 0.)),
                 ..default()
@@ -98,7 +98,7 @@ fn setup(
     let center = sled.0.center_point() * 150.0;
 
     commands.spawn(MaterialMesh2dBundle {
-        mesh: meshes.add(shape::Circle::new(16.).into()).into(),
+        mesh: meshes.add(shape::Circle::new(12.).into()).into(),
         material: materials.add(ColorMaterial::from(Color::rgb(0.25, 0.25, 0.25))),
         transform: Transform::from_translation(Vec3::new(center.x, center.y, 0.)),
         ..default()
