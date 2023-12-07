@@ -698,6 +698,8 @@ pub trait CollectionOfLeds {
     // - etc
 
     // Indices, ranges, and some others might not make sense.
+
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led>;
 }
 
 pub trait CollectionOfLedsMut {
@@ -712,12 +714,15 @@ pub trait CollectionOfLedsMut {
 
     fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led>;
 
-    fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led>;
-
     fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb);
 }
 
 impl CollectionOfLeds for Vec<&Led> {
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
+        let mut copy = self.clone();
+        copy.retain(|led| filter(led));
+        copy
+    }
 }
 
 impl CollectionOfLedsMut for Vec<&mut Led> {
@@ -728,11 +733,9 @@ impl CollectionOfLedsMut for Vec<&mut Led> {
     }
 
     fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
-        todo!()
-    }
-
-    fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led> {
-        todo!()
+        let mut copy: Vec<&Led> = self.iter().map(|led| &**led).collect();
+        copy.retain(|led| filter(led));
+        copy
     }
 
     fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
