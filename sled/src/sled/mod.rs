@@ -196,10 +196,9 @@ impl Sled {
             });
         }
 
-        for index in index_range {
-            self.leds[index].color = color;
-        }
-
+        self.leds[index_range]
+            .iter_mut()
+            .for_each(|led| led.color = color);
         Ok(())
     }
 
@@ -208,10 +207,7 @@ impl Sled {
         index_range: Range<usize>,
         mut func: F,
     ) {
-        let range = self.get_range_mut(index_range);
-        for led in range.iter_mut() {
-            func(led);
-        }
+        self.leds[index_range].iter_mut().for_each(|led| func(led));
     }
 }
 
@@ -248,15 +244,18 @@ impl Sled {
         segment_index: usize,
         mut func: F,
     ) -> Result<(), SledError> {
-        let segment = self.get_segment_mut(segment_index).ok_or(SledError {
-            message: format!("No line segment of index {} exists.", segment_index),
-        })?;
+        if segment_index >= self.line_segment_endpoint_indices.len() {
+            return Err(SledError {
+                message: format!("No line segment of index {} exists.", segment_index),
+            });
+        }
 
-        let num_leds_f32 = segment.len() as f32;
-        let lower_bound = segment[0].index();
-        for led in segment.iter_mut() {
-            let alpha = (led.index() - lower_bound) as f32 / num_leds_f32;
-            func(led, alpha);
+        let (start, end) = self.line_segment_endpoint_indices[segment_index];
+        let num_leds_f32 = (end - start) as f32;
+
+        for index in start..end {
+            let alpha = (index - start) as f32 / num_leds_f32;
+            func(&mut self.leds[index], alpha);
         }
 
         Ok(())
@@ -578,31 +577,37 @@ impl Sled {
         dist: f32,
         color: Rgb,
     ) -> Result<(), SledError> {
-        let mut ranges = vec![];
-        for (segment_index, segment) in self.line_segments.iter().enumerate() {
-            let intersections = segment.intersects_solid_circle(pos, dist);
-            let first = intersections.get(0);
-            let second = intersections.get(1);
+        // let mut ranges = vec![];
+        // for (segment_index, segment) in self.line_segments.iter().enumerate() {
+        //     let intersections = segment.intersects_solid_circle(pos, dist);
+        //     let first = intersections.get(0);
+        //     let second = intersections.get(1);
 
-            if first.is_some() && second.is_some() {
-                let first = self.alpha_to_index(*first.unwrap(), segment_index);
-                let second = self.alpha_to_index(*second.unwrap(), segment_index);
-                let range = first.min(second)..first.max(second);
-                ranges.push(range);
+        //     if first.is_some() && second.is_some() {
+        //         let first = self.alpha_to_index(*first.unwrap(), segment_index);
+        //         let second = self.alpha_to_index(*second.unwrap(), segment_index);
+        //         let range = first.min(second)..first.max(second);
+        //         ranges.push(range);
+        //     }
+        // }
+
+        // if ranges.is_empty() {
+        //     return Err(SledError {
+        //         message: format!(
+        //             "No LEDs exist within a distance of {} from the center point.",
+        //             dist
+        //         ),
+        //     });
+        // }
+
+        // for range in ranges {
+        //     self.set_range(range, color).unwrap();
+        // }
+        let target_sq = dist.powi(2);
+        for led in &mut self.leds {
+            if led.position().distance_squared(pos) < target_sq {
+                led.color = color;
             }
-        }
-
-        if ranges.is_empty() {
-            return Err(SledError {
-                message: format!(
-                    "No LEDs exist within a distance of {} from the center point.",
-                    dist
-                ),
-            });
-        }
-
-        for range in ranges {
-            self.set_range(range, color).unwrap();
         }
 
         Ok(())
@@ -617,7 +622,12 @@ impl Sled {
     }
 
     pub fn set_within_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
-        self.set_within_dist_from(self.center_point, dist, color)
+        for led in &mut self.leds {
+            if led.distance() < dist {
+                led.color = color;
+            }
+        }
+        Ok(())
     }
 }
 
