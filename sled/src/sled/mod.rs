@@ -679,11 +679,11 @@ impl Sled {
         self.map(|led| angle_to_color_map(led.angle()));
     }
 
-    pub fn map_by_distance(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_dist(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
         self.map(|led| dist_to_color_map(led.distance()));
     }
 
-    pub fn map_by_distance_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_dist_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Rgb) {
         self.map(|led| {
             let dist = pos.distance(led.position());
             dist_to_color_map(dist)
