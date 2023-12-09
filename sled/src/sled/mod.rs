@@ -14,6 +14,7 @@ use std::{ops::Range, usize};
 pub struct Sled {
     center_point: Vec2,
     leds: Vec<Led>,
+    num_leds: usize,
     line_segments: Vec<LineSegment>,
     // utility lookup tables
     line_segment_endpoint_indices: Vec<(usize, usize)>,
@@ -32,10 +33,11 @@ impl Sled {
         );
         let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
         let vertex_indices = Sled::vertex_indices(&config);
-
+        let num_leds = leds.len();
         Ok(Sled {
             center_point: config.center_point,
             leds,
+            num_leds,
             line_segments: config.line_segments,
             // utility lookup tables
             line_segment_endpoint_indices,
@@ -62,7 +64,7 @@ impl Sled {
     }
 
     pub fn num_leds(&self) -> usize {
-        self.leds.len()
+        self.num_leds
     }
 
     pub fn num_segments(&self) -> usize {
@@ -154,11 +156,13 @@ impl Sled {
     }
 
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_mut(index).ok_or(SledError {
-            message: format!("LED at index {} does not exist.", index),
-        })?;
+        if index > self.num_leds {
+            return Err(SledError {
+                message: format!("LED at index {} does not exist.", index),
+            });
+        }
 
-        led.color = color;
+        self.leds[index].color = color;
         Ok(())
     }
 
@@ -186,7 +190,7 @@ impl Sled {
     }
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
-        if index_range.end > self.num_leds() {
+        if index_range.end > self.num_leds {
             return Err(SledError {
                 message: format!("Index range extends beyond size of system."),
             });
@@ -219,19 +223,23 @@ impl Sled {
     }
 
     pub fn get_segment_mut(&mut self, segment_index: usize) -> Option<&mut [Led]> {
-        let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
+        if segment_index >= self.line_segment_endpoint_indices.len() {
+            return None;
+        }
+
+        let (start, end) = self.line_segment_endpoint_indices[segment_index];
         Some(self.get_range_mut(start..end))
     }
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
-        let leds = self.get_segment_mut(segment_index).ok_or(SledError {
-            message: format!("No line segment of index {} exists.", segment_index),
-        })?;
-
-        for led in leds {
-            led.color = color;
+        if segment_index >= self.line_segment_endpoint_indices.len() {
+            return Err(SledError {
+                message: format!("No line segment of index {} exists.", segment_index),
+            });
         }
 
+        let (start, end) = self.line_segment_endpoint_indices[segment_index];
+        self.set_range(start..end, color).unwrap();
         Ok(())
     }
 
@@ -258,19 +266,25 @@ impl Sled {
 /// Vertex-based read and write methods.
 impl Sled {
     pub fn get_vertex(&self, vertex_index: usize) -> Option<&Led> {
-        let led_index = self.vertex_indices.get(vertex_index)?;
-        self.get(*led_index)
+        if vertex_index >= self.vertex_indices.len() {
+            return None;
+        }
+
+        Some(&self.leds[vertex_index])
     }
 
     pub fn get_vertex_mut(&mut self, vertex_index: usize) -> Option<&mut Led> {
-        let led_index = self.vertex_indices.get(vertex_index)?;
-        self.get_mut(*led_index)
+        if vertex_index >= self.vertex_indices.len() {
+            return None;
+        }
+
+        Some(&mut self.leds[vertex_index])
     }
 
     pub fn get_vertices(&self) -> Vec<&Led> {
         let mut led_references: Vec<&Led> = vec![];
         for led_index in &self.vertex_indices {
-            led_references.push(self.get(*led_index).unwrap());
+            led_references.push(&self.leds[*led_index]);
         }
 
         led_references
@@ -288,17 +302,19 @@ impl Sled {
     }
 
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_vertex_mut(vertex_index).ok_or(SledError {
-            message: format!("Vertex with index {} does not exist.", vertex_index),
-        })?;
+        if vertex_index >= self.vertex_indices.len() {
+            return Err(SledError {
+                message: format!("Vertex with index {} does not exist.", vertex_index),
+            });
+        }
 
-        led.color = color;
+        self.leds[self.vertex_indices[vertex_index]].color = color;
         Ok(())
     }
 
     pub fn set_vertices(&mut self, color: Rgb) {
-        for i in self.vertex_indices.clone() {
-            self.set(i, color).unwrap();
+        for i in &self.vertex_indices {
+            self.leds[*i].color = color;
         }
     }
 
@@ -309,14 +325,6 @@ impl Sled {
     }
 }
 
-// fn reverse_lerp(a: Vec2, b: Vec2, c: Vec2) -> f32 {
-//     if a.x != b.x {
-//         (c.x - a.x) / (b.x - a.x)
-//     } else {
-//         (c.y - a.y) / (b.y - a.y)
-//     }
-// }
-
 /// directional read and write methods
 impl Sled {
     fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
@@ -325,7 +333,7 @@ impl Sled {
         let leds_in_segment = segment.num_leds() as f32;
 
         let target = startpoint_index + (segment_alpha * leds_in_segment).floor() as usize;
-        if target > self.num_leds() {
+        if target > self.num_leds {
             target
         } else {
             target
@@ -387,21 +395,20 @@ impl Sled {
     }
 
     pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_at_dir_mut(dir).ok_or(SledError {
-            message: format!("No LED in directon: {}", dir),
-        })?;
-
-        led.color = color;
-        Ok(())
+        match self.raycast_for_index(self.center_point, dir) {
+            None => Err(SledError {
+                message: format!("No LED in directon: {}", dir),
+            }),
+            Some(index) => {
+                self.leds[index].color = color;
+                Ok(())
+            }
+        }
     }
 
     pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
-        let led = self.get_at_angle_mut(angle).ok_or(SledError {
-            message: format!("No LED at angle: {}", angle),
-        })?;
-
-        led.color = color;
-        Ok(())
+        let dir = Vec2::from_angle(angle);
+        self.set_at_dir(dir, color)
     }
 }
 
@@ -484,9 +491,13 @@ impl Sled {
     }
 
     pub fn set_at_dist_from(&mut self, pos: Vec2, dist: f32, color: Rgb) -> Result<(), SledError> {
-        let leds_at_dist = self.get_at_dist_from_mut(pos, dist);
+        let indices: Vec<usize> = self
+            .get_at_dist_from(pos, dist)
+            .iter()
+            .map(|led| led.index())
+            .collect();
 
-        if leds_at_dist.is_empty() {
+        if indices.is_empty() {
             return Err(SledError {
                 message: format!(
                     "No LEDs exist at a distance of {} from the center point.",
@@ -495,9 +506,10 @@ impl Sled {
             });
         }
 
-        for led in leds_at_dist {
-            led.color = color;
+        for index in indices {
+            self.leds[index].color = color;
         }
+
         Ok(())
     }
 
@@ -695,8 +707,27 @@ impl Sled {
         self.map(|led| dir_to_color_map(led.direction()));
     }
 
+    pub fn map_by_dir_from(&mut self, point: Vec2, dir_to_color_map: impl Fn(Vec2) -> Rgb) {
+        self.map(|led| {
+            let dir = (point - led.position()).normalize_or_zero();
+            dir_to_color_map(dir)
+        });
+    }
+
     pub fn map_by_angle(&mut self, angle_to_color_map: impl Fn(f32) -> Rgb) {
         self.map(|led| angle_to_color_map(led.angle()));
+    }
+
+    pub fn map_by_angle_from(&mut self, point: Vec2, angle_to_color_map: impl Fn(f32) -> Rgb) {
+        let pos_x = Vec2::new(0.0, 1.0);
+        self.map(|led| {
+            let mut angle = (point - led.position()).angle_between(pos_x);
+            if angle < 0.0 {
+                angle = (2.0 * std::f32::consts::PI) + angle;
+            }
+
+            angle_to_color_map(angle)
+        });
     }
 
     pub fn map_by_dist(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
@@ -758,7 +789,7 @@ impl CollectionOfLedsMut for Vec<&mut Led> {
         copy
     }
 
-    fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
+    fn map(&mut self, _led_to_color_map: impl Fn(&Led) -> Rgb) {
         todo!()
     }
 }
