@@ -28,7 +28,7 @@ impl Led {
         }
 
         let distance = position.distance(center_point);
-
+        
         Led {
             color,
             position,
