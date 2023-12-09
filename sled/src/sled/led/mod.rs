@@ -1,8 +1,6 @@
-use std::f32::consts::PI;
-
-use crate::internal::color;
-use color::Rgb;
+use crate::color::Rgb;
 use glam::Vec2;
+use std::f32::consts::PI;
 
 #[derive(Clone)]
 pub struct Led {

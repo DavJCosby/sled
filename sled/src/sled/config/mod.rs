@@ -1,4 +1,4 @@
-use crate::SledError;
+use crate::error::SledError;
 use glam::Vec2;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::fs;
