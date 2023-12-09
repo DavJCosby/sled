@@ -186,9 +186,16 @@ impl Sled {
     }
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
-        for index in index_range {
-            self.set(index, color)?
+        if index_range.end > self.num_leds() {
+            return Err(SledError {
+                message: format!("Index range extends beyond size of system."),
+            });
         }
+
+        for index in index_range {
+            self.leds[index].color = color;
+        }
+
         Ok(())
     }
 
@@ -559,9 +566,21 @@ impl Sled {
         dist: f32,
         color: Rgb,
     ) -> Result<(), SledError> {
-        let leds_within_dist = self.get_within_dist_from_mut(pos, dist);
+        let mut ranges = vec![];
+        for (segment_index, segment) in self.line_segments.iter().enumerate() {
+            let intersections = segment.intersects_solid_circle(pos, dist);
+            let first = intersections.get(0);
+            let second = intersections.get(1);
 
-        if leds_within_dist.is_empty() {
+            if first.is_some() && second.is_some() {
+                let first = self.alpha_to_index(*first.unwrap(), segment_index);
+                let second = self.alpha_to_index(*second.unwrap(), segment_index);
+                let range = first.min(second)..first.max(second);
+                ranges.push(range);
+            }
+        }
+
+        if ranges.is_empty() {
             return Err(SledError {
                 message: format!(
                     "No LEDs exist within a distance of {} from the center point.",
@@ -570,9 +589,10 @@ impl Sled {
             });
         }
 
-        for led in leds_within_dist {
-            led.color = color;
+        for range in ranges {
+            self.set_range(range, color).unwrap();
         }
+
         Ok(())
     }
 
