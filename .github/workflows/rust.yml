@@ -19,6 +19,16 @@ jobs:
     - name: Build
       working-directory: ./sled
       run: cargo build
+      
     - name: Run tests
       working-directory: ./sled
       run: cargo test
+
+    - name: Run benchmarks
+      uses: benchmark-action/github-action-benchmark@v1.18.0
+      with: 
+        working-directory: ./sled
+        tool: 'cargo'
+        output-file-path: output.txt
+
+            
