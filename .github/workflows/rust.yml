@@ -27,7 +27,7 @@ jobs:
 
     - name: Run benchmark
       working-directory: ./sled
-      run: cargo bench map | tee output.txt; cat output.txt
+      run: cargo bench map | tee output.txt;echo "\noutputting file here:" cat output.txt
 
     - name: Store benchmark results
       uses: benchmark-action/github-action-benchmark@v1
