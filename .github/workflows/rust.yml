@@ -27,12 +27,12 @@ jobs:
 
     - name: Run benchmark
       working-directory: ./sled
-      run: cargo bench | tee output.txt
+      run: cargo bench map | tee output.txt
 
     - name: Store benchmark results
       uses: benchmark-action/github-action-benchmark@v1.18.0
       with: 
         tool: 'cargo'
-        output-file-path: output.txt
+        output-file-path: ./sled/output.txt
 
             

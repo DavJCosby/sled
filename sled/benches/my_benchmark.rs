@@ -116,8 +116,8 @@ criterion_group! {
     config = Criterion::default()
         .significance_level(0.05)
         .sample_size(100)
-        .measurement_time(Duration::from_secs_f32(6.0))
-        .warm_up_time(Duration::from_secs_f32(3.0));
+        .measurement_time(Duration::from_secs_f32(3.0))
+        .warm_up_time(Duration::from_secs_f32(1.0));
     targets = setters
 }
 criterion_main!(benches);
