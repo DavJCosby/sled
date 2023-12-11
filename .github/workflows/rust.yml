@@ -17,6 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose --target-dir=./sled/
+      run: pwd; cargo build --verbose
     - name: Run tests
-      run: cargo test --verbose --target-dir=./sled/
+      run: cargo test --verbose
