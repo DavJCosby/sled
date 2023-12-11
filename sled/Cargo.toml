@@ -28,3 +28,5 @@ doc-scrape-examples = true
 name = "my_benchmark"
 harness = false
 
+[lib]
+bench = false
