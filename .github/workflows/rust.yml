@@ -28,5 +28,3 @@ jobs:
     - name: Run tests
       working-directory: ./sled
       run: cargo test
-
-            
