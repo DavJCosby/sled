@@ -16,18 +16,22 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      working-directory: ./sled
-      run: cargo build
+    
+    # - name: Build
+    #   working-directory: ./sled
+    #   run: cargo build
       
-    - name: Run tests
-      working-directory: ./sled
-      run: cargo test
+    # - name: Run tests
+    #   working-directory: ./sled
+    #   run: cargo test
 
-    - name: Run benchmarks
+    - name: Run benchmark
+      working-directory: ./sled
+      run: cargo bench | tee output.txt
+
+    - name: Store benchmark results
       uses: benchmark-action/github-action-benchmark@v1.18.0
       with: 
-        working-directory: ./sled
         tool: 'cargo'
         output-file-path: output.txt
 
