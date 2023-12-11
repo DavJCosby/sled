@@ -16,14 +16,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Build
-      working-directory: ./sled
-      run: cargo build
-
     - name: Cache dependencies
       uses: Swatinem/rust-cache@v2.2.1
       with:
         workspaces: sled
+
+    - name: Build
+      working-directory: ./sled
+      run: cargo build
       
     - name: Run tests
       working-directory: ./sled
