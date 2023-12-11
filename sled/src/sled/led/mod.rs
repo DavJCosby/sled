@@ -3,6 +3,7 @@ use glam::Vec2;
 use std::f32::consts::PI;
 
 #[derive(Clone)]
+
 pub struct Led {
     pub color: Rgb,
     position: Vec2,

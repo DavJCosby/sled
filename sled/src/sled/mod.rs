@@ -167,7 +167,7 @@ impl Sled {
     }
 
     pub fn set_all(&mut self, color: Rgb) {
-        for led in self.leds.iter_mut() {
+        for led in &mut self.leds {
             led.color = color;
         }
     }
