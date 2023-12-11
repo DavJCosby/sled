@@ -5,7 +5,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-name: Run benchmarks
 jobs:
   runBenchmark:
     name: run benchmark
