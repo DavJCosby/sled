@@ -1,0 +1,19 @@
+name: Run Benchmarks
+on:   
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+name: Run benchmarks
+jobs:
+  runBenchmark:
+    name: run benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: boa-dev/criterion-compare-action@v3
+        with:
+          cwd: "./sled"
+          # Needed. The name of the branch to compare with. This default uses the branch which is being pulled against
+          branchName: ${{ github.base_ref }}

@@ -1,4 +1,4 @@
-name: Rust
+name: Build and Run Tests
 
 on:
   push:
@@ -17,22 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    # - name: Build
-    #   working-directory: ./sled
-    #   run: cargo build
-      
-    # - name: Run tests
-    #   working-directory: ./sled
-    #   run: cargo test
-
-    - name: Run benchmark
+    - name: Build
       working-directory: ./sled
-      run: cargo bench map | tee output.txt;echo "outputting file here:"; cat output.txt
-
-    - name: Store benchmark results
-      uses: benchmark-action/github-action-benchmark@v1
-      with: 
-        tool: 'cargo'
-        output-file-path: sled/output.txt
+      run: cargo build
+      
+    - name: Run tests
+      working-directory: ./sled
+      run: cargo test
 
             
