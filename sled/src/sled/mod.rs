@@ -264,7 +264,7 @@ impl Sled {
 impl Sled {
     pub fn get_segment(&self, segment_index: usize) -> Option<&[Led]> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
-        Some(&self[start..end])
+        Some(&self.leds[start..end])
     }
 
     pub fn get_segment_mut(&mut self, segment_index: usize) -> Option<&mut [Led]> {
@@ -273,7 +273,7 @@ impl Sled {
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
-        Some(&mut self[start..end])
+        Some(&mut self.leds[start..end])
     }
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
@@ -510,14 +510,18 @@ impl Sled {
         &mut self.leds[self.index_of_closest]
     }
 
+    pub fn set_closest(&mut self, color: Rgb) {
+        self.leds[self.index_of_closest].color = color;
+    }
+
     pub fn get_closest_to(&self, pos: Vec2) -> &Led {
         let index_of_closest = self.get_index_of_closest_to(pos);
-        &self[index_of_closest]
+        &self.leds[index_of_closest]
     }
 
     pub fn get_closest_to_mut(&mut self, pos: Vec2) -> &mut Led {
         let index_of_closest = self.get_index_of_closest_to(pos);
-        &mut self[index_of_closest]
+        &mut self.leds[index_of_closest]
     }
 
     pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
@@ -530,7 +534,7 @@ impl Sled {
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
                 let index = self.alpha_to_index(alpha, segment_index);
-                all_at_distance.push(&self[index]);
+                all_at_distance.push(&self.leds[index]);
             }
         }
 
@@ -612,7 +616,7 @@ impl Sled {
                 let first = self.alpha_to_index(*first.unwrap(), segment_index);
                 let second = self.alpha_to_index(*second.unwrap(), segment_index);
                 let range = first.min(second)..first.max(second);
-                all_within_distance.extend(&self[range]);
+                all_within_distance.extend(&self.leds[range]);
             }
         }
 
