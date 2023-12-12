@@ -580,16 +580,22 @@ impl Sled {
     }
 
     pub fn set_at_dist_from(&mut self, pos: Vec2, dist: f32, color: Rgb) -> Result<(), SledError> {
-        let mut leds_at_dist = self.get_at_dist_from_mut(pos, dist);
+        let indices: Vec<usize> = self.indices_at_dist(pos, dist);
 
-        if leds_at_dist.is_empty() {
-            Err(SledError {
-                message: format!("No LEDs exist within a distance of {} from {}", dist, pos),
-            })
-        } else {
-            leds_at_dist.set_all(color);
-            Ok(())
+        if indices.is_empty() {
+            return Err(SledError {
+                message: format!(
+                    "No LEDs exist at a distance of {} from the center point.",
+                    dist
+                ),
+            });
         }
+
+        for index in indices {
+            self.leds[index].color = color;
+        }
+
+        Ok(())
     }
 
     pub fn get_at_dist(&self, dist: f32) -> Vec<&Led> {
@@ -647,7 +653,7 @@ impl Sled {
                 led.color = color;
             }
         }
-        
+
         Ok(())
     }
 
@@ -665,19 +671,13 @@ impl Sled {
     }
 
     pub fn set_within_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
-        let mut within_dist = self.get_within_dist_mut(dist);
-
-        if within_dist.is_empty() {
-            Err(SledError {
-                message: format!(
-                    "No LEDs exist within a distance of {} from the center",
-                    dist
-                ),
-            })
-        } else {
-            within_dist.set_all(color);
-            Ok(())
+        for led in &mut self.leds {
+            if led.distance() < dist {
+                led.color = color;
+            }
         }
+
+        Ok(())
     }
 }
 
