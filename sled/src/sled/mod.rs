@@ -405,9 +405,31 @@ impl Sled {
         }
     }
 
+    pub fn set_at_dir_from(&mut self, pos: Vec2, dir: Vec2, color: Rgb) -> Result<(), SledError> {
+        match self.raycast_for_index(pos, dir) {
+            None => Err(SledError {
+                message: format!("No LED in directon: {}", dir),
+            }),
+            Some(index) => {
+                self.leds[index].color = color;
+                Ok(())
+            }
+        }
+    }
+
     pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
         let dir = Vec2::from_angle(angle);
         self.set_at_dir(dir, color)
+    }
+
+    pub fn set_at_angle_from(
+        &mut self,
+        pos: Vec2,
+        angle: f32,
+        color: Rgb,
+    ) -> Result<(), SledError> {
+        let dir = Vec2::from_angle(angle);
+        self.set_at_dir_from(dir, pos, color)
     }
 }
 
