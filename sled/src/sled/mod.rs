@@ -8,6 +8,7 @@ use config::{Config, LineSegment};
 use led::Led;
 
 use glam::Vec2;
+use std::ops::{Index, IndexMut};
 use std::{ops::Range, usize};
 
 #[allow(dead_code)]
@@ -179,14 +180,54 @@ impl Sled {
     }
 }
 
-/// Index range-based read and write methods
-impl Sled {
-    pub fn get_range(&self, index_range: Range<usize>) -> &[Led] {
+impl Index<usize> for Sled {
+    type Output = Led;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.leds[index]
+    }
+}
+
+impl IndexMut<usize> for Sled {
+    fn index_mut(&mut self, index: usize) -> &mut Led {
+        &mut self.leds[index]
+    }
+}
+
+impl Index<Range<usize>> for Sled {
+    type Output = [Led];
+
+    fn index(&self, index_range: Range<usize>) -> &[Led] {
         &self.leds[index_range]
     }
+}
 
-    pub fn get_range_mut(&mut self, index_range: Range<usize>) -> &mut [Led] {
+impl IndexMut<Range<usize>> for Sled {
+    fn index_mut(&mut self, index_range: Range<usize>) -> &mut [Led] {
         &mut self.leds[index_range]
+    }
+}
+
+/// Index range-based read and write methods
+impl Sled {
+    pub fn get_range(&self, index_range: Range<usize>) -> Result<&[Led], SledError> {
+        if index_range.end < self.num_leds {
+            Ok(&self.leds[index_range])
+        } else {
+            Err(SledError {
+                message: format!("Index range extends beyond size of system."),
+            })
+        }
+    }
+
+    pub fn get_range_mut(&mut self, index_range: Range<usize>) -> Result<&mut [Led], SledError> {
+        if index_range.end < self.num_leds {
+            Ok(&mut self.leds[index_range])
+        } else {
+            Err(SledError {
+                message: format!("Index range extends beyond size of system."),
+            })
+        }
     }
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
@@ -215,7 +256,7 @@ impl Sled {
 impl Sled {
     pub fn get_segment(&self, segment_index: usize) -> Option<&[Led]> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
-        Some(self.get_range(start..end))
+        Some(&self[start..end])
     }
 
     pub fn get_segment_mut(&mut self, segment_index: usize) -> Option<&mut [Led]> {
@@ -224,7 +265,7 @@ impl Sled {
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
-        Some(self.get_range_mut(start..end))
+        Some(&mut self[start..end])
     }
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
