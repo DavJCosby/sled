@@ -1,3 +1,5 @@
+[![Build and Run Tests](https://github.com/DavJCosby/sled/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/DavJCosby/sled/actions/workflows/rust.yml)
+
 # NOTICE: Project Under Massive Rework
 I've begun of this project, and so most of the old legacy code for this project needed to go. If you are interested in seeing what this looked like before I deleted everything and started over, look at [#6dbe3c7]([url](https://github.com/DavJCosby/sled/tree/6dbe3c7da6447125dbd71a01ba61078b83073945))
 

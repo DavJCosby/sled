@@ -11,12 +11,16 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
     
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2.2.1
+      with:
+        workspaces: sled
+
     - name: Build
       working-directory: ./sled
       run: cargo build
@@ -24,5 +28,3 @@ jobs:
     - name: Run tests
       working-directory: ./sled
       run: cargo test
-
-            
