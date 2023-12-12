@@ -90,15 +90,15 @@ fn setters(c: &mut Criterion) {
         })
     });
 
-    c.bench_function("set_closest", |b| {
-        b.iter(|| {
-            sled.set_closest(white);
-            sled.set_closest(white);
-            sled.set_closest(white);
-            sled.set_closest(white);
-            sled.set_closest(white);
-        })
-    });
+    // c.bench_function("set_closest", |b| {
+    //     b.iter(|| {
+    //         sled.set_closest(white);
+    //         sled.set_closest(white);
+    //         sled.set_closest(white);
+    //         sled.set_closest(white);
+    //         sled.set_closest(white);
+    //     })
+    // });
 
     c.bench_function("set_at_dist", |b| {
         b.iter(|| {
