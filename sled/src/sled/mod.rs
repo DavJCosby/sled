@@ -165,7 +165,7 @@ impl Sled {
     }
 
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
-        if index > self.num_leds {
+        if index >= self.num_leds {
             return Err(SledError {
                 message: format!("LED at index {} does not exist.", index),
             });
@@ -239,7 +239,7 @@ impl Sled {
     }
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
-        if index_range.end > self.num_leds {
+        if index_range.end >= self.num_leds {
             return Err(SledError {
                 message: format!("Index range extends beyond size of system."),
             });
@@ -381,11 +381,7 @@ impl Sled {
         let leds_in_segment = segment.num_leds() as f32;
 
         let target = startpoint_index + (segment_alpha * leds_in_segment).floor() as usize;
-        if target > self.num_leds {
-            target
-        } else {
-            target
-        }
+        target
     }
 
     fn raycast_for_index(&self, start: Vec2, dir: Vec2) -> Option<usize> {
