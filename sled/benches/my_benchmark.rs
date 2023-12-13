@@ -15,7 +15,6 @@ fn setters(c: &mut Criterion) {
             sled.set(120, white).unwrap();
             sled.set(173, white).unwrap();
             sled.set(228, white).unwrap();
-
         });
     });
 
@@ -48,7 +47,6 @@ fn setters(c: &mut Criterion) {
             sled.set_segment(4, white).unwrap();
         });
     });
-
 
     c.bench_function("set_vertex", |b| {
         b.iter(|| {
@@ -121,21 +119,21 @@ fn setters(c: &mut Criterion) {
 
     c.bench_function("set_within_dist", |b| {
         b.iter(|| {
-            sled.set_within_dist(0.5, white).unwrap();
-            sled.set_within_dist(1.0, white).unwrap();
-            sled.set_within_dist(1.5, white).unwrap();
-            sled.set_within_dist(2.0, white).unwrap();
-            sled.set_within_dist(2.5, white).unwrap();
+            sled.set_within_dist(0.5, white);
+            sled.set_within_dist(1.0, white);
+            sled.set_within_dist(1.5, white);
+            sled.set_within_dist(2.0, white);
+            sled.set_within_dist(2.5, white);
         })
     });
 
     c.bench_function("set_within_dist_from", |b| {
         b.iter(|| {
-            sled.set_within_dist_from(center, 0.5, white).unwrap();
-            sled.set_within_dist_from(center, 1.0, white).unwrap();
-            sled.set_within_dist_from(center, 1.5, white).unwrap();
-            sled.set_within_dist_from(center, 2.0, white).unwrap();
-            sled.set_within_dist_from(center, 2.5, white).unwrap();
+            sled.set_within_dist_from(center, 0.5, white);
+            sled.set_within_dist_from(center, 1.0, white);
+            sled.set_within_dist_from(center, 1.5, white);
+            sled.set_within_dist_from(center, 2.0, white);
+            sled.set_within_dist_from(center, 2.5, white);
         })
     });
 
