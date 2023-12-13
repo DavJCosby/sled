@@ -20,12 +20,14 @@ fn step(sled: &mut Sled, elapsed: f32) {
 
     for i in 0..GREEN_COUNT {
         let angle = inner_time_scale + (TAU / GREEN_COUNT as f32) * i as f32;
-        sled.get_at_angle_mut(angle).unwrap().color += inner_color;
+        sled.modulate_at_angle(angle, |led| led.color + inner_color)
+            .unwrap();
     }
 
     for i in 0..BLUE_COUNT {
         let angle = outer_time_scale + (TAU / BLUE_COUNT as f32) * i as f32 % TAU;
-        sled.get_at_angle_mut(angle).unwrap().color += outer_delta;
+        sled.modulate_at_angle(angle, |led| led.color + outer_delta)
+            .unwrap();
     }
 
     let radar_time_scale = elapsed / TRAIL_RADIUS;
