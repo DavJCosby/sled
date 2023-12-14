@@ -4,8 +4,8 @@ use sled::{Rgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
     let mut sled = Sled::new("./benches/config1.toml").unwrap();
-    let white = Rgb::new(1.0, 1.0, 1.0);
 
-    sled.set_range(20..50, white)?;
+    let led = sled.get_at_dir(glam::Vec2::new(0.0, -1.0)).unwrap();
+    println!("{}", led.angle());
     Ok(())
 }

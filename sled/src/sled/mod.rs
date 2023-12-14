@@ -108,14 +108,7 @@ impl Sled {
                 let pos = segment.start.lerp(segment.end, alpha);
                 let dir = (pos - *center_point).normalize();
 
-                let led = Led::new(
-                    default_color,
-                    pos,
-                    dir,
-                    leds.len(),
-                    segment_index,
-                    *center_point,
-                );
+                let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
                 leds.push(led);
             }
         }
