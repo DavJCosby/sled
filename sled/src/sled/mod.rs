@@ -318,6 +318,54 @@ impl Sled {
         Ok(())
     }
 
+    pub fn get_segments(&self, range: Range<usize>) -> Option<&[Led]> {
+        if range.start >= self.line_segment_endpoint_indices.len() {
+            None
+        } else {
+            let (start, _) = *self.line_segment_endpoint_indices.get(range.start)?;
+            let (_, end) = *self.line_segment_endpoint_indices.get(range.end)?;
+            Some(&self.leds[start..end])
+        }
+    }
+
+    pub fn modulate_segments<F: Fn(&Led) -> Rgb>(
+        &mut self,
+        range: Range<usize>,
+        color_rule: F,
+    ) -> Result<(), SledError> {
+        if range.start >= self.line_segment_endpoint_indices.len() {
+            return Err(SledError {
+                message: format!(
+                    "Segment index range extends beyond the number of segments in the system."
+                ),
+            });
+        }
+
+        let (start, _) = self.line_segment_endpoint_indices[range.start];
+        let (_, end) = self.line_segment_endpoint_indices[range.end];
+        for led in &mut self.leds[start..end] {
+            led.color = color_rule(led);
+        }
+        Ok(())
+    }
+
+    pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
+        if range.start >= self.line_segment_endpoint_indices.len() {
+            return Err(SledError {
+                message: format!(
+                    "Segment index range extends beyond the number of segments in the system."
+                ),
+            });
+        }
+
+        let (start, _) = self.line_segment_endpoint_indices[range.start];
+        let (_, end) = self.line_segment_endpoint_indices[range.end];
+        for led in &mut self.leds[start..end] {
+            led.color = color;
+        }
+        Ok(())
+    }
+
     pub fn for_each_in_segment<F: FnMut(&mut Led, f32)>(
         &mut self,
         segment_index: usize,
