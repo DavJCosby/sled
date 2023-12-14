@@ -1,7 +1,7 @@
 use std::{f32::consts::TAU, time::Duration};
 
 use criterion::{criterion_group, criterion_main, Criterion};
-use sled::{Rgb, Sled};
+use sled::{color::Rgb, Sled};
 
 const GREEN_RADIUS: f32 = 35.0;
 const GREEN_COUNT: usize = 64;

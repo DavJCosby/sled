@@ -1,4 +1,4 @@
-use sled::{Rgb, Sled, SledError};
+use sled::{color::Rgb, Sled, SledError};
 
 // fn display
 

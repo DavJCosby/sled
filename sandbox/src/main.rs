@@ -1,6 +1,6 @@
 use std::f32::consts::TAU;
 
-use sled::{Rgb, Sled, SledError};
+use sled::{color::Rgb, Sled, SledError};
 
 use bevy::{
     audio::AudioPlugin, diagnostic::DiagnosticsPlugin, gltf::GltfPlugin, log::LogPlugin,
