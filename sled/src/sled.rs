@@ -1,13 +1,12 @@
-pub mod config;
-pub mod led;
+use crate::{
+    color,
+    color::{Rgb, Srgb},
+    config::{Config, LineSegment},
+    error::SledError,
+    led::Led,
+    Vec2,
+};
 
-use crate::color;
-use crate::color::{Rgb, Srgb};
-use crate::error::SledError;
-use config::{Config, LineSegment};
-use led::Led;
-
-use glam::Vec2;
 use std::ops::{Index, IndexMut};
 use std::{ops::Range, usize};
 
@@ -104,18 +103,9 @@ impl Sled {
             for i in 0..*segment_size {
                 let segment = &line_segments[segment_index];
                 let alpha = i as f32 / (segment_size - 1) as f32;
-
                 let pos = segment.start.lerp(segment.end, alpha);
-                let dir = (pos - *center_point).normalize();
+                let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
 
-                let led = Led::new(
-                    default_color,
-                    pos,
-                    dir,
-                    leds.len(),
-                    segment_index,
-                    *center_point,
-                );
                 leds.push(led);
             }
         }
@@ -439,7 +429,8 @@ impl Sled {
 
     pub fn set_vertices(&mut self, color: Rgb) {
         for i in &self.vertex_indices {
-            self.leds[*i].color = color;
+            let led = &mut self.leds[*i];
+            led.color = color;
         }
     }
 

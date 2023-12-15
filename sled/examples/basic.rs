@@ -1,11 +1,14 @@
-use sled::{Rgb, Sled, SledError};
+use sled::{color::Rgb, Sled, SledError, Vec2};
 
 // fn display
 
 fn main() -> Result<(), SledError> {
-    let mut sled = Sled::new("./benches/config1.toml").unwrap();
-    let white = Rgb::new(1.0, 1.0, 1.0);
+    let mut sled = Sled::new("./benches/config1.toml")?;
 
-    sled.set_range(20..50, white)?;
+    sled.set_within_dist(1.0, Rgb::new(1.0, 0.0, 0.0));
+    sled.modulate_segment(2, |led| led.color * 0.5)?;
+
+    let _colors: Vec<Rgb<_, u8>> = sled.read_colors();
+
     Ok(())
 }
