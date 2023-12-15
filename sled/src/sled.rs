@@ -102,7 +102,7 @@ impl Sled {
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
                 let segment = &line_segments[segment_index];
-                let alpha = i as f32 / (segment_size - 1) as f32;
+                let alpha = (i + 1) as f32 / *segment_size as f32;
                 let pos = segment.start.lerp(segment.end, alpha);
                 let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
 
@@ -126,10 +126,17 @@ impl Sled {
     fn vertex_indices(config: &Config) -> Vec<usize> {
         let mut vertex_indices = vec![];
 
-        let mut last_end_point: Option<Vec2> = None;
+        let start = config.line_segments[0].start;
+        let end = config.line_segments[config.line_segments.len() - 1].end;
+
+        if start != end {
+            vertex_indices.push(0);
+        }
+
+        let mut last_end_point: Vec2 = start;
         let mut last_index = 0;
         for line in &config.line_segments {
-            if Some(line.start) != last_end_point {
+            if line.start != last_end_point {
                 vertex_indices.push(last_index);
             }
 
@@ -137,7 +144,7 @@ impl Sled {
             vertex_indices.push(last_index + num_leds - 1);
 
             last_index += num_leds;
-            last_end_point = Some(line.end);
+            last_end_point = line.end;
         }
 
         vertex_indices
