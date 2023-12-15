@@ -432,7 +432,8 @@ impl Sled {
 
     pub fn set_vertices(&mut self, color: Rgb) {
         for i in &self.vertex_indices {
-            self.leds[*i].color = color;
+            let led = &mut self.leds[*i];
+            led.color = Rgb::new(1.0, 1.0, 1.0);
         }
     }
 

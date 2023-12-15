@@ -47,31 +47,14 @@ const BLUE_COUNT: usize = 96;
 const TRAIL_RADIUS: f32 = 18.0;
 
 fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
-    let inner_color = Rgb::new(0.6, 0.93, 0.762);
-    let outer_delta = Rgb::new(0.4, 0.51, 0.93);
-
-    let inner_time_scale = elapsed / GREEN_RADIUS;
-    let outer_time_scale = elapsed / BLUE_RADIUS;
-
-    for i in 0..GREEN_COUNT {
-        let angle = inner_time_scale + (TAU / GREEN_COUNT as f32) * i as f32;
-        sled.modulate_at_angle(angle, |led| led.color + inner_color)
-            .unwrap();
-    }
-
-    for i in 0..BLUE_COUNT {
-        let angle = outer_time_scale + (TAU / BLUE_COUNT as f32) * i as f32 % TAU;
-        sled.modulate_at_angle(angle, |led| led.color + outer_delta)
-            .unwrap();
-    }
-
-    let radar_time_scale = elapsed / TRAIL_RADIUS;
-    let angle = radar_time_scale % TAU;
-    sled.map(|led| {
-        let da = (led.angle() + angle) % TAU;
-        let fac = 1.0 - (da / (TAU)).powf(1.25);
-        led.color * fac
+    
+    sled.map_by_dir(|dir| {
+        let red = (dir.x + 1.0) * 0.5;
+        let green = (dir.y + 1.0) * 0.5;
+        Rgb::new(red, green, 0.5)
     });
+
+    sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 
     Ok(())
 }
