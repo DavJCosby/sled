@@ -20,6 +20,7 @@ pub struct Sled {
     line_segment_endpoint_indices: Vec<(usize, usize)>,
     vertex_indices: Vec<usize>,
     index_of_closest: usize,
+    index_of_furthest: usize,
 }
 
 /// Construction, output, and basic sled info.
@@ -41,12 +42,19 @@ impl Sled {
             .unwrap()
             .index();
 
+        let index_of_furthest = leds
+            .iter()
+            .max_by(|l, r| l.distance().partial_cmp(&r.distance()).unwrap())
+            .unwrap()
+            .index();
+
         Ok(Sled {
             center_point: config.center_point,
             leds,
             num_leds,
             line_segments: config.line_segments,
             index_of_closest,
+            index_of_furthest,
             // utility lookup tables
             line_segment_endpoint_indices,
             vertex_indices,
@@ -624,6 +632,51 @@ impl Sled {
         self.leds[index_of_closest].color = color;
     }
 
+    /* furthest getters/setters */
+
+    pub fn get_index_of_furthest_from(&self, pos: Vec2) -> usize {
+        let (index_of_furthest, _dist) = self
+            .vertex_indices
+            .iter()
+            .map(|i| {
+                let vertex_pos = self.leds[*i].position();
+                (*i, pos.distance_squared(vertex_pos))
+            })
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+            .unwrap();
+
+        index_of_furthest
+    }
+
+    pub fn get_furthest(&self) -> &Led {
+        &self.leds[self.index_of_furthest]
+    }
+
+    pub fn get_furthest_from(&self, pos: Vec2) -> &Led {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        &self.leds[index_of_furthest]
+    }
+
+    pub fn modulate_furthest<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
+        let led = &mut self.leds[self.index_of_furthest];
+        led.color = color_rule(led);
+    }
+
+    pub fn modulate_furthest_from<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        let led = &mut self.leds[index_of_furthest];
+        led.color = color_rule(led);
+    }
+
+    pub fn set_furthest(&mut self, color: Rgb) {
+        self.leds[self.index_of_furthest].color = color;
+    }
+
+    pub fn set_furthest_from(&mut self, pos: Vec2, color: Rgb) {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        self.leds[index_of_furthest].color = color;
+    }
+
     /* at distance methods */
 
     fn indices_at_dist(&self, pos: Vec2, dist: f32) -> Vec<usize> {
@@ -933,6 +986,8 @@ impl CollectionOfLeds for Vec<&Led> {
         copy.retain(|led| filter(led));
         copy
     }
+
+    // regular get_closest should be possible to as each led already stores its distance.
 
     fn get_closest_to(&self, pos: Vec2) -> &Led {
         self.iter()

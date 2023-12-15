@@ -36,12 +36,24 @@ fn main() -> Result<(), SledError> {
     Ok(())
 }
 
-fn step(sled: &mut Sled, _elapsed: f32) -> Result<(), SledError> {
-    sled.map_by_dir(|dir| {
-        let red = (dir.x + 1.0) * 0.5;
-        let green = (dir.y + 1.0) * 0.5;
-        Rgb::new(red, green, 0.5)
-    });
+fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
+    // sled.map_by_dir(|dir| {
+    //     let red = (dir.x + 1.0) * 0.5;
+    //     let green = (dir.y + 1.0) * 0.5;
+    //     Rgb::new(red, green, 0.5)
+    // });
+
+    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+
+    // let t = elapsed / 20.0;
+    // let pos = Vec2::new(1.5 + t.cos(), 1.5 + t.sin());
+    let pos = sled.center_point();
+
+    sled.set_closest_to(pos, Rgb::new(1.0, 1.0, 0.0));
+    println!("dist based: {}", sled.get_furthest_from(pos).position());
+    println!("vert based: {}", sled.get_furthest().position());
+
+    sled.set_furthest_from(pos, Rgb::new(0.0, 0.0, 1.0));
 
     sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 
