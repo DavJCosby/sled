@@ -8,13 +8,13 @@
 //!
 //! # Basic Setup
 //! To create a Sled struct, you need to create a configuration file and pass the file path in to the constructor:
-//! ```rust
+//! ```rust, ignore
 //! let mut sled = Sled::new("/path/to/config.toml").unwrap();
 //! ````
 //!
 //! These config files are used to map the LEDs in your setup to 2D space. Here's an example .toml file:
 //!
-//! ```
+//! ```ignore
 //! // config.toml
 //! center_point = [0.0, 0.5]
 //! density = 30.0
@@ -52,15 +52,15 @@
 //! Here's a taste of some of the things Sled lets you do:
 //!
 //! Set all vertices to white
-//! ```
+//! ```ignore
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 //! ```
 //! > Set all LEDs within 1 unit of the center_point to red
-//! ```
+//! ```ignore
 //! sled.set_within_dist(1.0, Rgb::new(1.0, 0.0, 0.0));
 //! ```
 //! Set each LED using a function of its direction from the point `(2, 1)`
-//! ```rust
+//! ```rust, ignore
 //! sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!     let red = (dir.x + 1.0) * 0.5;
 //!     let green = (dir.y + 1.0) * 0.5;
@@ -68,14 +68,14 @@
 //! });
 //! ```
 //! Dim one of our walls by 50%
-//! ```rust
+//! ```rust, ignore
 //! sled.modulate_segment(2, |led| led.color * 0.5)?;
 //! ```
 //! For more examples see the page for the [Sled] struct.
 //!
 //! ## Output
 //! Once you're ready to display these colors, you'll probably want them packed in a nice contiguous array of RGB values. With Sled, that's as easy as:
-//! ```rust
+//! ```rust, ignore
 //!     let colors: Vec<Rgb<_, u8>> = sled.read_colors();
 //! ```
 //! > *Note, the example about automatically converts the Rgbs to a 0-255 scale (8 bits/channel).
