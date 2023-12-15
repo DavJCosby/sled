@@ -1,6 +1,7 @@
 use crate::color::Rgb;
 use glam::Vec2;
-use std::f32::consts::PI;
+
+use std::f32::consts::TAU;
 
 #[derive(Clone)]
 
@@ -29,7 +30,7 @@ impl Led {
 
         let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
         if angle < 0.0 {
-            angle = (2.0 * PI) + angle;
+            angle = TAU + angle;
         }
         let distance = position.distance(center_point);
 

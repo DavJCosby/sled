@@ -103,11 +103,9 @@ impl Sled {
             for i in 0..*segment_size {
                 let segment = &line_segments[segment_index];
                 let alpha = i as f32 / (segment_size - 1) as f32;
-
                 let pos = segment.start.lerp(segment.end, alpha);
-                let dir = (pos - *center_point).normalize();
-
                 let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
+
                 leds.push(led);
             }
         }
@@ -432,7 +430,7 @@ impl Sled {
     pub fn set_vertices(&mut self, color: Rgb) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
-            led.color = Rgb::new(1.0, 1.0, 1.0);
+            led.color = color;
         }
     }
 

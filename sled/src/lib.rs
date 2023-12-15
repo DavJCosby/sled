@@ -69,27 +69,31 @@
 //! ```
 //! Dim one of our walls by 50%
 //! ```rust
-//! sled.modulate_segment(2, |led| led.color * 0.5);
+//! sled.modulate_segment(2, |led| led.color * 0.5)?;
 //! ```
 //! For more examples see the page for the [Sled] struct.
 //!
 //! ## Output
 //! Once you're ready to display these colors, you'll probably want them packed in a nice contiguous array of RGB values. With Sled, that's as easy as:
 //! ```rust
-//! let colors: Vec<Srgb<u8>> = sled.read_colors();
+//!     let colors: Vec<Rgb<_, u8>> = sled.read_colors();
 //! ```
 //! > *Note, the example about automatically converts the Rgbs to a 0-255 scale (8 bits/channel).
 //! > Replace the u8 with f32 if you need a 0.0 - 1.0 scale (32 bits/channel).*
 
-/// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
-pub mod color;
-mod error;
-mod sled;
-mod led;
 mod config;
+mod error;
+mod led;
+mod sled;
 
-pub use led::Led;
 pub use error::SledError;
-pub use sled::Sled;
-/// [glam](https://crates.io/crates/glam)'s implementation. 
+/// [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
+pub use led::Led;
+pub use sled::Sled;
+
+/// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
+pub mod color {
+    pub use palette::rgb::Rgb;
+    pub use palette::*;
+}

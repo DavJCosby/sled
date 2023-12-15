@@ -1,5 +1,3 @@
-use std::f32::consts::TAU;
-
 use sled::{color::Rgb, Sled, SledError};
 
 use bevy::{
@@ -38,16 +36,7 @@ fn main() -> Result<(), SledError> {
     Ok(())
 }
 
-const GREEN_RADIUS: f32 = 35.0;
-const GREEN_COUNT: usize = 64;
-
-const BLUE_RADIUS: f32 = 45.0;
-const BLUE_COUNT: usize = 96;
-
-const TRAIL_RADIUS: f32 = 18.0;
-
-fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
-    
+fn step(sled: &mut Sled, _elapsed: f32) -> Result<(), SledError> {
     sled.map_by_dir(|dir| {
         let red = (dir.x + 1.0) * 0.5;
         let green = (dir.y + 1.0) * 0.5;
