@@ -1,5 +1,5 @@
 //! A crate for spatial control of LED strip light configurations.
-//! 
+//!
 //! Quick Links:
 //! - [Sled] spatial read/write methods for our system
 //! - [Led] Struct representing each LED in our system
@@ -50,7 +50,7 @@
 //! ## Drawing
 //! Once you have your Sled struct, you can start drawing to it right away!
 //! Here's a taste of some of the things Sled lets you do:
-//! 
+//!
 //! Set all vertices to white
 //! ```
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
@@ -72,7 +72,7 @@
 //! sled.modulate_segment(2, |led| led.color * 0.5);
 //! ```
 //! For more examples see the page for the [Sled] struct.
-//! 
+//!
 //! ## Output
 //! Once you're ready to display these colors, you'll probably want them packed in a nice contiguous array of RGB values. With Sled, that's as easy as:
 //! ```rust
@@ -83,12 +83,13 @@
 
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
 pub mod color;
+mod error;
+mod sled;
+mod led;
+mod config;
 
-/// Error handling types for the Sled eco-system.
-pub mod error;
-
-/// All types specific to Sled, including the struct itself as well as those needed to process a configuration.
-pub mod sled;
-
+pub use led::Led;
 pub use error::SledError;
-pub use sled::{led::Led, Sled};
+pub use sled::Sled;
+/// [glam](https://crates.io/crates/glam)'s implementation. 
+pub use glam::Vec2;

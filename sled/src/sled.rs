@@ -1,13 +1,12 @@
-pub mod config;
-pub mod led;
+use crate::{
+    color,
+    color::{Rgb, Srgb},
+    config::{Config, LineSegment},
+    error::SledError,
+    led::Led,
+    Vec2,
+};
 
-use crate::color;
-use crate::color::{Rgb, Srgb};
-use crate::error::SledError;
-use config::{Config, LineSegment};
-use led::Led;
-
-use glam::Vec2;
 use std::ops::{Index, IndexMut};
 use std::{ops::Range, usize};
 
