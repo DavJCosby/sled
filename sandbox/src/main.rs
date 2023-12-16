@@ -37,25 +37,19 @@ fn main() -> Result<(), SledError> {
 }
 
 fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
-    // sled.map_by_dir(|dir| {
-    //     let red = (dir.x + 1.0) * 0.5;
-    //     let green = (dir.y + 1.0) * 0.5;
-    //     Rgb::new(red, green, 0.5)
-    // });
+    sled.map(|led| led.color * 0.9);
 
-    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+    let t = (elapsed / 35.0).cos() / 2.0 + 0.5;
 
-    // let t = elapsed / 20.0;
-    // let pos = Vec2::new(1.5 + t.cos(), 1.5 + t.sin());
-    let pos = sled.center_point();
+    let p0 = Vec2::new(-2.0, 2.0);
+    let p1 = Vec2::new(3.5, 0.0);
 
-    sled.set_closest_to(pos, Rgb::new(1.0, 1.0, 0.0));
-    println!("dist based: {}", sled.get_furthest_from(pos).position());
-    println!("vert based: {}", sled.get_furthest().position());
+    let pos = p0.lerp(p1, t);
 
-    sled.set_furthest_from(pos, Rgb::new(0.0, 0.0, 1.0));
+    let angle = elapsed / 180.0 % std::f32::consts::TAU;
 
-    sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
+    sled.set_at_angle_from(angle, pos, Rgb::new(0.0, 1.0, 0.0));
+    sled.set_at_angle_from(angle + std::f32::consts::PI, pos, Rgb::new(0.0, 1.0, 0.0));
 
     Ok(())
 }

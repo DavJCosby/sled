@@ -1,5 +1,5 @@
 # A static reference point. At initialization, directions, distances, etc relative to this point are pre-calculated.
-center_point = [0.0, 1.5]
+center_point = [0.0, 1.0]
 density = 30.0
 
 [[line_segment]]
