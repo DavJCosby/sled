@@ -1,6 +1,4 @@
-use std::f32::consts::TAU;
-
-use sled::{Rgb, Sled, SledError};
+use sled::{color::Rgb, Sled, SledError};
 
 use bevy::{
     audio::AudioPlugin, diagnostic::DiagnosticsPlugin, gltf::GltfPlugin, log::LogPlugin,
@@ -38,40 +36,20 @@ fn main() -> Result<(), SledError> {
     Ok(())
 }
 
-const GREEN_RADIUS: f32 = 35.0;
-const GREEN_COUNT: usize = 64;
-
-const BLUE_RADIUS: f32 = 45.0;
-const BLUE_COUNT: usize = 96;
-
-const TRAIL_RADIUS: f32 = 18.0;
-
 fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
-    let inner_color = Rgb::new(0.6, 0.93, 0.762);
-    let outer_delta = Rgb::new(0.4, 0.51, 0.93);
+    sled.map(|led| led.color * 0.9);
 
-    let inner_time_scale = elapsed / GREEN_RADIUS;
-    let outer_time_scale = elapsed / BLUE_RADIUS;
+    let t = (elapsed / 35.0).cos() / 2.0 + 0.5;
 
-    for i in 0..GREEN_COUNT {
-        let angle = inner_time_scale + (TAU / GREEN_COUNT as f32) * i as f32;
-        sled.modulate_at_angle(angle, |led| led.color + inner_color)
-            .unwrap();
-    }
+    let p0 = Vec2::new(-2.0, 2.0);
+    let p1 = Vec2::new(3.5, 0.0);
 
-    for i in 0..BLUE_COUNT {
-        let angle = outer_time_scale + (TAU / BLUE_COUNT as f32) * i as f32 % TAU;
-        sled.modulate_at_angle(angle, |led| led.color + outer_delta)
-            .unwrap();
-    }
+    let pos = p0.lerp(p1, t);
 
-    let radar_time_scale = elapsed / TRAIL_RADIUS;
-    let angle = radar_time_scale % TAU;
-    sled.map(|led| {
-        let da = (led.angle() + angle) % TAU;
-        let fac = 1.0 - (da / (TAU)).powf(1.25);
-        led.color * fac
-    });
+    let angle = elapsed / 180.0 % std::f32::consts::TAU;
+
+    sled.set_at_angle_from(angle, pos, Rgb::new(0.0, 1.0, 0.0));
+    sled.set_at_angle_from(angle + std::f32::consts::PI, pos, Rgb::new(0.0, 1.0, 0.0));
 
     Ok(())
 }

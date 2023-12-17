@@ -1,13 +1,12 @@
-pub mod config;
-pub mod led;
+use crate::{
+    color,
+    color::{Rgb, Srgb},
+    config::{Config, LineSegment},
+    error::SledError,
+    led::Led,
+    Vec2,
+};
 
-use crate::color;
-use crate::color::{Rgb, Srgb};
-use crate::error::SledError;
-use config::{Config, LineSegment};
-use led::Led;
-
-use glam::Vec2;
 use std::ops::{Index, IndexMut};
 use std::{ops::Range, usize};
 
@@ -21,6 +20,7 @@ pub struct Sled {
     line_segment_endpoint_indices: Vec<(usize, usize)>,
     vertex_indices: Vec<usize>,
     index_of_closest: usize,
+    index_of_furthest: usize,
 }
 
 /// Construction, output, and basic sled info.
@@ -42,12 +42,19 @@ impl Sled {
             .unwrap()
             .index();
 
+        let index_of_furthest = leds
+            .iter()
+            .max_by(|l, r| l.distance().partial_cmp(&r.distance()).unwrap())
+            .unwrap()
+            .index();
+
         Ok(Sled {
             center_point: config.center_point,
             leds,
             num_leds,
             line_segments: config.line_segments,
             index_of_closest,
+            index_of_furthest,
             // utility lookup tables
             line_segment_endpoint_indices,
             vertex_indices,
@@ -103,19 +110,10 @@ impl Sled {
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
                 let segment = &line_segments[segment_index];
-                let alpha = i as f32 / (segment_size - 1) as f32;
-
+                let alpha = (i + 1) as f32 / *segment_size as f32;
                 let pos = segment.start.lerp(segment.end, alpha);
-                let dir = (pos - *center_point).normalize();
+                let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
 
-                let led = Led::new(
-                    default_color,
-                    pos,
-                    dir,
-                    leds.len(),
-                    segment_index,
-                    *center_point,
-                );
                 leds.push(led);
             }
         }
@@ -136,10 +134,17 @@ impl Sled {
     fn vertex_indices(config: &Config) -> Vec<usize> {
         let mut vertex_indices = vec![];
 
-        let mut last_end_point: Option<Vec2> = None;
+        let start = config.line_segments[0].start;
+        let end = config.line_segments[config.line_segments.len() - 1].end;
+
+        if start != end {
+            vertex_indices.push(0);
+        }
+
+        let mut last_end_point: Vec2 = start;
         let mut last_index = 0;
         for line in &config.line_segments {
-            if Some(line.start) != last_end_point {
+            if line.start != last_end_point {
                 vertex_indices.push(last_index);
             }
 
@@ -147,7 +152,7 @@ impl Sled {
             vertex_indices.push(last_index + num_leds - 1);
 
             last_index += num_leds;
-            last_end_point = Some(line.end);
+            last_end_point = line.end;
         }
 
         vertex_indices
@@ -439,7 +444,8 @@ impl Sled {
 
     pub fn set_vertices(&mut self, color: Rgb) {
         for i in &self.vertex_indices {
-            self.leds[*i].color = color;
+            let led = &mut self.leds[*i];
+            led.color = color;
         }
     }
 
@@ -480,10 +486,10 @@ impl Sled {
     /* direction setters/getters */
 
     pub fn get_at_dir(&self, dir: Vec2) -> Option<&Led> {
-        self.get_at_dir_from(self.center_point, dir)
+        self.get_at_dir_from(dir, self.center_point)
     }
 
-    pub fn get_at_dir_from(&self, pos: Vec2, dir: Vec2) -> Option<&Led> {
+    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Option<&Led> {
         let index_of_closest = self.raycast_for_index(pos, dir)?;
         Some(self.get(index_of_closest)?)
     }
@@ -515,10 +521,10 @@ impl Sled {
     }
 
     pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> Result<(), SledError> {
-        self.set_at_dir_from(self.center_point, dir, color)
+        self.set_at_dir_from(dir, self.center_point, color)
     }
 
-    pub fn set_at_dir_from(&mut self, pos: Vec2, dir: Vec2, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Rgb) -> Result<(), SledError> {
         match self.raycast_for_index(pos, dir) {
             Some(index) => {
                 self.leds[index].color = color;
@@ -537,9 +543,9 @@ impl Sled {
         self.get_at_dir(dir)
     }
 
-    pub fn get_at_angle_from(&self, center_point: Vec2, angle: f32) -> Option<&Led> {
+    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Option<&Led> {
         let dir = Vec2::from_angle(angle);
-        self.get_at_dir_from(center_point, dir)
+        self.get_at_dir_from(dir, center_point)
     }
 
     pub fn modulate_at_angle<F: Fn(&Led) -> Rgb>(
@@ -561,13 +567,13 @@ impl Sled {
     }
 
     pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
-        self.set_at_angle_from(self.center_point, angle, color)
+        self.set_at_angle_from(angle, self.center_point, color)
     }
 
     pub fn set_at_angle_from(
         &mut self,
-        pos: Vec2,
         angle: f32,
+        pos: Vec2,
         color: Rgb,
     ) -> Result<(), SledError> {
         let dir = Vec2::from_angle(angle);
@@ -626,6 +632,51 @@ impl Sled {
         self.leds[index_of_closest].color = color;
     }
 
+    /* furthest getters/setters */
+
+    pub fn get_index_of_furthest_from(&self, pos: Vec2) -> usize {
+        let (index_of_furthest, _dist) = self
+            .vertex_indices
+            .iter()
+            .map(|i| {
+                let vertex_pos = self.leds[*i].position();
+                (*i, pos.distance_squared(vertex_pos))
+            })
+            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap())
+            .unwrap();
+
+        index_of_furthest
+    }
+
+    pub fn get_furthest(&self) -> &Led {
+        &self.leds[self.index_of_furthest]
+    }
+
+    pub fn get_furthest_from(&self, pos: Vec2) -> &Led {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        &self.leds[index_of_furthest]
+    }
+
+    pub fn modulate_furthest<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
+        let led = &mut self.leds[self.index_of_furthest];
+        led.color = color_rule(led);
+    }
+
+    pub fn modulate_furthest_from<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        let led = &mut self.leds[index_of_furthest];
+        led.color = color_rule(led);
+    }
+
+    pub fn set_furthest(&mut self, color: Rgb) {
+        self.leds[self.index_of_furthest].color = color;
+    }
+
+    pub fn set_furthest_from(&mut self, pos: Vec2, color: Rgb) {
+        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        self.leds[index_of_furthest].color = color;
+    }
+
     /* at distance methods */
 
     fn indices_at_dist(&self, pos: Vec2, dist: f32) -> Vec<usize> {
@@ -641,10 +692,10 @@ impl Sled {
     }
 
     pub fn get_at_dist(&self, dist: f32) -> Vec<&Led> {
-        self.get_at_dist_from(self.center_point, dist)
+        self.get_at_dist_from(dist, self.center_point)
     }
 
-    pub fn get_at_dist_from(&self, pos: Vec2, dist: f32) -> Vec<&Led> {
+    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Vec<&Led> {
         let mut all_at_distance: Vec<&Led> = vec![];
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
@@ -662,13 +713,13 @@ impl Sled {
         dist: f32,
         color_rule: F,
     ) -> Result<(), SledError> {
-        self.modulate_at_dist_from(self.center_point, dist, color_rule)
+        self.modulate_at_dist_from(dist, self.center_point, color_rule)
     }
 
     pub fn modulate_at_dist_from<F: Fn(&Led) -> Rgb>(
         &mut self,
-        pos: Vec2,
         dist: f32,
+        pos: Vec2,
         color_rule: F,
     ) -> Result<(), SledError> {
         let indices: Vec<usize> = self.indices_at_dist(pos, dist);
@@ -688,10 +739,10 @@ impl Sled {
     }
 
     pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
-        self.set_at_dist_from(self.center_point, dist, color)
+        self.set_at_dist_from(dist, self.center_point, color)
     }
 
-    pub fn set_at_dist_from(&mut self, pos: Vec2, dist: f32, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) -> Result<(), SledError> {
         let indices: Vec<usize> = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
@@ -713,10 +764,10 @@ impl Sled {
     /* within distance methods */
 
     pub fn get_within_dist(&self, dist: f32) -> Vec<&Led> {
-        self.get_within_dist_from(self.center_point, dist)
+        self.get_within_dist_from(dist, self.center_point)
     }
 
-    pub fn get_within_dist_from(&self, pos: Vec2, dist: f32) -> Vec<&Led> {
+    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Vec<&Led> {
         let mut all_within_distance: Vec<&Led> = vec![];
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
@@ -753,8 +804,8 @@ impl Sled {
 
     pub fn modulate_within_dist_from<F: Fn(&Led) -> Rgb>(
         &mut self,
-        pos: Vec2,
         dist: f32,
+        pos: Vec2,
         color_rule: F,
     ) {
         let target_sq = dist.powi(2);
@@ -766,7 +817,7 @@ impl Sled {
         }
     }
 
-    pub fn set_within_dist_from(&mut self, pos: Vec2, dist: f32, color: Rgb) {
+    pub fn set_within_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) {
         let target_sq = dist.powi(2);
 
         for led in &mut self.leds {
@@ -935,6 +986,8 @@ impl CollectionOfLeds for Vec<&Led> {
         copy.retain(|led| filter(led));
         copy
     }
+
+    // regular get_closest should be possible to as each led already stores its distance.
 
     fn get_closest_to(&self, pos: Vec2) -> &Led {
         self.iter()
