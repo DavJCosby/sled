@@ -7,7 +7,10 @@ use crate::{
     Vec2,
 };
 
-use std::ops::{Index, IndexMut};
+use std::{
+    borrow::{Borrow, BorrowMut},
+    ops::{self, Deref, DerefMut, Index, IndexMut},
+};
 use std::{ops::Range, usize};
 
 #[allow(dead_code)]
@@ -950,101 +953,27 @@ impl Sled {
 }
 
 pub trait CollectionOfLeds {
-    // Some methods that might make sense:
-    // - get_closest_to(), get_furthest_from()
-    // - filter() for chaining
-    // - etc
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self;
+    fn retain(&mut self, f: impl FnMut(&Led) -> bool);
+    // probably us a hashset for or()
+    fn and(&mut self, other: Self) -> Self;
+    fn or(&mut self, other: Self) -> Self;
 
-    // Indices, ranges, and some others might not make sense.
+    fn get_closest(&self) -> &Led;
+    fn get_closest_to(&self, pos: Vec2) -> &Led;
 
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led>;
-    fn get_closest_to(&self, center_point: Vec2) -> &Led;
+    fn get_furthest(&self) -> &Led;
+    fn get_furthest_from(&self, pos: Vec2) -> &Led;
+
+    fn get_within_dist(&self) -> Self;
+    fn get_within_dist_from(&self, pos: Vec2) -> Self;
 }
 
 pub trait CollectionOfLedsMut {
-    // A lot of normal set methods probably don't make the most sense here. More likely use cases are:
-    // - set_all()
-    // - filter_mut() for chaining
-    // - for_each()
-    // - mapping methods
-    // - etc
-
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led>;
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self;
 
     fn set_all(&mut self, color: Rgb);
-
-    fn get_closest_to(&self, pos: Vec2) -> &Led;
-    fn get_closest_to_mut(&mut self, pos: Vec2) -> &mut Led;
     fn set_closest_to(&mut self, pos: Vec2, color: Rgb);
 
     fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb);
-}
-
-impl CollectionOfLeds for Vec<&Led> {
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
-        let mut copy = self.clone();
-        copy.retain(|led| filter(led));
-        copy
-    }
-
-    // regular get_closest should be possible to as each led already stores its distance.
-
-    fn get_closest_to(&self, pos: Vec2) -> &Led {
-        self.iter()
-            .min_by(|l, r| {
-                let d1 = l.position().distance_squared(pos);
-                let d2 = r.position().distance_squared(pos);
-                d1.partial_cmp(&d2).unwrap()
-            })
-            .unwrap()
-    }
-}
-
-impl CollectionOfLedsMut for Vec<&mut Led> {
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Vec<&Led> {
-        let mut copy: Vec<&Led> = self.iter().map(|led| &**led).collect();
-        copy.retain(|led| filter(led));
-        copy
-    }
-
-    fn get_closest_to(&self, pos: Vec2) -> &Led {
-        self.iter()
-            .min_by(|l, r| {
-                let d1 = l.position().distance_squared(pos);
-                let d2 = r.position().distance_squared(pos);
-                d1.partial_cmp(&d2).unwrap()
-            })
-            .unwrap()
-    }
-
-    fn get_closest_to_mut(&mut self, pos: Vec2) -> &mut Led {
-        self.iter_mut()
-            .min_by(|l, r| {
-                let d1 = l.position().distance_squared(pos);
-                let d2 = r.position().distance_squared(pos);
-                d1.partial_cmp(&d2).unwrap()
-            })
-            .unwrap()
-    }
-
-    fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
-        self.iter_mut()
-            .min_by(|l, r| {
-                let d1 = l.position().distance_squared(pos);
-                let d2 = r.position().distance_squared(pos);
-                d1.partial_cmp(&d2).unwrap()
-            })
-            .unwrap()
-            .color = color;
-    }
-
-    fn set_all(&mut self, color: Rgb) {
-        for led in self {
-            led.color = color;
-        }
-    }
-
-    fn map(&mut self, _led_to_color_map: impl Fn(&Led) -> Rgb) {
-        todo!()
-    }
 }
