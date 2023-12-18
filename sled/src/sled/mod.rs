@@ -1,0 +1,32 @@
+use crate::{config::LineSegment, led::Led, Vec2};
+
+#[allow(dead_code)]
+pub struct Sled {
+    center_point: Vec2,
+    leds: Vec<Led>,
+    num_leds: usize,
+    line_segments: Vec<LineSegment>,
+    // utility lookup tables
+    line_segment_endpoint_indices: Vec<(usize, usize)>,
+    vertex_indices: Vec<usize>,
+    index_of_closest: usize,
+    index_of_furthest: usize,
+}
+
+// goofy spacing to preserve order after auto-formatting.
+// Mostly just important for docs.
+
+mod meta;
+
+mod indexical;
+
+mod segmental;
+
+mod directional;
+
+mod positional;
+
+mod maps;
+
+mod filters;
+pub use filters::CollectionOfLeds;
