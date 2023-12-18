@@ -8,8 +8,8 @@ use crate::{
 };
 
 use std::{
-    borrow::{Borrow, BorrowMut},
-    ops::{self, Deref, DerefMut, Index, IndexMut},
+    collections::HashSet,
+    ops::{Index, IndexMut},
 };
 use std::{ops::Range, usize};
 
@@ -953,11 +953,11 @@ impl Sled {
 }
 
 pub trait CollectionOfLeds {
+    // syntax sugar for .iter().filter().collect()
     fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self;
-    fn retain(&mut self, f: impl FnMut(&Led) -> bool);
-    // probably us a hashset for or()
-    fn and(&mut self, other: Self) -> Self;
-    fn or(&mut self, other: Self) -> Self;
+
+    fn and(&mut self, other: &Self) -> Self;
+    fn or(&mut self, other: &Self) -> Self;
 
     fn get_closest(&self) -> &Led;
     fn get_closest_to(&self, pos: Vec2) -> &Led;
@@ -965,15 +965,172 @@ pub trait CollectionOfLeds {
     fn get_furthest(&self) -> &Led;
     fn get_furthest_from(&self, pos: Vec2) -> &Led;
 
-    fn get_within_dist(&self) -> Self;
-    fn get_within_dist_from(&self, pos: Vec2) -> Self;
+    fn get_within_dist(&self, dist: f32) -> Self;
+    fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self;
 }
 
-pub trait CollectionOfLedsMut {
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self;
+impl CollectionOfLeds for Vec<&Led> {
+    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
+        self.iter()
+            .filter_map(|led| filter(led).then_some(*led))
+            .collect()
+    }
 
-    fn set_all(&mut self, color: Rgb);
-    fn set_closest_to(&mut self, pos: Vec2, color: Rgb);
+    fn and(&mut self, other: &Self) -> Self {
+        // definitely can be optimized
+        let mut copy = self.clone();
+        copy.retain(|led| other.contains(led));
+        copy
+    }
 
-    fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb);
+    fn or(&mut self, other: &Self) -> Self {
+        let mut set = HashSet::new();
+        self.iter().for_each(|led| {
+            set.insert(*led);
+        });
+
+        other.iter().for_each(|led| {
+            set.insert(*led);
+        });
+
+        set.iter().map(|led| *led).collect()
+    }
+
+    fn get_closest(&self) -> &Led {
+        self.iter()
+            .min_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
+            .unwrap()
+    }
+
+    fn get_closest_to(&self, pos: Vec2) -> &Led {
+        self.iter()
+            .min_by(|a, b| {
+                let da = a.position().distance_squared(pos);
+                let db = b.position().distance_squared(pos);
+                da.partial_cmp(&db).unwrap()
+            })
+            .unwrap()
+    }
+
+    fn get_furthest(&self) -> &Led {
+        self.iter()
+            .max_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
+            .unwrap()
+    }
+
+    fn get_furthest_from(&self, pos: Vec2) -> &Led {
+        self.iter()
+            .max_by(|a, b| {
+                let da = a.position().distance_squared(pos);
+                let db = b.position().distance_squared(pos);
+                da.partial_cmp(&db).unwrap()
+            })
+            .unwrap()
+    }
+
+    fn get_within_dist(&self, dist: f32) -> Self {
+        self.filter(|led| led.distance() < dist)
+    }
+
+    fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self {
+        let dist_sq = dist.powi(2);
+        self.filter(|led| led.position().distance_squared(pos) < dist_sq)
+    }
 }
+
+// pub trait CollectionOfLedsMut {
+//     /// consumes other and modifies itself
+//     fn and(&mut self, other: Self);
+//     /// consumes other and modifies itself
+//     fn or(&mut self, other: Self);
+
+//     fn get_closest(&self) -> &Led;
+//     fn get_closest_to(&self, pos: Vec2) -> &Led;
+//     fn set_closest(&mut self, color: Rgb);
+//     fn set_closest_to(&mut self, pos: Vec2, color: Rgb);
+//     fn modulate_closest(&mut self, color_rule: )
+
+//     fn get_furthest(&self) -> &Led;
+//     fn get_furthest_from(&self, pos: Vec2) -> &Led;
+
+//     fn get_within_dist(&self, dist: f32) -> Self;
+//     fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self;
+
+//     fn set_all(&mut self, color: Rgb);
+//     fn set_closest_to(&mut self, pos: Vec2, color: Rgb);
+
+//     fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb);
+// }
+
+// impl CollectionOfLedsMut for Vec<&mut Led> {
+//     fn and(&mut self, other: Self) {
+//         self.retain(|led| other.contains(led));
+//     }
+
+//     fn or(&mut self, other: Self) {
+//         for led in other {
+//             if !self.contains(&led) {
+//                 self.push(led);
+//             }
+//         }
+//     }
+
+//     fn get_closest(&self) -> &Led {
+//         self.iter()
+//             .min_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
+//             .unwrap()
+//     }
+
+//     fn get_closest_to(&self, pos: Vec2) -> &Led {
+//         self.iter()
+//             .min_by(|a, b| {
+//                 let da = a.position().distance_squared(pos);
+//                 let db = b.position().distance_squared(pos);
+//                 da.partial_cmp(&db).unwrap()
+//             })
+//             .unwrap()
+//     }
+
+//     fn get_furthest(&self) -> &Led {
+//         self.iter()
+//             .max_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
+//             .unwrap()
+//     }
+
+//     fn get_furthest_from(&self, pos: Vec2) -> &Led {
+//         self.iter()
+//             .max_by(|a, b| {
+//                 let da = a.position().distance_squared(pos);
+//                 let db = b.position().distance_squared(pos);
+//                 da.partial_cmp(&db).unwrap()
+//             })
+//             .unwrap()
+//     }
+
+//     fn get_within_dist(&self, dist: f32) -> Self {
+//         self.iter()
+//             .filter_map(|led| (led.distance() < dist).then_some(*led))
+//             .collect()
+//     }
+
+//     fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self {
+//         let dist_sq = dist.powi(2);
+//         self.iter()
+//             .filter_map(|led| (led.position().distance_squared(pos) < dist_sq).then_some(*led))
+//             .collect()
+//     }
+
+//     fn set_all(&mut self, color: Rgb) {
+//         for led in self {
+//             led.color = color;
+//         }
+//     }
+
+//     fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
+//         todo!()
+//     }
+
+//     fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
+//         todo!()
+//     }
+// }
