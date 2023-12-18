@@ -91,6 +91,7 @@ pub use error::SledError;
 pub use glam::Vec2;
 pub use led::Led;
 pub use sled::Sled;
+pub use sled::CollectionOfLeds;
 
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
 pub mod color {

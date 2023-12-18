@@ -76,3 +76,17 @@ impl Led {
         self.segment
     }
 }
+
+impl PartialEq for Led {
+    fn eq(&self, other: &Self) -> bool {
+        self.index() == other.index()
+    }
+}
+
+impl Eq for Led {}
+
+impl std::hash::Hash for Led {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.index.hash(state);
+    }
+}
