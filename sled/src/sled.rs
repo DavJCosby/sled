@@ -837,41 +837,41 @@ impl Sled {
         return self.leds.iter().filter(|led| filter(led)).collect();
     }
 
-    pub fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led> {
-        return self.leds.iter_mut().filter(|led| filter(led)).collect();
-    }
+    // pub fn filter_mut(&mut self, filter: impl Fn(&Led) -> bool) -> Vec<&mut Led> {
+    //     return self.leds.iter_mut().filter(|led| filter(led)).collect();
+    // }
 
     pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
         self.filter(|led| angle_filter(led.angle()))
     }
 
-    pub fn filter_by_angle_mut(&mut self, angle_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
-        self.filter_mut(|led| angle_filter(led.angle()))
-    }
+    // pub fn filter_by_angle_mut(&mut self, angle_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
+    //     self.filter_mut(|led| angle_filter(led.angle()))
+    // }
 
     pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Vec<&Led> {
         self.filter(|led| dir_filter(led.direction()))
     }
 
-    pub fn filter_by_dir_mut(&mut self, dir_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
-        self.filter_mut(|led| dir_filter(led.direction()))
-    }
+    // pub fn filter_by_dir_mut(&mut self, dir_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
+    //     self.filter_mut(|led| dir_filter(led.direction()))
+    // }
 
     pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Vec<&Led> {
         self.filter(|led| pos_filter(led.position()))
     }
 
-    pub fn filter_by_pos_mut(&mut self, pos_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
-        self.filter_mut(|led| pos_filter(led.position()))
-    }
+    // pub fn filter_by_pos_mut(&mut self, pos_filter: impl Fn(Vec2) -> bool) -> Vec<&mut Led> {
+    //     self.filter_mut(|led| pos_filter(led.position()))
+    // }
 
     pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
         self.filter(|led| dist_filter(led.distance()))
     }
 
-    pub fn filter_by_dist_mut(&mut self, dist_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
-        self.filter_mut(|led| dist_filter(led.distance()))
-    }
+    // pub fn filter_by_dist_mut(&mut self, dist_filter: impl Fn(f32) -> bool) -> Vec<&mut Led> {
+    //     self.filter_mut(|led| dist_filter(led.distance()))
+    // }
 
     pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Vec<&Led> {
         self.filter(|led| {
@@ -880,16 +880,16 @@ impl Sled {
         })
     }
 
-    pub fn filter_by_dist_from_mut(
-        &mut self,
-        pos: Vec2,
-        dist_filter: impl Fn(f32) -> bool,
-    ) -> Vec<&mut Led> {
-        self.filter_mut(|led| {
-            let dist = pos.distance(led.position());
-            dist_filter(dist)
-        })
-    }
+    // pub fn filter_by_dist_from_mut(
+    //     &mut self,
+    //     pos: Vec2,
+    //     dist_filter: impl Fn(f32) -> bool,
+    // ) -> Vec<&mut Led> {
+    //     self.filter_mut(|led| {
+    //         let dist = pos.distance(led.position());
+    //         dist_filter(dist)
+    //     })
+    // }
 }
 
 /// Maps
