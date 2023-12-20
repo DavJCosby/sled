@@ -1,11 +1,17 @@
-use crate::{color::Rgb, error::SledError, led::Led, sled::Sled};
-use std::ops::Range;
+use crate::{
+    color::Rgb,
+    error::SledError,
+    led::Led,
+    sled::{Set, Sled},
+};
+use std::{collections::HashSet, ops::Range};
 
 /// Segment-based read and write methods.
 impl Sled {
-    pub fn get_segment(&self, segment_index: usize) -> Option<&[Led]> {
+    pub fn get_segment(&self, segment_index: usize) -> Option<Set> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
-        Some(&self.leds[start..end])
+        let led_range = &self.leds[start..end];
+        Some(led_range.into())
     }
 
     pub fn modulate_segment<F: Fn(&Led) -> Rgb>(
@@ -39,13 +45,14 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_segments(&self, range: Range<usize>) -> Option<&[Led]> {
+    pub fn get_segments(&self, range: Range<usize>) -> Option<Set> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             None
         } else {
             let (start, _) = *self.line_segment_endpoint_indices.get(range.start)?;
             let (_, end) = *self.line_segment_endpoint_indices.get(range.end)?;
-            Some(&self.leds[start..end])
+            let led_range = &self.leds[start..end];
+            Some(led_range.into())
         }
     }
 
@@ -147,8 +154,9 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_vertices(&self) -> Vec<&Led> {
-        self.vertex_indices.iter().map(|i| &self.leds[*i]).collect()
+    pub fn get_vertices(&self) -> Set {
+        let hs: HashSet<&Led> = self.vertex_indices.iter().map(|i| &self.leds[*i]).collect();
+        hs.into()
     }
 
     pub fn modulate_vertices<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {

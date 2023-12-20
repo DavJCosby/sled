@@ -48,8 +48,8 @@ fn step(sled: &mut Sled, elapsed: f32) -> Result<(), SledError> {
 
     let angle = elapsed / 180.0 % std::f32::consts::TAU;
 
-    sled.set_at_angle_from(angle, pos, Rgb::new(0.0, 1.0, 0.0));
-    sled.set_at_angle_from(angle + std::f32::consts::PI, pos, Rgb::new(0.0, 1.0, 0.0));
+    sled.set_at_angle_from(angle, pos, Rgb::new(0.0, 1.0, 0.0))?;
+    sled.set_at_angle_from(angle + std::f32::consts::PI, pos, Rgb::new(0.0, 1.0, 0.0))?;
 
     Ok(())
 }

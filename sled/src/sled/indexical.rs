@@ -1,6 +1,11 @@
-use std::ops::{Index, IndexMut, Range};
+use std::ops::Range;
 
-use crate::{color::Rgb, error::SledError, led::Led, sled::Sled};
+use crate::{
+    color::Rgb,
+    error::SledError,
+    led::Led,
+    sled::{Set, Sled},
+};
 
 /// Index-based read and write methods.
 impl Sled {
@@ -48,39 +53,12 @@ impl Sled {
     }
 }
 
-impl Index<usize> for Sled {
-    type Output = Led;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.leds[index]
-    }
-}
-
-impl IndexMut<usize> for Sled {
-    fn index_mut(&mut self, index: usize) -> &mut Led {
-        &mut self.leds[index]
-    }
-}
-
-impl Index<Range<usize>> for Sled {
-    type Output = [Led];
-
-    fn index(&self, index_range: Range<usize>) -> &[Led] {
-        &self.leds[index_range]
-    }
-}
-
-impl IndexMut<Range<usize>> for Sled {
-    fn index_mut(&mut self, index_range: Range<usize>) -> &mut [Led] {
-        &mut self.leds[index_range]
-    }
-}
-
 /// Index range-based read and write methods
 impl Sled {
-    pub fn get_range(&self, index_range: Range<usize>) -> Result<&[Led], SledError> {
+    pub fn get_range(&self, index_range: Range<usize>) -> Result<Set, SledError> {
         if index_range.end < self.num_leds {
-            Ok(&self.leds[index_range])
+            let led_range = &self.leds[index_range];
+            Ok(led_range.into())
         } else {
             Err(SledError {
                 message: format!("Index range extends beyond size of system."),

@@ -1,4 +1,11 @@
-use crate::{color::Rgb, error::SledError, led::Led, sled::Sled};
+use std::collections::HashSet;
+
+use crate::{
+    color::Rgb,
+    error::SledError,
+    led::Led,
+    sled::{Set, Sled},
+};
 use glam::Vec2;
 
 /// position-based read and write methods
@@ -111,21 +118,21 @@ impl Sled {
         all_at_distance
     }
 
-    pub fn get_at_dist(&self, dist: f32) -> Vec<&Led> {
+    pub fn get_at_dist(&self, dist: f32) -> Set {
         self.get_at_dist_from(dist, self.center_point)
     }
 
-    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Vec<&Led> {
-        let mut all_at_distance: Vec<&Led> = vec![];
+    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Set {
+        let mut all_at_distance = HashSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
                 let index = self.alpha_to_index(alpha, segment_index);
-                all_at_distance.push(&self.leds[index]);
+                all_at_distance.insert(&self.leds[index]);
             }
         }
 
-        all_at_distance
+        all_at_distance.into()
     }
 
     pub fn modulate_at_dist<F: Fn(&Led) -> Rgb>(
@@ -183,12 +190,12 @@ impl Sled {
 
     /* within distance methods */
 
-    pub fn get_within_dist(&self, dist: f32) -> Vec<&Led> {
+    pub fn get_within_dist(&self, dist: f32) -> Set {
         self.get_within_dist_from(dist, self.center_point)
     }
 
-    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Vec<&Led> {
-        let mut all_within_distance: Vec<&Led> = vec![];
+    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Set {
+        let mut all_within_distance = HashSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             let intersections = segment.intersects_solid_circle(pos, dist);
@@ -203,7 +210,7 @@ impl Sled {
             }
         }
 
-        all_within_distance
+        all_within_distance.into()
     }
 
     pub fn modulate_within_dist<F: Fn(&Led) -> Rgb>(&mut self, dist: f32, color_rule: F) {

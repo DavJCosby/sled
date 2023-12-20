@@ -29,4 +29,4 @@ mod positional;
 mod maps;
 
 mod filters;
-pub use filters::CollectionOfLeds;
+pub use filters::Set;
