@@ -1,5 +1,4 @@
 use sled::{color::Rgb, Sled, SledError};
-
 use bevy::{
     audio::AudioPlugin, diagnostic::DiagnosticsPlugin, gltf::GltfPlugin, log::LogPlugin,
     prelude::*, scene::ScenePlugin, sprite::MaterialMesh2dBundle, text::TextPlugin, ui::UiPlugin,

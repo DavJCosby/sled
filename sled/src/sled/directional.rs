@@ -2,14 +2,15 @@ use std::collections::HashSet;
 
 use crate::{color::Rgb, error::SledError, led::Led, Set, Sled};
 use glam::Vec2;
+use smallvec::SmallVec;
 
 /// directional read and write methods
 impl Sled {
-    fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> Vec<usize> {
+    fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[usize; 4]> {
         let dist = 100_000.0;
         let end = start + dir * dist;
 
-        let mut intersections: Vec<usize> = vec![];
+        let mut intersections = smallvec::smallvec![];
         for (seg_index, segment) in self.line_segments.iter().enumerate() {
             if let Some(t) = segment.intersects_line(start, end) {
                 let index = self.alpha_to_index(t, seg_index);

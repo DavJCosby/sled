@@ -1,6 +1,7 @@
 use crate::error::SledError;
 use glam::Vec2;
 use serde::{Deserialize, Deserializer, Serialize};
+use smallvec::{smallvec, SmallVec};
 use std::fs;
 
 static mut DEFAULT_DENSITY: f32 = 0.0;
@@ -56,13 +57,13 @@ impl LineSegment {
         }
     }
 
-    pub fn intersects_circle(&self, circle_center: Vec2, circle_radius: f32) -> Vec<f32> {
+    pub fn intersects_circle(&self, circle_center: Vec2, circle_radius: f32) -> SmallVec<[f32; 2]> {
         let v1 = self.end - self.start;
         let v2 = self.start - circle_center;
 
         let b = -2.0 * v1.dot(v2);
         let c = 2.0 * v1.length_squared();
-        let mut return_values: Vec<f32> = vec![];
+        let mut return_values = smallvec::smallvec![];
 
         let mut d = b * b - 2.0 * c * (v2.length_squared() - circle_radius.powi(2));
         if d < 0.0 {
@@ -81,13 +82,17 @@ impl LineSegment {
             return_values.push(t2);
         }
 
-        return return_values;
+        return_values
     }
 
     // similar to intersects circle, but includes anywhere
     // the line is inside the circle, rather than passes through it.
-    pub fn intersects_solid_circle(&self, circle_center: Vec2, circle_radius: f32) -> Vec<f32> {
-        let mut return_values: Vec<f32> = vec![];
+    pub fn intersects_solid_circle(
+        &self,
+        circle_center: Vec2,
+        circle_radius: f32,
+    ) -> SmallVec<[f32; 2]> {
+        let mut return_values = smallvec![];
         let radius_sq = circle_radius.powi(2);
         let v1 = self.end - self.start;
         // LineSegment should probably just have its length stored
@@ -98,7 +103,7 @@ impl LineSegment {
             if self.start.distance_squared(circle_center) <= radius_sq
                 && self.end.distance_squared(circle_center) <= radius_sq
             {
-                return vec![0.0, 1.0];
+                return smallvec![0.0, 1.0];
             }
         }
 
@@ -118,7 +123,7 @@ impl LineSegment {
 
         return_values.push(alpha1);
         return_values.push(alpha2);
-        return return_values;
+        return_values
     }
 
     pub fn closest_to_point(&self, point: Vec2) -> (Vec2, f32) {
