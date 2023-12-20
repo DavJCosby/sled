@@ -22,6 +22,14 @@ impl<'f> From<HashSet<&'f Led>> for Set<'f> {
 
 #[allow(dead_code)]
 impl<'f> Set<'f> {
+    pub fn len(&self) -> usize {
+        return self.leds.len();
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.leds.is_empty();
+    }
+
     pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
         let filtered: HashSet<&'f Led> = self
             .leds
