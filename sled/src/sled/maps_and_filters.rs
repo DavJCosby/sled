@@ -1,4 +1,10 @@
-use crate::{color::Rgb, led::Led, sled::Sled};
+use std::collections::HashSet;
+
+use crate::{
+    color::Rgb,
+    led::Led,
+    sled::{Set, Sled},
+};
 use glam::Vec2;
 
 /// Maps
@@ -58,5 +64,36 @@ impl Sled {
             let dist = pos.distance(led.position());
             dist_to_color_map(dist)
         });
+    }
+}
+
+/// Filters
+impl Sled {
+    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Set {
+        let filtered: HashSet<&Led> = self.leds.iter().filter(|led| filter(led)).collect();
+        return filtered.into();
+    }
+
+    pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Set {
+        self.filter(|led| angle_filter(led.angle()))
+    }
+
+    pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Set {
+        self.filter(|led| dir_filter(led.direction()))
+    }
+
+    pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Set {
+        self.filter(|led| pos_filter(led.position()))
+    }
+
+    pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Set {
+        self.filter(|led| dist_filter(led.distance()))
+    }
+
+    pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Set {
+        self.filter(|led| {
+            let dist = pos.distance(led.position());
+            dist_filter(dist)
+        })
     }
 }
