@@ -49,7 +49,7 @@ impl LineSegment {
         let s = (-s1.y * start_dif.x + s1.x * start_dif.y) * inv_denom;
         let t = (s2.x * start_dif.y - s2.y * start_dif.x) * inv_denom;
 
-        if 0.0 <= s && s <= 1.0 && 0.0 <= t && t <= 1.0 {
+        if (0.0..=1.0).contains(&s) && (0.0..=1.0).contains(&t) {
             // Some((self.start + s1 * t, t))
             Some(t)
         } else {
