@@ -1,6 +1,6 @@
 use std::collections::{hash_set, HashSet};
 
-use crate::{led::Led, sled::Sled};
+use crate::{color::Rgb, led::Led, sled::Sled};
 use glam::Vec2;
 
 pub struct Set<'f> {
@@ -22,19 +22,7 @@ impl<'f> From<HashSet<&'f Led>> for Set<'f> {
 
 #[allow(dead_code)]
 impl<'f> Set<'f> {
-    pub fn from_vec(leds: Vec<&'f Led>) -> Self {
-        let mut set = HashSet::new();
-        for led in leds {
-            set.insert(led);
-        }
-        Set { leds: set }
-    }
-
-    pub fn from_hashset(leds: HashSet<&'f Led>) -> Self {
-        Set { leds }
-    }
-
-    fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
+    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
         let filtered: HashSet<&'f Led> = self
             .leds
             .iter()
@@ -44,7 +32,7 @@ impl<'f> Set<'f> {
         Set { leds: filtered }
     }
 
-    fn and(&self, other: &Self) -> Self {
+    pub fn and(&self, other: &Self) -> Self {
         let mut filtered = self.leds.clone();
 
         for led in &self.leds {
@@ -56,7 +44,7 @@ impl<'f> Set<'f> {
         Set { leds: filtered }
     }
 
-    fn or(&self, other: &Self) -> Self {
+    pub fn or(&self, other: &Self) -> Self {
         let mut extended = self.leds.clone();
 
         for led in &other.leds {
@@ -66,13 +54,14 @@ impl<'f> Set<'f> {
         Set { leds: extended }
     }
 
-    fn get_closest(&self) -> &Led {
+    pub fn get_closest(&self) -> &Led {
         self.leds
             .iter()
             .min_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
             .unwrap()
     }
-    fn get_closest_to(&self, pos: Vec2) -> &Led {
+
+    pub fn get_closest_to(&self, pos: Vec2) -> &Led {
         self.leds
             .iter()
             .min_by(|a, b| {
@@ -83,13 +72,14 @@ impl<'f> Set<'f> {
             .unwrap()
     }
 
-    fn get_furthest(&self) -> &Led {
+    pub fn get_furthest(&self) -> &Led {
         self.leds
             .iter()
             .max_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
             .unwrap()
     }
-    fn get_furthest_from(&self, pos: Vec2) -> &Led {
+
+    pub fn get_furthest_from(&self, pos: Vec2) -> &Led {
         self.leds
             .iter()
             .max_by(|a, b| {
@@ -100,51 +90,45 @@ impl<'f> Set<'f> {
             .unwrap()
     }
 
-    fn get_within_dist(&self, dist: f32) -> Self {
+    pub fn get_within_dist(&self, dist: f32) -> Self {
         self.filter(|led| led.distance() < dist)
     }
-    fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self {
+
+    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self {
         let dist_sq = dist.powi(2);
         self.filter(|led| led.position().distance_squared(pos) < dist_sq)
     }
 }
 
-/// Filters
-impl Sled {
-    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Set {
-        let filtered: HashSet<&Led> = self.leds.iter().filter(|led| filter(led)).collect();
-        return filtered.into();
-    }
+impl<'f> IntoIterator for Set<'f> {
+    type Item = &'f Led;
+    type IntoIter = hash_set::IntoIter<&'f Led>;
 
-    pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Set {
-        self.filter(|led| angle_filter(led.angle()))
-    }
-
-    pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Set {
-        self.filter(|led| dir_filter(led.direction()))
-    }
-
-    pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Set {
-        self.filter(|led| pos_filter(led.position()))
-    }
-
-    pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Set {
-        self.filter(|led| dist_filter(led.distance()))
-    }
-
-    pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Set {
-        self.filter(|led| {
-            let dist = pos.distance(led.position());
-            dist_filter(dist)
-        })
+    fn into_iter(self) -> Self::IntoIter {
+        self.leds.into_iter()
     }
 }
 
-impl<'f> IntoIterator for Set<'f> {
+impl<'s, 'f> IntoIterator for &'s Set<'f> {
     type Item = &'f Led;
     type IntoIter = hash_set::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.leds.into_iter()
+        // this doesn't seem right; revisit
+        self.leds.clone().into_iter()
+    }
+}
+
+impl Sled {
+    pub fn set_leds_in_set(&mut self, set: &Set, color: Rgb) {
+        for led in set {
+            self.leds[led.index()].color = color;
+        }
+    }
+
+    pub fn modulate_leds_in_set<F: Fn(&Led) -> Rgb>(&mut self, set: &Set, color_rule: F) {
+        for led in set {
+            self.leds[led.index()].color = color_rule(led)
+        }
     }
 }

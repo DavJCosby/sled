@@ -26,7 +26,7 @@ mod directional;
 
 mod positional;
 
-mod maps;
+mod maps_and_filters;
 
-mod filters;
-pub use filters::Set;
+mod sets;
+pub use sets::Set;
