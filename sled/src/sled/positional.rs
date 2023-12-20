@@ -7,6 +7,7 @@ use crate::{
     sled::{Set, Sled},
 };
 use glam::Vec2;
+use smallvec::{smallvec, SmallVec};
 
 /// position-based read and write methods
 impl Sled {
@@ -106,8 +107,8 @@ impl Sled {
 
     /* at distance methods */
 
-    fn indices_at_dist(&self, pos: Vec2, dist: f32) -> Vec<usize> {
-        let mut all_at_distance: Vec<usize> = vec![];
+    fn indices_at_dist(&self, pos: Vec2, dist: f32) -> SmallVec<[usize; 8]> {
+        let mut all_at_distance = smallvec![];
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
                 let index = self.alpha_to_index(alpha, segment_index);
@@ -149,7 +150,7 @@ impl Sled {
         pos: Vec2,
         color_rule: F,
     ) -> Result<(), SledError> {
-        let indices: Vec<usize> = self.indices_at_dist(pos, dist);
+        let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
             return Err(SledError {
@@ -170,7 +171,7 @@ impl Sled {
     }
 
     pub fn set_at_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) -> Result<(), SledError> {
-        let indices: Vec<usize> = self.indices_at_dist(pos, dist);
+        let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
             return Err(SledError {

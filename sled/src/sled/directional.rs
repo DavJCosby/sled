@@ -1,33 +1,39 @@
-use crate::{color::Rgb, error::SledError, led::Led, sled::Sled};
+use std::collections::HashSet;
+
+use crate::{color::Rgb, error::SledError, led::Led, Set, Sled};
 use glam::Vec2;
+use smallvec::SmallVec;
 
 /// directional read and write methods
 impl Sled {
-    fn raycast_for_index(&self, start: Vec2, dir: Vec2) -> Option<usize> {
+    fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[usize; 4]> {
         let dist = 100_000.0;
         let end = start + dir * dist;
 
-        let mut intersection: Option<(f32, usize)> = None;
-        for (index, segment) in self.line_segments.iter().enumerate() {
+        let mut intersections = smallvec::smallvec![];
+        for (seg_index, segment) in self.line_segments.iter().enumerate() {
             if let Some(t) = segment.intersects_line(start, end) {
-                intersection = Some((t, index));
-                break;
+                let index = self.alpha_to_index(t, seg_index);
+                intersections.push(index);
             }
         }
 
-        let (alpha, segment_index) = intersection?;
-        return Some(self.alpha_to_index(alpha, segment_index));
+        intersections
     }
 
     /* direction setters/getters */
 
-    pub fn get_at_dir(&self, dir: Vec2) -> Option<&Led> {
+    pub fn get_at_dir(&self, dir: Vec2) -> Set {
         self.get_at_dir_from(dir, self.center_point)
     }
 
-    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Option<&Led> {
-        let index_of_closest = self.raycast_for_index(pos, dir)?;
-        Some(self.get(index_of_closest)?)
+    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Set {
+        let intersecting_indices = self.raycast_for_indices(pos, dir);
+        intersecting_indices
+            .iter()
+            .map(|i| &self.leds[*i])
+            .collect::<HashSet<&Led>>()
+            .into()
     }
 
     pub fn modulate_at_dir<F: Fn(&Led) -> Rgb>(
@@ -44,16 +50,19 @@ impl Sled {
         pos: Vec2,
         color_rule: F,
     ) -> Result<(), SledError> {
-        match self.raycast_for_index(pos, dir) {
-            Some(index) => {
-                let led = &mut self.leds[index];
-                led.color = color_rule(&led);
-                Ok(())
-            }
-            None => Err(SledError {
+        let intersecting_indices = self.raycast_for_indices(pos, dir);
+
+        if intersecting_indices.is_empty() {
+            return Err(SledError {
                 message: format!("No LED in directon: {} from {}", dir, pos),
-            }),
+            });
         }
+
+        for index in intersecting_indices {
+            let led = &mut self.leds[index];
+            led.color = color_rule(&led);
+        }
+        Ok(())
     }
 
     pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> Result<(), SledError> {
@@ -61,25 +70,28 @@ impl Sled {
     }
 
     pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Rgb) -> Result<(), SledError> {
-        match self.raycast_for_index(pos, dir) {
-            Some(index) => {
-                self.leds[index].color = color;
-                Ok(())
-            }
-            None => Err(SledError {
+        let intersecting_indices = self.raycast_for_indices(pos, dir);
+
+        if intersecting_indices.is_empty() {
+            return Err(SledError {
                 message: format!("No LED in directon: {} from {}", dir, pos),
-            }),
+            });
         }
+
+        for index in intersecting_indices {
+            self.leds[index].color = color;
+        }
+        Ok(())
     }
 
     /* angle setters/getters */
 
-    pub fn get_at_angle(&self, angle: f32) -> Option<&Led> {
+    pub fn get_at_angle(&self, angle: f32) -> Set {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir(dir)
     }
 
-    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Option<&Led> {
+    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Set {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir_from(dir, center_point)
     }
