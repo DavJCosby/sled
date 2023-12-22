@@ -21,6 +21,12 @@ pub struct Driver {
     last_update: Instant,
 }
 
+impl Default for Driver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Driver {
     pub fn new() -> Self {
         Driver {
@@ -52,7 +58,7 @@ impl Driver {
 
         self.sled = Some(sled);
         self.startup = Instant::now();
-        self.last_update = self.startup.clone();
+        self.last_update = self.startup;
     }
 
     pub fn update(&mut self) {

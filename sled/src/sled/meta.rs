@@ -85,8 +85,8 @@ impl Sled {
     }
 
     fn build_led_list(
-        leds_per_segment: &Vec<usize>,
-        line_segments: &Vec<LineSegment>,
+        leds_per_segment: &[usize],
+        line_segments: &[LineSegment],
         center_point: &Vec2,
     ) -> Vec<Led> {
         let mut leds = vec![];
@@ -148,7 +148,7 @@ impl Sled {
         let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
         let leds_in_segment = segment.num_leds() as f32;
 
-        let target = startpoint_index + (segment_alpha * leds_in_segment).floor() as usize;
-        target
+        
+        startpoint_index + (segment_alpha * leds_in_segment).floor() as usize
     }
 }

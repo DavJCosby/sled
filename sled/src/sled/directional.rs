@@ -60,7 +60,7 @@ impl Sled {
 
         for index in intersecting_indices {
             let led = &mut self.leds[index];
-            led.color = color_rule(&led);
+            led.color = color_rule(led);
         }
         Ok(())
     }

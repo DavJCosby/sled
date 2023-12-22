@@ -26,7 +26,7 @@ pub struct LineSegment {
 
 impl LineSegment {
     pub fn num_leds(&self) -> usize {
-        return (self.length() * self.density).round() as usize;
+        (self.length() * self.density).round() as usize
     }
 
     pub fn length(&self) -> f32 {
@@ -99,12 +99,8 @@ impl LineSegment {
         let v1_lensq = v1.length_squared();
 
         // if fully enclosed, we can skip some steps
-        if v1_lensq <= radius_sq {
-            if self.start.distance_squared(circle_center) <= radius_sq
-                && self.end.distance_squared(circle_center) <= radius_sq
-            {
-                return smallvec![0.0, 1.0];
-            }
+        if v1_lensq <= radius_sq && self.start.distance_squared(circle_center) <= radius_sq && self.end.distance_squared(circle_center) <= radius_sq {
+            return smallvec![0.0, 1.0];
         }
 
         let v2 = self.start - circle_center;
@@ -155,6 +151,6 @@ impl Config {
     }
 
     fn get_default_density() -> f32 {
-        return unsafe { DEFAULT_DENSITY };
+        unsafe { DEFAULT_DENSITY }
     }
 }
