@@ -63,9 +63,7 @@ impl Sled {
     ) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return Err(SledError {
-                message: format!(
-                    "Segment index range extends beyond the number of segments in the system."
-                ),
+                message: "Segment index range extends beyond the number of segments in the system.".to_string(),
             });
         }
 
@@ -80,9 +78,7 @@ impl Sled {
     pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return Err(SledError {
-                message: format!(
-                    "Segment index range extends beyond the number of segments in the system."
-                ),
+                message: "Segment index range extends beyond the number of segments in the system.".to_string(),
             });
         }
 
@@ -139,7 +135,7 @@ impl Sled {
         }
 
         let led = &mut self.leds[vertex_index];
-        led.color = color_rule(&led);
+        led.color = color_rule(led);
         Ok(())
     }
 
@@ -162,7 +158,7 @@ impl Sled {
     pub fn modulate_vertices<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
-            led.color = color_rule(&led);
+            led.color = color_rule(led);
         }
     }
 

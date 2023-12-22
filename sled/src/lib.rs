@@ -82,6 +82,7 @@
 //! > Replace the u8 with f32 if you need a 0.0 - 1.0 scale (32 bits/channel).*
 
 pub mod color;
+pub mod driver;
 mod config;
 mod error;
 mod led;

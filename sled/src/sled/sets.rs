@@ -10,24 +10,24 @@ pub struct Set<'f> {
 impl<'f> From<&'f [Led]> for Set<'f> {
     fn from(value: &'f [Led]) -> Self {
         let hs = HashSet::from_iter(value);
-        return Set { leds: hs };
+        Set { leds: hs }
     }
 }
 
 impl<'f> From<HashSet<&'f Led>> for Set<'f> {
     fn from(value: HashSet<&'f Led>) -> Self {
-        return Set { leds: value };
+        Set { leds: value }
     }
 }
 
 #[allow(dead_code)]
 impl<'f> Set<'f> {
     pub fn len(&self) -> usize {
-        return self.leds.len();
+        self.leds.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        return self.leds.is_empty();
+        self.leds.is_empty()
     }
 
     pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
