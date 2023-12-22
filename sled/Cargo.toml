@@ -3,14 +3,18 @@ name = "sled"
 version = "0.2.0"
 edition = "2021"
 
+[features]
+default = []
+named_colors = []
+
 [dependencies]
-glam = { version = "0.24.2", features = ["serde"] }
-serde = "1.0.188"
+glam = { version = "0.24", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
 palette = { version = "0.7.3", default-features = false, features = [
-    "serializing",
     "std",
     "approx",
 ] }
+smallvec = "1.11.2"
 toml = "0.8.0"
 
 [dev-dependencies]
