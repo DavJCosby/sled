@@ -11,14 +11,7 @@ fn main() -> Result<(), SledError> {
         Ok(())
     });
 
-    let num: &f32 = driver.get_slider("hello").unwrap();
-
-    // let mut sliders = Sliders::new();
-    // sliders.set("background", Rgb::new(1.0, 1.0, 1.0));
-    // sliders.set("brightness", 0.5);
-
-    // let bg: &Rgb = sliders.get("background").unwrap();
-    // let brightness: &f32 = sliders.get("brightness").unwrap();
+    driver.mount(sled);
 
     Ok(())
 }

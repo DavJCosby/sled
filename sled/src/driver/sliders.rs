@@ -1,25 +1,33 @@
 use std::collections::HashMap;
 
-use self::internal::SliderMapForType;
+use glam::Vec3;
+
+use self::internal_traits::SliderMapForType;
 use crate::color::Rgb;
 
 pub struct Sliders {
-    color_sliders: HashMap<String, Rgb>,
-    f32_sliders: HashMap<String, f32>,
+    colors: HashMap<String, Rgb>,
+    f32s: HashMap<String, f32>,
+    bools: HashMap<String, bool>,
+    vec3s: HashMap<String, Vec3>,
+    usizes: HashMap<String, usize>,
 }
 
 #[allow(dead_code)]
 impl Sliders {
     pub fn new() -> Self {
         Sliders {
-            color_sliders: HashMap::new(),
-            f32_sliders: HashMap::new(),
+            colors: HashMap::new(),
+            f32s: HashMap::new(),
+            bools: HashMap::new(),
+            vec3s: HashMap::new(),
+            usizes: HashMap::new(),
         }
     }
 
     pub fn set<T>(&mut self, key: &str, value: T)
     where
-        Sliders: internal::SliderMapForType<T>,
+        Sliders: SliderMapForType<T>,
     {
         let map = self.map_for_type_mut();
         map.insert(key.to_string(), value);
@@ -27,18 +35,14 @@ impl Sliders {
 
     pub fn get<T>(&self, key: &str) -> Option<&T>
     where
-        Sliders: internal::SliderMapForType<T>,
+        Sliders: SliderMapForType<T>,
     {
         let map = self.map_for_type();
         return map.get(key);
     }
 }
 
-pub trait Slider<T>: internal::SliderMapForType<T> {}
-impl Slider<Rgb> for Sliders {}
-impl Slider<f32> for Sliders {}
-
-mod internal {
+mod internal_traits {
     use std::collections::HashMap;
 
     pub trait SliderMapForType<T> {
@@ -47,22 +51,59 @@ mod internal {
     }
 }
 
-impl internal::SliderMapForType<Rgb> for Sliders {
+impl SliderMapForType<Rgb> for Sliders {
     fn map_for_type(&self) -> &HashMap<String, Rgb> {
-        &self.color_sliders
+        &self.colors
     }
 
     fn map_for_type_mut(&mut self) -> &mut HashMap<String, Rgb> {
-        &mut self.color_sliders
+        &mut self.colors
     }
 }
 
-impl internal::SliderMapForType<f32> for Sliders {
+impl SliderMapForType<f32> for Sliders {
     fn map_for_type(&self) -> &HashMap<String, f32> {
-        &self.f32_sliders
+        &self.f32s
     }
 
     fn map_for_type_mut(&mut self) -> &mut HashMap<String, f32> {
-        &mut self.f32_sliders
+        &mut self.f32s
     }
 }
+
+impl SliderMapForType<bool> for Sliders {
+    fn map_for_type(&self) -> &HashMap<String, bool> {
+        &self.bools
+    }
+
+    fn map_for_type_mut(&mut self) -> &mut HashMap<String, bool> {
+        &mut self.bools
+    }
+}
+
+impl SliderMapForType<Vec3> for Sliders {
+    fn map_for_type(&self) -> &HashMap<String, Vec3> {
+        &self.vec3s
+    }
+
+    fn map_for_type_mut(&mut self) -> &mut HashMap<String, Vec3> {
+        &mut self.vec3s
+    }
+}
+
+impl SliderMapForType<usize> for Sliders {
+    fn map_for_type(&self) -> &HashMap<String, usize> {
+        &self.usizes
+    }
+
+    fn map_for_type_mut(&mut self) -> &mut HashMap<String, usize> {
+        &mut self.usizes
+    }
+}
+
+pub trait Slider<T>: SliderMapForType<T> {}
+impl Slider<Rgb> for Sliders {}
+impl Slider<f32> for Sliders {}
+impl Slider<bool> for Sliders {}
+impl Slider<Vec3> for Sliders {}
+impl Slider<usize> for Sliders {}
