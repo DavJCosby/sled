@@ -1,7 +1,5 @@
-use sled::driver::Driver;
+use sled::driver::{Driver, Sliders};
 use sled::{color::Rgb, Sled, SledError};
-
-// fn display
 
 fn main() -> Result<(), SledError> {
     let sled = Sled::new("./benches/config1.toml")?;
@@ -13,16 +11,12 @@ fn main() -> Result<(), SledError> {
         Ok(())
     });
 
-    driver.mount(sled);
+    let mut sliders = Sliders::new();
+    sliders.set("background", Rgb::new(1.0, 1.0, 1.0));
+    sliders.set("brightness", 0.5);
 
-    for _ in 0..10 {
-        driver.update();
-    }
-
-    // sled.set_within_dist(1.0, Rgb::new(1.0, 0.0, 0.0));
-    // sled.modulate_segment(2, |led| led.color * 0.5)?;
-
-    // let _colors: Vec<Rgb<_, u8>> = sled.read_colors();
+    let bg: &Rgb = sliders.get("background").unwrap();
+    let brightness: &f32 = sliders.get("brightness").unwrap();
 
     Ok(())
 }

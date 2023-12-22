@@ -1,6 +1,9 @@
-use std::time::{Duration, Instant};
+use std::{
+    collections::HashMap,
+    time::{Duration, Instant},
+};
 
-use crate::{Sled, SledError};
+use crate::{color::Rgb, Sled, SledError};
 
 pub enum RefreshTiming {
     None,
@@ -10,6 +13,75 @@ pub enum RefreshTiming {
 pub struct TimeInfo {
     pub elapsed: Duration,
     pub delta: Duration,
+}
+
+pub trait Slider: internal::Slider {}
+
+mod internal {
+    pub trait Slider {
+        fn get_slider_of_this_type<'a>(
+            sliders: &'a super::Sliders,
+            key: &'a str,
+        ) -> Option<&'a Self>
+        where
+            Self: Sized;
+
+        fn set_slider_of_this_type(&self, sliders: &mut super::Sliders, key: &str);
+    }
+}
+
+impl Slider for Rgb {}
+impl Slider for f32 {}
+
+impl internal::Slider for Rgb {
+    fn get_slider_of_this_type<'a>(sliders: &'a Sliders, key: &'a str) -> Option<&'a Self>
+    where
+        Self: Sized,
+    {
+        sliders.color_sliders.get(key)
+    }
+
+    fn set_slider_of_this_type(&self, sliders: &mut Sliders, key: &str) {
+        sliders.color_sliders.insert(key.to_string(), *self);
+    }
+}
+
+impl internal::Slider for f32 {
+    fn get_slider_of_this_type<'a>(sliders: &'a Sliders, key: &'a str) -> Option<&'a Self>
+    where
+        Self: Sized,
+    {
+        sliders.f32_sliders.get(key)
+    }
+
+    fn set_slider_of_this_type(&self, sliders: &mut Sliders, key: &str) {
+        sliders.f32_sliders.insert(key.to_string(), *self);
+    }
+}
+
+// A polymorphic solution that is both clever and vile.
+pub struct Sliders {
+    color_sliders: HashMap<String, Rgb>,
+    f32_sliders: HashMap<String, f32>,
+}
+
+impl Sliders {
+    pub fn new() -> Self {
+        Sliders {
+            color_sliders: HashMap::new(),
+            f32_sliders: HashMap::new(),
+        }
+    }
+
+    pub fn set(&mut self, key: &str, value: impl Slider) {
+        // I know how it looks, but hear me out...
+        value.set_slider_of_this_type(self, key)
+    }
+
+    pub fn get<'a, T: Slider>(&'a self, key: &'a str) -> Option<&T> {
+        // This might be even worse lol
+        T::get_slider_of_this_type(&self, key)
+    }
 }
 
 pub struct Driver {
