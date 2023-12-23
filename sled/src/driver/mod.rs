@@ -1,9 +1,9 @@
-use crate::{Set, Sled, SledError};
+use crate::{Filter, Sled, SledError};
 use std::time::{Duration, Instant};
 
-mod sets;
+mod filters;
 mod sliders;
-use sets::Sets;
+use filters::Filters;
 use sliders::{Slider, Sliders};
 
 pub enum RefreshTiming {
@@ -17,8 +17,8 @@ pub struct TimeInfo {
 }
 
 type SledResult = Result<(), SledError>;
-type StartupCommands = Box<dyn Fn(&mut Sled, &mut Sliders, &mut Sets) -> SledResult>;
-type DrawCommands = Box<dyn Fn(&mut Sled, &Sliders, &Sets, &TimeInfo) -> SledResult>;
+type StartupCommands = Box<dyn Fn(&mut Sled, &mut Sliders, &mut Filters) -> SledResult>;
+type DrawCommands = Box<dyn Fn(&mut Sled, &Sliders, &Filters, &TimeInfo) -> SledResult>;
 pub struct Driver {
     _timing_strategy: RefreshTiming,
     sled: Option<Sled>,
@@ -27,7 +27,7 @@ pub struct Driver {
     startup: Instant,
     last_update: Instant,
     sliders: Sliders,
-    sets: Sets,
+    filters: Filters,
 }
 
 impl Default for Driver {
@@ -46,12 +46,12 @@ impl Driver {
             startup: Instant::now(),
             last_update: Instant::now(),
             sliders: Sliders::new(),
-            sets: Sets::new(),
+            filters: Filters::new(),
         }
     }
 
     pub fn set_startup_commands<
-        F: Fn(&mut Sled, &mut Sliders, &mut Sets) -> SledResult + 'static,
+        F: Fn(&mut Sled, &mut Sliders, &mut Filters) -> SledResult + 'static,
     >(
         &mut self,
         startup_commands: F,
@@ -60,7 +60,7 @@ impl Driver {
     }
 
     pub fn set_draw_commands<
-        F: Fn(&mut Sled, &Sliders, &Sets, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&mut Sled, &Sliders, &Filters, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         draw_commands: F,
@@ -75,7 +75,7 @@ impl Driver {
 
     fn startup(&mut self) {
         if let Some(sled) = &mut self.sled {
-            (self.startup_commands)(sled, &mut self.sliders, &mut self.sets).unwrap();
+            (self.startup_commands)(sled, &mut self.sliders, &mut self.filters).unwrap();
             self.startup = Instant::now();
             self.last_update = self.startup;
         }
@@ -95,7 +95,7 @@ impl Driver {
         (self.draw_commands)(
             self.sled.as_mut().unwrap(),
             &self.sliders,
-            &self.sets,
+            &self.filters,
             &time_info,
         )
         .unwrap();
@@ -115,11 +115,11 @@ impl Driver {
         self.sliders.get(key)
     }
 
-    pub fn insert_set(&mut self, key: &str, set: Set) {
-        self.sets.set(key, set);
+    pub fn insert_filter(&mut self, key: &str, set: Filter) {
+        self.filters.set(key, set);
     }
 
-    pub fn get_set(&self, key: &str) -> Option<&Set> {
-        self.sets.get(key)
+    pub fn get_filter(&self, key: &str) -> Option<&Filter> {
+        self.filters.get(key)
     }
 }

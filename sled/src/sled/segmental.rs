@@ -2,13 +2,13 @@ use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 use std::{collections::HashSet, ops::Range};
 
 /// Segment-based read and write methods.
 impl Sled {
-    pub fn get_segment(&self, segment_index: usize) -> Option<Set> {
+    pub fn get_segment(&self, segment_index: usize) -> Option<Filter> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
         let led_range = &self.leds[start..end];
         Some(led_range.into())
@@ -45,7 +45,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_segments(&self, range: Range<usize>) -> Option<Set> {
+    pub fn get_segments(&self, range: Range<usize>) -> Option<Filter> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             None
         } else {
@@ -63,7 +63,8 @@ impl Sled {
     ) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return Err(SledError {
-                message: "Segment index range extends beyond the number of segments in the system.".to_string(),
+                message: "Segment index range extends beyond the number of segments in the system."
+                    .to_string(),
             });
         }
 
@@ -78,7 +79,8 @@ impl Sled {
     pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return Err(SledError {
-                message: "Segment index range extends beyond the number of segments in the system.".to_string(),
+                message: "Segment index range extends beyond the number of segments in the system."
+                    .to_string(),
             });
         }
 
@@ -150,7 +152,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_vertices(&self) -> Set {
+    pub fn get_vertices(&self) -> Filter {
         let hs: HashSet<usize> = self.vertex_indices.iter().copied().collect();
         hs.into()
     }

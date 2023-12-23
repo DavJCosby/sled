@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{color::Rgb, error::SledError, led::Led, Set, Sled};
+use crate::{color::Rgb, error::SledError, led::Led, Filter, Sled};
 use glam::Vec2;
 use smallvec::SmallVec;
 
@@ -23,11 +23,11 @@ impl Sled {
 
     /* direction setters/getters */
 
-    pub fn get_at_dir(&self, dir: Vec2) -> Set {
+    pub fn get_at_dir(&self, dir: Vec2) -> Filter {
         self.get_at_dir_from(dir, self.center_point)
     }
 
-    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Set {
+    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Filter {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
             .iter().copied()
@@ -85,12 +85,12 @@ impl Sled {
 
     /* angle setters/getters */
 
-    pub fn get_at_angle(&self, angle: f32) -> Set {
+    pub fn get_at_angle(&self, angle: f32) -> Filter {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir(dir)
     }
 
-    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Set {
+    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Filter {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir_from(dir, center_point)
     }

@@ -3,28 +3,28 @@ use std::collections::{hash_set, HashSet};
 use crate::{color::Rgb, led::Led, sled::Sled};
 
 #[derive(Clone)]
-pub struct Set {
+pub struct Filter {
     led_indices: HashSet<usize>,
 }
 
-impl From<&[Led]> for Set {
+impl From<&[Led]> for Filter {
     fn from(value: &[Led]) -> Self {
         let mut hs = HashSet::new();
         for led in value {
             hs.insert(led.index());
         }
-        Set { led_indices: hs }
+        Filter { led_indices: hs }
     }
 }
 
-impl From<HashSet<usize>> for Set {
+impl From<HashSet<usize>> for Filter {
     fn from(value: HashSet<usize>) -> Self {
-        Set { led_indices: value }
+        Filter { led_indices: value }
     }
 }
 
 #[allow(dead_code)]
-impl Set {
+impl Filter {
     pub fn len(&self) -> usize {
         self.led_indices.len()
     }
@@ -42,7 +42,7 @@ impl Set {
             }
         }
 
-        Set {
+        Filter {
             led_indices: filtered,
         }
     }
@@ -54,13 +54,13 @@ impl Set {
             extended.insert(*led);
         }
 
-        Set {
+        Filter {
             led_indices: extended,
         }
     }
 }
 
-impl IntoIterator for Set {
+impl IntoIterator for Filter {
     type Item = usize;
     type IntoIter = hash_set::IntoIter<usize>;
 
@@ -69,7 +69,7 @@ impl IntoIterator for Set {
     }
 }
 
-impl IntoIterator for &Set {
+impl IntoIterator for &Filter {
     type Item = usize;
     type IntoIter = hash_set::IntoIter<Self::Item>;
 
@@ -80,14 +80,14 @@ impl IntoIterator for &Set {
 }
 
 impl Sled {
-    pub fn set_leds_in_set(&mut self, set: &Set, color: Rgb) {
-        for i in set {
+    pub fn set_filter(&mut self, filter: &Filter, color: Rgb) {
+        for i in filter {
             self.leds[i].color = color;
         }
     }
 
-    pub fn modulate_leds_in_set<F: Fn(&Led) -> Rgb>(&mut self, set: &Set, color_rule: F) {
-        for i in set {
+    pub fn modulate_filter<F: Fn(&Led) -> Rgb>(&mut self, filter: &Filter, color_rule: F) {
+        for i in filter {
             let led = &mut self.leds[i];
             led.color = color_rule(led)
         }

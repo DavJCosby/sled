@@ -82,8 +82,8 @@
 //! > Replace the u8 with f32 if you need a 0.0 - 1.0 scale (32 bits/channel).*
 
 pub mod color;
-pub mod driver;
 mod config;
+pub mod driver;
 mod error;
 mod led;
 mod sled;
@@ -92,5 +92,5 @@ pub use error::SledError;
 /// [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
 pub use led::Led;
-pub use sled::Set;
+pub use sled::Filter;
 pub use sled::Sled;

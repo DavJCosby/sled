@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     color::Rgb,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 use glam::Vec2;
 
@@ -69,7 +69,7 @@ impl Sled {
 
 /// Filters
 impl Sled {
-    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Set {
+    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Filter {
         let filtered: HashSet<usize> = self
             .leds
             .iter()
@@ -78,23 +78,23 @@ impl Sled {
         filtered.into()
     }
 
-    pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Set {
+    pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Filter {
         self.filter(|led| angle_filter(led.angle()))
     }
 
-    pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Set {
+    pub fn filter_by_dir(&self, dir_filter: impl Fn(Vec2) -> bool) -> Filter {
         self.filter(|led| dir_filter(led.direction()))
     }
 
-    pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Set {
+    pub fn filter_by_pos(&self, pos_filter: impl Fn(Vec2) -> bool) -> Filter {
         self.filter(|led| pos_filter(led.position()))
     }
 
-    pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Set {
+    pub fn filter_by_dist(&self, dist_filter: impl Fn(f32) -> bool) -> Filter {
         self.filter(|led| dist_filter(led.distance()))
     }
 
-    pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Set {
+    pub fn filter_by_dist_from(&self, pos: Vec2, dist_filter: impl Fn(f32) -> bool) -> Filter {
         self.filter(|led| {
             let dist = pos.distance(led.position());
             dist_filter(dist)
