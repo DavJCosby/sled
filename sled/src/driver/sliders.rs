@@ -12,7 +12,7 @@ pub struct Sliders {
     bools: Map<CompactString, bool, MAP_DEPTH>,
     vec3s: Map<CompactString, Vec3, MAP_DEPTH>,
     usizes: Map<CompactString, usize, MAP_DEPTH>,
-}
+} 
 
 #[allow(dead_code)]
 impl Sliders {

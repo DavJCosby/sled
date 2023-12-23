@@ -129,7 +129,7 @@ impl Sled {
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
                 let index = self.alpha_to_index(alpha, segment_index);
-                all_at_distance.insert(&self.leds[index]);
+                all_at_distance.insert(index);
             }
         }
 
@@ -207,7 +207,7 @@ impl Sled {
                 let first = self.alpha_to_index(*first.unwrap(), segment_index);
                 let second = self.alpha_to_index(*second.unwrap(), segment_index);
                 let range = first.min(second)..first.max(second);
-                all_within_distance.extend(&self.leds[range]);
+                all_within_distance.extend(range);
             }
         }
 

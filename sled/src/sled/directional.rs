@@ -31,8 +31,8 @@ impl Sled {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
             .iter()
-            .map(|i| &self.leds[*i])
-            .collect::<HashSet<&Led>>()
+            .map(|i| *i)
+            .collect::<HashSet<usize>>()
             .into()
     }
 

@@ -70,7 +70,11 @@ impl Sled {
 /// Filters
 impl Sled {
     pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Set {
-        let filtered: HashSet<&Led> = self.leds.iter().filter(|led| filter(led)).collect();
+        let filtered: HashSet<usize> = self
+            .leds
+            .iter()
+            .filter_map(|led| if filter(led) { Some(led.index()) } else { None })
+            .collect();
         return filtered.into();
     }
 

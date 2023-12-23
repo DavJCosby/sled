@@ -5,20 +5,33 @@ fn main() -> Result<(), SledError> {
     let sled = Sled::new("./benches/config1.toml")?;
     let mut driver = Driver::new();
 
-    driver.set_startup_commands(|_sled, sliders| {
-        println!("Startup");
-        sliders.set("brightness", 0.5);
-        sliders.set("color", Rgb::new(1.0, 1.0, 1.0));
+    driver.set_startup_commands(|sled, sliders, sets| {
+        sliders.set("background", Rgb::new(0.0, 0.0, 0.0));
+        sliders.set("light_color", Rgb::new(1.0, 1.0, 1.0));
+
+        sets.set("left_wall", sled.get_segment(2).unwrap());
+        sets.set("cone", sled.filter_by_angle(|a| a > 0.2 && a <= 0.6));
         Ok(())
     });
 
-    driver.set_draw_commands(|sled, sliders, _time_info| {
-        let brightness: f32 = *sliders.get("brightness").unwrap();
-        let color: Rgb = *sliders.get("color").unwrap();
+    driver.set_draw_commands(|sled, sliders, sets, time_info| {
+        let bg_color: Rgb = *sliders.get("background").unwrap();
+        let light_color: Rgb = *sliders.get("light_color").unwrap();
 
-        println!("{}", brightness);
+        let cone = sets.get("cone").unwrap();
+        let left_wall = sets.get("left_wall").unwrap();
 
-        sled.set_all(color * brightness);
+        let peak_br = (time_info.elapsed.as_secs_f32() / 20.0).sin() + 1.0;
+
+        sled.set_all(bg_color);
+
+        sled.set_leds_in_set(cone, light_color);
+
+        sled.modulate_leds_in_set(left_wall, |led| {
+            let d_sq = led.distance().powi(2);
+            light_color * peak_br / d_sq
+        });
+
         Ok(())
     });
 

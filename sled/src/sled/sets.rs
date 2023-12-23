@@ -1,142 +1,95 @@
 use std::collections::{hash_set, HashSet};
 
 use crate::{color::Rgb, led::Led, sled::Sled};
-use glam::Vec2;
 
-pub struct Set<'f> {
-    leds: HashSet<&'f Led>,
+#[derive(Clone)]
+pub struct Set {
+    led_indices: HashSet<usize>,
 }
 
-impl<'f> From<&'f [Led]> for Set<'f> {
-    fn from(value: &'f [Led]) -> Self {
-        let hs = HashSet::from_iter(value);
-        return Set { leds: hs };
+impl From<&[Led]> for Set {
+    fn from(value: &[Led]) -> Self {
+        let mut hs = HashSet::new();
+        for led in value {
+            hs.insert(led.index());
+        }
+        return Set { led_indices: hs };
     }
 }
 
-impl<'f> From<HashSet<&'f Led>> for Set<'f> {
-    fn from(value: HashSet<&'f Led>) -> Self {
-        return Set { leds: value };
+impl From<HashSet<usize>> for Set {
+    fn from(value: HashSet<usize>) -> Self {
+        return Set { led_indices: value };
     }
 }
 
 #[allow(dead_code)]
-impl<'f> Set<'f> {
+impl Set {
     pub fn len(&self) -> usize {
-        return self.leds.len();
+        return self.led_indices.len();
     }
 
     pub fn is_empty(&self) -> bool {
-        return self.leds.is_empty();
-    }
-
-    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Self {
-        let filtered: HashSet<&'f Led> = self
-            .leds
-            .iter()
-            .filter_map(|led| filter(led).then_some(*led))
-            .collect();
-
-        Set { leds: filtered }
+        return self.led_indices.is_empty();
     }
 
     pub fn and(&self, other: &Self) -> Self {
-        let mut filtered = self.leds.clone();
+        let mut filtered = self.led_indices.clone();
 
-        for led in &self.leds {
-            if !other.leds.contains(led) {
+        for led in &self.led_indices {
+            if !other.led_indices.contains(led) {
                 filtered.remove(led);
             }
         }
 
-        Set { leds: filtered }
+        Set {
+            led_indices: filtered,
+        }
     }
 
     pub fn or(&self, other: &Self) -> Self {
-        let mut extended = self.leds.clone();
+        let mut extended = self.led_indices.clone();
 
-        for led in &other.leds {
+        for led in &other.led_indices {
             extended.insert(*led);
         }
 
-        Set { leds: extended }
-    }
-
-    pub fn get_closest(&self) -> &Led {
-        self.leds
-            .iter()
-            .min_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
-            .unwrap()
-    }
-
-    pub fn get_closest_to(&self, pos: Vec2) -> &Led {
-        self.leds
-            .iter()
-            .min_by(|a, b| {
-                let da = a.position().distance_squared(pos);
-                let db = b.position().distance_squared(pos);
-                da.partial_cmp(&db).unwrap()
-            })
-            .unwrap()
-    }
-
-    pub fn get_furthest(&self) -> &Led {
-        self.leds
-            .iter()
-            .max_by(|a, b| a.distance().partial_cmp(&b.distance()).unwrap())
-            .unwrap()
-    }
-
-    pub fn get_furthest_from(&self, pos: Vec2) -> &Led {
-        self.leds
-            .iter()
-            .max_by(|a, b| {
-                let da = a.position().distance_squared(pos);
-                let db = b.position().distance_squared(pos);
-                da.partial_cmp(&db).unwrap()
-            })
-            .unwrap()
-    }
-
-    pub fn get_within_dist(&self, dist: f32) -> Self {
-        self.filter(|led| led.distance() < dist)
-    }
-
-    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Self {
-        let dist_sq = dist.powi(2);
-        self.filter(|led| led.position().distance_squared(pos) < dist_sq)
+        Set {
+            led_indices: extended,
+        }
     }
 }
 
-impl<'f> IntoIterator for Set<'f> {
-    type Item = &'f Led;
-    type IntoIter = hash_set::IntoIter<&'f Led>;
+impl IntoIterator for Set {
+    type Item = usize;
+    type IntoIter = hash_set::IntoIter<usize>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.leds.into_iter()
+        self.led_indices.into_iter()
     }
 }
 
-impl<'s, 'f> IntoIterator for &'s Set<'f> {
-    type Item = &'f Led;
+impl IntoIterator for &Set {
+    type Item = usize;
     type IntoIter = hash_set::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
         // this doesn't seem right; revisit
-        self.leds.clone().into_iter()
+        self.led_indices.clone().into_iter()
     }
 }
 
 impl Sled {
     pub fn set_leds_in_set(&mut self, set: &Set, color: Rgb) {
-        for led in set {
-            self.leds[led.index()].color = color;
+        for i in set {
+            self.leds[i].color = color;
         }
     }
 
     pub fn modulate_leds_in_set<F: Fn(&Led) -> Rgb>(&mut self, set: &Set, color_rule: F) {
-        for led in set {
-            self.leds[led.index()].color = color_rule(led)
+        for i in set {
+            let led = &mut self.leds[i];
+            led.color = color_rule(led)
         }
     }
 }

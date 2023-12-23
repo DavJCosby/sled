@@ -155,7 +155,7 @@ impl Sled {
     }
 
     pub fn get_vertices(&self) -> Set {
-        let hs: HashSet<&Led> = self.vertex_indices.iter().map(|i| &self.leds[*i]).collect();
+        let hs: HashSet<usize> = self.vertex_indices.iter().map(|i| *i).collect();
         hs.into()
     }
 

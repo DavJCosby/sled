@@ -1,4 +1,5 @@
 use std::{error::Error, fmt};
+use std::convert::From;
 
 #[derive(Debug)]
 pub struct SledError {
