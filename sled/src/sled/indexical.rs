@@ -4,7 +4,7 @@ use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 
 /// Index-based read and write methods.
@@ -55,7 +55,7 @@ impl Sled {
 
 /// Index range-based read and write methods
 impl Sled {
-    pub fn get_range(&self, index_range: Range<usize>) -> Result<Set, SledError> {
+    pub fn get_range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
             Ok(led_range.into())

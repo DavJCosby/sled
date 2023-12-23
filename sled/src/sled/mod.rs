@@ -28,5 +28,5 @@ mod positional;
 
 mod maps_and_filters;
 
-mod sets;
-pub use sets::Set;
+mod filter;
+pub use filter::Filter;
