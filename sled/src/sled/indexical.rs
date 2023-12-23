@@ -25,7 +25,7 @@ impl Sled {
         }
 
         let led = &mut self.leds[index];
-        led.color = color_rule(&led);
+        led.color = color_rule(led);
         Ok(())
     }
 
@@ -61,7 +61,7 @@ impl Sled {
             Ok(led_range.into())
         } else {
             Err(SledError {
-                message: format!("Index range extends beyond size of system."),
+                message: "Index range extends beyond size of system.".to_string(),
             })
         }
     }
@@ -73,7 +73,7 @@ impl Sled {
     ) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return Err(SledError {
-                message: format!("Index range extends beyond size of system."),
+                message: "Index range extends beyond size of system.".to_string(),
             });
         }
 
@@ -87,7 +87,7 @@ impl Sled {
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return Err(SledError {
-                message: format!("Index range extends beyond size of system."),
+                message: "Index range extends beyond size of system.".to_string(),
             });
         }
 
@@ -100,8 +100,8 @@ impl Sled {
     pub fn for_each_in_range<F: FnMut(&mut Led)>(
         &mut self,
         index_range: Range<usize>,
-        mut func: F,
+        func: F,
     ) {
-        self.leds[index_range].iter_mut().for_each(|led| func(led));
+        self.leds[index_range].iter_mut().for_each(func);
     }
 }

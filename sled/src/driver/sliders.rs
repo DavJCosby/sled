@@ -15,6 +15,12 @@ pub struct Sliders {
 } 
 
 #[allow(dead_code)]
+impl Default for Sliders {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Sliders {
     pub fn new() -> Self {
         Sliders {

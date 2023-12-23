@@ -48,7 +48,7 @@ impl Sled {
         self.map(|led| {
             let mut angle = (point - led.position()).angle_between(pos_x);
             if angle < 0.0 {
-                angle = (2.0 * std::f32::consts::PI) + angle;
+                angle += std::f32::consts::TAU;
             }
 
             angle_to_color_map(angle)
@@ -75,7 +75,7 @@ impl Sled {
             .iter()
             .filter_map(|led| if filter(led) { Some(led.index()) } else { None })
             .collect();
-        return filtered.into();
+        filtered.into()
     }
 
     pub fn filter_by_angle(&self, angle_filter: impl Fn(f32) -> bool) -> Set {

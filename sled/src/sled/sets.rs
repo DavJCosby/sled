@@ -13,24 +13,24 @@ impl From<&[Led]> for Set {
         for led in value {
             hs.insert(led.index());
         }
-        return Set { led_indices: hs };
+        Set { led_indices: hs }
     }
 }
 
 impl From<HashSet<usize>> for Set {
     fn from(value: HashSet<usize>) -> Self {
-        return Set { led_indices: value };
+        Set { led_indices: value }
     }
 }
 
 #[allow(dead_code)]
 impl Set {
     pub fn len(&self) -> usize {
-        return self.led_indices.len();
+        self.led_indices.len()
     }
 
     pub fn is_empty(&self) -> bool {
-        return self.led_indices.is_empty();
+        self.led_indices.is_empty()
     }
 
     pub fn and(&self, other: &Self) -> Self {

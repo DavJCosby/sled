@@ -30,6 +30,12 @@ pub struct Driver {
     sets: Sets,
 }
 
+impl Default for Driver {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Driver {
     pub fn new() -> Self {
         Driver {

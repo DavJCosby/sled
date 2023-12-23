@@ -30,8 +30,7 @@ impl Sled {
     pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Set {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
-            .iter()
-            .map(|i| *i)
+            .iter().copied()
             .collect::<HashSet<usize>>()
             .into()
     }
@@ -60,7 +59,7 @@ impl Sled {
 
         for index in intersecting_indices {
             let led = &mut self.leds[index];
-            led.color = color_rule(&led);
+            led.color = color_rule(led);
         }
         Ok(())
     }

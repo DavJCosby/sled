@@ -200,7 +200,7 @@ impl Sled {
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             let intersections = segment.intersects_solid_circle(pos, dist);
-            let first = intersections.get(0);
+            let first = intersections.first();
             let second = intersections.get(1);
 
             if first.is_some() && second.is_some() {
