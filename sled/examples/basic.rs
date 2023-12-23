@@ -39,5 +39,7 @@ fn main() -> Result<(), SledError> {
         driver.update();
     }
 
+    let sled = driver.dismount();
+
     Ok(())
 }

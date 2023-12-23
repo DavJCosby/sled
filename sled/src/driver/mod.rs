@@ -68,37 +68,29 @@ impl Driver {
         self.draw_commands = Box::new(draw_commands);
     }
 
-    pub fn mount(&mut self, sled: Sled) {
+    pub fn mount(&mut self, mut sled: Sled) {
+        (self.startup_commands)(&mut sled, &mut self.sliders, &mut self.filters).unwrap();
+        self.startup = Instant::now();
+        self.last_update = self.startup;
         self.sled = Some(sled);
-        self.startup();
-    }
-
-    fn startup(&mut self) {
-        if let Some(sled) = &mut self.sled {
-            (self.startup_commands)(sled, &mut self.sliders, &mut self.filters).unwrap();
-            self.startup = Instant::now();
-            self.last_update = self.startup;
-        }
     }
 
     pub fn update(&mut self) {
-        if self.sled.is_none() {
-            return;
+        if let Some(sled) = &mut self.sled {
+            let time_info = TimeInfo {
+                elapsed: self.startup.elapsed(),
+                delta: self.last_update.elapsed(),
+            };
+
+            self.last_update = Instant::now();
+            (self.draw_commands)(sled, &self.sliders, &self.filters, &time_info).unwrap();
         }
+    }
 
-        let time_info = TimeInfo {
-            elapsed: self.startup.elapsed(),
-            delta: self.last_update.elapsed(),
-        };
-
-        self.last_update = Instant::now();
-        (self.draw_commands)(
-            self.sled.as_mut().unwrap(),
-            &self.sliders,
-            &self.filters,
-            &time_info,
-        )
-        .unwrap();
+    pub fn dismount(mut self) -> Sled {
+        let sled = self.sled.unwrap();
+        self.sled = None;
+        sled
     }
 
     pub fn set_slider<T>(&mut self, key: &str, value: T)
