@@ -14,11 +14,14 @@ pub struct TimeInfo {
     pub delta: Duration,
 }
 
+type SledResult = Result<(), SledError>;
+type StartupCommands = Box<dyn Fn(&mut Sled, &mut Sliders) -> SledResult>;
+type DrawCommands = Box<dyn Fn(&mut Sled, &Sliders, &TimeInfo) -> SledResult>;
 pub struct Driver {
     _timing_strategy: RefreshTiming,
     sled: Option<Sled>,
-    startup_commands: Box<dyn Fn(&mut Sled) -> Result<(), SledError>>,
-    draw_commands: Box<dyn Fn(&mut Sled, &TimeInfo) -> Result<(), SledError>>,
+    startup_commands: StartupCommands,
+    draw_commands: DrawCommands,
     startup: Instant,
     last_update: Instant,
     sliders: Sliders,
@@ -29,22 +32,22 @@ impl Driver {
         Driver {
             _timing_strategy: RefreshTiming::None,
             sled: None,
-            startup_commands: Box::new(|_| Ok(())),
-            draw_commands: Box::new(|_, _| Ok(())),
+            startup_commands: Box::new(|_, _| Ok(())),
+            draw_commands: Box::new(|_, _, _| Ok(())),
             startup: Instant::now(),
             last_update: Instant::now(),
             sliders: Sliders::new(),
         }
     }
 
-    pub fn set_startup_commands<F: Fn(&mut Sled) -> Result<(), SledError> + 'static>(
+    pub fn set_startup_commands<F: Fn(&mut Sled, &mut Sliders) -> SledResult + 'static>(
         &mut self,
         startup_commands: F,
     ) {
         self.startup_commands = Box::new(startup_commands);
     }
 
-    pub fn set_draw_commands<F: Fn(&mut Sled, &TimeInfo) -> Result<(), SledError> + 'static>(
+    pub fn set_draw_commands<F: Fn(&mut Sled, &Sliders, &TimeInfo) -> SledResult + 'static>(
         &mut self,
         draw_commands: F,
     ) {
@@ -52,7 +55,7 @@ impl Driver {
     }
 
     pub fn mount(&mut self, mut sled: Sled) {
-        (self.startup_commands)(&mut sled).unwrap();
+        (self.startup_commands)(&mut sled, &mut self.sliders).unwrap();
 
         self.sled = Some(sled);
         self.startup = Instant::now();
@@ -67,7 +70,7 @@ impl Driver {
             };
 
             self.last_update = Instant::now();
-            (self.draw_commands)(sled, &time_info).unwrap();
+            (self.draw_commands)(sled, &self.sliders, &time_info).unwrap();
         }
     }
 

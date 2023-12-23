@@ -1,27 +1,28 @@
-use std::collections::HashMap;
-
+use compact_str::{CompactString, ToCompactString};
 use glam::Vec3;
+use micromap::Map;
 
 use self::internal_traits::SliderMapForType;
 use crate::color::Rgb;
 
+const MAP_DEPTH: usize = 8;
 pub struct Sliders {
-    colors: HashMap<String, Rgb>,
-    f32s: HashMap<String, f32>,
-    bools: HashMap<String, bool>,
-    vec3s: HashMap<String, Vec3>,
-    usizes: HashMap<String, usize>,
+    colors: Map<CompactString, Rgb, MAP_DEPTH>,
+    f32s: Map<CompactString, f32, MAP_DEPTH>,
+    bools: Map<CompactString, bool, MAP_DEPTH>,
+    vec3s: Map<CompactString, Vec3, MAP_DEPTH>,
+    usizes: Map<CompactString, usize, MAP_DEPTH>,
 }
 
 #[allow(dead_code)]
 impl Sliders {
     pub fn new() -> Self {
         Sliders {
-            colors: HashMap::new(),
-            f32s: HashMap::new(),
-            bools: HashMap::new(),
-            vec3s: HashMap::new(),
-            usizes: HashMap::new(),
+            colors: Map::new(),
+            f32s: Map::new(),
+            bools: Map::new(),
+            vec3s: Map::new(),
+            usizes: Map::new(),
         }
     }
 
@@ -30,7 +31,7 @@ impl Sliders {
         Sliders: SliderMapForType<T>,
     {
         let map = self.map_for_type_mut();
-        map.insert(key.to_string(), value);
+        map.insert(key.to_compact_string(), value);
     }
 
     pub fn get<T>(&self, key: &str) -> Option<&T>
@@ -43,60 +44,62 @@ impl Sliders {
 }
 
 mod internal_traits {
-    use std::collections::HashMap;
+    use super::MAP_DEPTH;
+    use compact_str::CompactString;
+    use micromap::Map;
 
     pub trait SliderMapForType<T> {
-        fn map_for_type(&self) -> &HashMap<String, T>;
-        fn map_for_type_mut(&mut self) -> &mut HashMap<String, T>;
+        fn map_for_type(&self) -> &Map<CompactString, T, MAP_DEPTH>;
+        fn map_for_type_mut(&mut self) -> &mut Map<CompactString, T, MAP_DEPTH>;
     }
 }
 
 impl SliderMapForType<Rgb> for Sliders {
-    fn map_for_type(&self) -> &HashMap<String, Rgb> {
+    fn map_for_type(&self) -> &Map<CompactString, Rgb, MAP_DEPTH> {
         &self.colors
     }
 
-    fn map_for_type_mut(&mut self) -> &mut HashMap<String, Rgb> {
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, Rgb, MAP_DEPTH> {
         &mut self.colors
     }
 }
 
 impl SliderMapForType<f32> for Sliders {
-    fn map_for_type(&self) -> &HashMap<String, f32> {
+    fn map_for_type(&self) -> &Map<CompactString, f32, MAP_DEPTH> {
         &self.f32s
     }
 
-    fn map_for_type_mut(&mut self) -> &mut HashMap<String, f32> {
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, f32, MAP_DEPTH> {
         &mut self.f32s
     }
 }
 
 impl SliderMapForType<bool> for Sliders {
-    fn map_for_type(&self) -> &HashMap<String, bool> {
+    fn map_for_type(&self) -> &Map<CompactString, bool, MAP_DEPTH> {
         &self.bools
     }
 
-    fn map_for_type_mut(&mut self) -> &mut HashMap<String, bool> {
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, bool, MAP_DEPTH> {
         &mut self.bools
     }
 }
 
 impl SliderMapForType<Vec3> for Sliders {
-    fn map_for_type(&self) -> &HashMap<String, Vec3> {
+    fn map_for_type(&self) -> &Map<CompactString, Vec3, MAP_DEPTH> {
         &self.vec3s
     }
 
-    fn map_for_type_mut(&mut self) -> &mut HashMap<String, Vec3> {
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, Vec3, MAP_DEPTH> {
         &mut self.vec3s
     }
 }
 
 impl SliderMapForType<usize> for Sliders {
-    fn map_for_type(&self) -> &HashMap<String, usize> {
+    fn map_for_type(&self) -> &Map<CompactString, usize, MAP_DEPTH> {
         &self.usizes
     }
 
-    fn map_for_type_mut(&mut self) -> &mut HashMap<String, usize> {
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, usize, MAP_DEPTH> {
         &mut self.usizes
     }
 }
