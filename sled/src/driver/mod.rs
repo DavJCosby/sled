@@ -108,7 +108,7 @@ impl Driver {
         self.sliders.set(key, value)
     }
 
-    pub fn get_slider<T>(&self, key: &str) -> Option<&T>
+    pub fn get_slider<T: Copy>(&self, key: &str) -> Option<T>
     where
         Sliders: Slider<T>,
     {

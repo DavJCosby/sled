@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use compact_str::{CompactString, ToCompactString};
 use glam::Vec3;
 use micromap::Map;
@@ -12,7 +14,7 @@ pub struct Sliders {
     bools: Map<CompactString, bool, MAP_DEPTH>,
     vec3s: Map<CompactString, Vec3, MAP_DEPTH>,
     usizes: Map<CompactString, usize, MAP_DEPTH>,
-} 
+}
 
 #[allow(dead_code)]
 impl Default for Sliders {
@@ -40,12 +42,12 @@ impl Sliders {
         map.insert(key.to_compact_string(), value);
     }
 
-    pub fn get<T>(&self, key: &str) -> Option<&T>
+    pub fn get<T: Copy>(&self, key: &str) -> Option<T>
     where
         Sliders: SliderMapForType<T>,
     {
         let map = self.map_for_type();
-        return map.get(key);
+        deref_option(map.get(key))
     }
 }
 
@@ -116,3 +118,10 @@ impl Slider<f32> for Sliders {}
 impl Slider<bool> for Sliders {}
 impl Slider<Vec3> for Sliders {}
 impl Slider<usize> for Sliders {}
+
+fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
+    match option {
+        Some(v) => Some(*v),
+        None => todo!(),
+    }
+}

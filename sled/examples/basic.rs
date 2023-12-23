@@ -15,8 +15,8 @@ fn main() -> Result<(), SledError> {
     });
 
     driver.set_draw_commands(|sled, sliders, filters, time_info| {
-        let bg_color: Rgb = *sliders.get("background").unwrap();
-        let light_color: Rgb = *sliders.get("light_color").unwrap();
+        let bg_color = sliders.get("background").unwrap_or_default();
+        let light_color = sliders.get("light_color").unwrap_or_default();
 
         let cone = filters.get("cone").unwrap();
         let left_wall = filters.get("left_wall").unwrap();
