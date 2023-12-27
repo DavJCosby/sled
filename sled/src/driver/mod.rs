@@ -3,8 +3,11 @@ use std::time::{Duration, Instant};
 
 mod filters;
 mod sliders;
-use filters::Filters;
-use sliders::{Slider, Sliders};
+mod scheduler;
+pub use filters::Filters;
+pub use sliders::{Slider, Sliders};
+
+pub use scheduler::Scheduler;
 
 pub enum RefreshTiming {
     None,
