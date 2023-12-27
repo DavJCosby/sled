@@ -177,9 +177,10 @@ impl Sled {
 
         if indices.is_empty() {
             return SledError::new(format!(
-                    "No LEDs exist at a distance of {} from the center point.",
-                    dist
-                )).as_err()
+                "No LEDs exist at a distance of {} from the center point.",
+                dist
+            ))
+            .as_err();
         }
 
         for index in indices {
