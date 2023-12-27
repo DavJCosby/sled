@@ -1,16 +1,23 @@
 use std::{error::Error, fmt};
 
-
 #[derive(Debug)]
 pub struct SledError {
     pub message: String,
 }
 
 impl SledError {
+    pub fn new(message: String) -> Self {
+        SledError { message }
+    }
+
     pub fn from_error(e: impl Error) -> Self {
         SledError {
             message: e.to_string(),
         }
+    }
+
+    pub fn as_err<T>(self) -> Result<T, Self> {
+        Err(self)
     }
 }
 

@@ -20,9 +20,11 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!("Segment of index {} does not exist.", segment_index),
-            });
+            return SledError::new(format!(
+                "Segment of index {} does not exist.",
+                segment_index
+            ))
+            .as_err();
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
@@ -35,9 +37,11 @@ impl Sled {
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!("No line segment of index {} exists.", segment_index),
-            });
+            return SledError::new(format!(
+                "No line segment of index {} exists.",
+                segment_index
+            ))
+            .as_err();
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
@@ -62,10 +66,11 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: "Segment index range extends beyond the number of segments in the system."
+            return SledError::new(
+                "Segment index range extends beyond the number of segments in the system."
                     .to_string(),
-            });
+            )
+            .as_err();
         }
 
         let (start, _) = self.line_segment_endpoint_indices[range.start];
@@ -78,10 +83,11 @@ impl Sled {
 
     pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: "Segment index range extends beyond the number of segments in the system."
+            return SledError::new(
+                "Segment index range extends beyond the number of segments in the system."
                     .to_string(),
-            });
+            )
+            .as_err();
         }
 
         let (start, _) = self.line_segment_endpoint_indices[range.start];
@@ -131,9 +137,8 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
-            return Err(SledError {
-                message: format!("Vertex of index {} does not exist.", vertex_index),
-            });
+            return SledError::new(format!("Vertex of index {} does not exist.", vertex_index))
+                .as_err();
         }
 
         let led = &mut self.leds[vertex_index];
@@ -143,9 +148,11 @@ impl Sled {
 
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
-            return Err(SledError {
-                message: format!("Vertex with index {} does not exist.", vertex_index),
-            });
+            return SledError::new(format!(
+                "Vertex with index {} does not exist.",
+                vertex_index
+            ))
+            .as_err();
         }
 
         self.leds[self.vertex_indices[vertex_index]].color = color;
