@@ -16,11 +16,11 @@ fn draw(
     filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {
-    let bg_color = sliders.get("background").unwrap_or_default();
-    let light_color = sliders.get("light_color").unwrap_or_default();
+    let bg_color = sliders.get("background").ok_or("bg_color not found")?;
+    let light_color = sliders.get("light_color").ok_or("light_color not found")?;
 
-    let cone = filters.get("cone").unwrap();
-    let left_wall = filters.get("left_wall").unwrap();
+    let cone = filters.get("cone").ok_or("cone not found")?;
+    let left_wall = filters.get("left_wall").ok_or("left_wall not found")?;
 
     let peak_br = (time_info.elapsed.as_secs_f32() / 20.0).sin() + 1.0;
 

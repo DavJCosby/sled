@@ -21,6 +21,12 @@ impl SledError {
     }
 }
 
+impl std::convert::From<&str> for SledError {
+    fn from(value: &str) -> Self {
+        SledError::new(value.to_string())
+    }
+}
+
 impl fmt::Display for SledError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.message)
