@@ -83,10 +83,12 @@
 
 pub mod color;
 mod config;
-pub mod driver;
 mod error;
 mod led;
 mod sled;
+
+#[cfg(feature = "drivers")]
+pub mod driver;
 
 pub use error::SledError;
 /// [glam](https://crates.io/crates/glam)'s implementation.

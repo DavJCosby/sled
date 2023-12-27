@@ -4,7 +4,8 @@ version = "0.2.0"
 edition = "2021"
 
 [features]
-default = []
+default = ["drivers"]
+drivers = ["micromap", "compact_str", "futures"]
 named_colors = []
 
 [dependencies]
@@ -14,10 +15,12 @@ palette = { version = "0.7.3", default-features = false, features = [
     "std",
     "approx",
 ] }
-smallvec = "1.11.2"
-micromap = "0.0.14"
-compact_str = "0.7"
 toml = "0.8.0"
+smallvec = "1.11.2"
+futures = { version = "0.3", optional = true }
+micromap = { version = "0.0.14", optional = true }
+compact_str = { version = "0.7", optional = true }
+#spin_sleep = { git = "https://github.com/nyanpasu64/spin-sleep.git", branch = "fix-loop-helper", optional = true }
 
 [dev-dependencies]
 criterion = "0.5.1"
