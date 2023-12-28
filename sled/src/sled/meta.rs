@@ -60,6 +60,10 @@ impl Sled {
             .collect()
     }
 
+    pub fn read_positions(&self) -> Vec<Vec2> {
+        self.leds.iter().map(|led| led.position()).collect()
+    }
+
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
@@ -148,7 +152,6 @@ impl Sled {
         let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
         let leds_in_segment = segment.num_leds() as f32;
 
-        
         startpoint_index + (segment_alpha * leds_in_segment).floor() as usize
     }
 }

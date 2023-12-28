@@ -1,9 +1,9 @@
-use crate::{Filter, Sled, SledError};
+use crate::{color::Srgb, Filter, Sled, SledError, Vec2};
 use std::time::{Duration, Instant};
 
 mod filters;
-mod sliders;
 mod scheduler;
+mod sliders;
 pub use filters::Filters;
 pub use sliders::{Slider, Sliders};
 
@@ -116,5 +116,24 @@ impl Driver {
 
     pub fn get_filter(&self, key: &str) -> Option<&Filter> {
         self.filters.get(key)
+    }
+
+    pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
+    where
+        f32: crate::color::stimulus::IntoStimulus<T>,
+    {
+        if let Some(sled) = &self.sled {
+            sled.read_colors()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn read_positions(&self) -> Vec<Vec2> {
+        if let Some(sled) = &self.sled {
+            sled.read_positions()
+        } else {
+            vec![]
+        }
     }
 }
