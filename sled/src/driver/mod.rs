@@ -141,4 +141,15 @@ impl Driver {
             vec![]
         }
     }
+
+    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    where
+        f32: crate::color::stimulus::IntoStimulus<T>,
+    {
+        if let Some(sled) = &self.sled {
+            sled.read_colors_and_positions()
+        } else {
+            vec![]
+        }
+    }
 }

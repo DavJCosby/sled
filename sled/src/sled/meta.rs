@@ -64,6 +64,16 @@ impl Sled {
         self.leds.iter().map(|led| led.position()).collect()
     }
 
+    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    where
+        f32: color::stimulus::IntoStimulus<T>,
+    {
+        self.leds
+            .iter()
+            .map(|led| (led.color.into_format(), led.position()))
+            .collect()
+    }
+
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
