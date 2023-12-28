@@ -1,5 +1,8 @@
 use spin_sleep::SpinSleeper;
-use std::time::{Duration, Instant};
+use std::{
+    error::Error,
+    time::{Duration, Instant},
+};
 pub struct Scheduler {
     target_delta: Duration,
     sleeper: SpinSleeper,
@@ -29,6 +32,18 @@ impl Scheduler {
                 break;
             }
             self.sleep_until_next_frame();
+        }
+    }
+
+    pub fn loop_until_err<T>(
+        &mut self,
+        mut task: impl FnMut() -> Result<T, Box<dyn std::error::Error>>,
+    ) -> Box<dyn std::error::Error> {
+        loop {
+            match task() {
+                Ok(_) => continue,
+                Err(e) => return e,
+            }
         }
     }
 

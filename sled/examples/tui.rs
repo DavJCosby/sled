@@ -6,19 +6,17 @@ use crossterm::{
 
 use ratatui::{
     prelude::*,
-    widgets::{
-        canvas::{Circle, Rectangle},
-        *,
-    },
+    widgets::{canvas::Circle, *},
 };
 
 use sled::{color::Srgb, Sled, Vec2};
 
-use std::io::{self, stdout, Stdout};
+use std::io::{self, stdout, Error, ErrorKind, Stdout};
 
 pub struct SledTerminalDisplay {
     pub leds: Vec<(Srgb<u8>, Vec2)>,
     on_quit: Box<dyn FnMut()>,
+    quit: bool,
     x_bounds: [f64; 2],
     y_bounds: [f64; 2],
     terminal: Option<Terminal<CrosstermBackend<Stdout>>>,
@@ -32,6 +30,7 @@ impl SledTerminalDisplay {
             y_bounds: [-1.1, 2.1],
             terminal: None,
             on_quit: Box::new(|| {}),
+            quit: false,
         }
     }
 
@@ -54,13 +53,15 @@ impl SledTerminalDisplay {
 
     pub fn refresh(&mut self) -> io::Result<()> {
         let should_quit = self.check_for_quit()?;
-        if !should_quit {
-            self.draw()?;
-        } else {
+        if should_quit {
+            self.quit = true;
             (self.on_quit)();
             self.stop()?;
+            Err(Error::new(ErrorKind::Other, "User closed the terminal."))
+        } else {
+            self.draw()?;
+            Ok(())
         }
-        Ok(())
     }
 
     fn draw(&mut self) -> io::Result<()> {
@@ -68,7 +69,11 @@ impl SledTerminalDisplay {
             terminal.draw(|frame| {
                 frame.render_widget(
                     canvas::Canvas::default()
-                        .block(Block::default().borders(Borders::ALL).title("Current effect: quirky_trail.rs"))
+                        .block(
+                            Block::default()
+                                .borders(Borders::ALL)
+                                .title("Current effect: quirky_trail.rs"),
+                        )
                         .marker(Marker::HalfBlock)
                         .background_color(Color::Black)
                         .paint(|ctx| {

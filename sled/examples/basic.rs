@@ -1,5 +1,6 @@
 mod tui;
 use core::time;
+use std::error::Error;
 use std::f32::consts::TAU;
 
 use tui::SledTerminalDisplay;
@@ -84,21 +85,23 @@ fn draw(
 //     Ok(())
 // }
 
-fn main() -> Result<(), SledError> {
+fn main() {
     let mut display = SledTerminalDisplay::new();
+    display.start().unwrap();
+
+    let sled = Sled::new("./examples/config.toml").unwrap();
     let mut driver = Driver::new();
+
     driver.set_startup_commands(startup);
     driver.set_draw_commands(draw);
-
-    let sled = Sled::new("./examples/config.toml")?;
     driver.mount(sled);
-    display.start().unwrap();
-    display.on_quit(|| panic!("ending!"));
+
     let mut scheduler = Scheduler::fixed_hz(500.0);
-    scheduler.loop_forever(|| {
+    scheduler.loop_until_err(|| {
         driver.step();
 
         display.leds = driver.read_colors_and_positions();
-        display.refresh().unwrap();
+        display.refresh()?;
+        Ok(())
     });
 }
