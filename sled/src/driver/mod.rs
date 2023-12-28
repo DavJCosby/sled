@@ -78,7 +78,7 @@ impl Driver {
         self.sled = Some(sled);
     }
 
-    pub fn update(&mut self) {
+    pub fn step(&mut self) {
         if let Some(sled) = &mut self.sled {
             let time_info = TimeInfo {
                 elapsed: self.startup.elapsed(),
@@ -88,6 +88,11 @@ impl Driver {
             self.last_update = Instant::now();
             (self.draw_commands)(sled, &self.sliders, &self.filters, &time_info).unwrap();
         }
+    }
+
+    pub fn step_by(&mut self, delta: Duration) {
+        self.startup -= delta;
+        self.step();
     }
 
     pub fn dismount(mut self) -> Sled {

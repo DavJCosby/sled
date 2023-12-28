@@ -44,6 +44,6 @@ fn main() -> Result<(), SledError> {
 
     let mut scheduler = Scheduler::fixed_hz(120.0);
     scheduler.loop_forever(|| {
-        driver.update();
+        driver.step();
     });
 }
