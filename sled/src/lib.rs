@@ -90,6 +90,9 @@ mod sled;
 #[cfg(feature = "drivers")]
 pub mod driver;
 
+#[cfg(feature = "scheduler")]
+pub mod scheduler;
+
 pub use error::SledError;
 /// [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;

@@ -2,12 +2,9 @@ use crate::{color::Srgb, Filter, Sled, SledError, Vec2};
 use std::time::{Duration, Instant};
 
 mod filters;
-mod scheduler;
 mod sliders;
 pub use filters::Filters;
 pub use sliders::{Slider, Sliders};
-
-pub use scheduler::Scheduler;
 
 pub enum RefreshTiming {
     None,
