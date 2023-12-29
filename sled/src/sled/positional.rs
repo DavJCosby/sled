@@ -153,9 +153,11 @@ impl Sled {
         let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LEDs exist at a distance of {} from {}", dist, pos),
-            });
+            return SledError::new(format!(
+                "No LEDs exist at a distance of {} from {}",
+                dist, pos
+            ))
+            .as_err();
         }
 
         for i in indices {
@@ -174,12 +176,11 @@ impl Sled {
         let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
-            return Err(SledError {
-                message: format!(
-                    "No LEDs exist at a distance of {} from the center point.",
-                    dist
-                ),
-            });
+            return SledError::new(format!(
+                "No LEDs exist at a distance of {} from the center point.",
+                dist
+            ))
+            .as_err();
         }
 
         for index in indices {

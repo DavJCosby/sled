@@ -4,7 +4,8 @@ version = "0.2.0"
 edition = "2021"
 
 [features]
-default = []
+default = ["drivers"]
+drivers = ["micromap", "compact_str", "spin_sleep"]
 named_colors = []
 
 [dependencies]
@@ -14,13 +15,16 @@ palette = { version = "0.7.3", default-features = false, features = [
     "std",
     "approx",
 ] }
-smallvec = "1.11.2"
-micromap = "0.0.14"
-compact_str = "0.7"
 toml = "0.8.0"
+smallvec = "1.11.2"
+micromap = { version = "0.0.14", optional = true }
+compact_str = { version = "0.7", optional = true }
+spin_sleep = { version = "1.1.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.5.1"
+ratatui = "0.25.0"
+crossterm = "0.27.0"
 
 [profile.bench]
 lto = true

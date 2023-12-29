@@ -30,7 +30,8 @@ impl Sled {
     pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Filter {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
-            .iter().copied()
+            .iter()
+            .copied()
             .collect::<HashSet<usize>>()
             .into()
     }
@@ -52,9 +53,7 @@ impl Sled {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LED in directon: {} from {}", dir, pos),
-            });
+            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
         }
 
         for index in intersecting_indices {
@@ -72,9 +71,7 @@ impl Sled {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LED in directon: {} from {}", dir, pos),
-            });
+            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
         }
 
         for index in intersecting_indices {

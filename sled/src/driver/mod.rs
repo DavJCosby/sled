@@ -1,10 +1,13 @@
-use crate::{Filter, Sled, SledError};
+use crate::{color::Srgb, Filter, Sled, SledError, Vec2};
 use std::time::{Duration, Instant};
 
 mod filters;
+mod scheduler;
 mod sliders;
-use filters::Filters;
-use sliders::{Slider, Sliders};
+pub use filters::Filters;
+pub use sliders::{Slider, Sliders};
+
+pub use scheduler::Scheduler;
 
 pub enum RefreshTiming {
     None,
@@ -75,7 +78,7 @@ impl Driver {
         self.sled = Some(sled);
     }
 
-    pub fn update(&mut self) {
+    pub fn step(&mut self) {
         if let Some(sled) = &mut self.sled {
             let time_info = TimeInfo {
                 elapsed: self.startup.elapsed(),
@@ -85,6 +88,11 @@ impl Driver {
             self.last_update = Instant::now();
             (self.draw_commands)(sled, &self.sliders, &self.filters, &time_info).unwrap();
         }
+    }
+
+    pub fn step_by(&mut self, delta: Duration) {
+        self.startup -= delta;
+        self.step();
     }
 
     pub fn dismount(mut self) -> Sled {
@@ -113,5 +121,35 @@ impl Driver {
 
     pub fn get_filter(&self, key: &str) -> Option<&Filter> {
         self.filters.get(key)
+    }
+
+    pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
+    where
+        f32: crate::color::stimulus::IntoStimulus<T>,
+    {
+        if let Some(sled) = &self.sled {
+            sled.read_colors()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn read_positions(&self) -> Vec<Vec2> {
+        if let Some(sled) = &self.sled {
+            sled.read_positions()
+        } else {
+            vec![]
+        }
+    }
+
+    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    where
+        f32: crate::color::stimulus::IntoStimulus<T>,
+    {
+        if let Some(sled) = &self.sled {
+            sled.read_colors_and_positions()
+        } else {
+            vec![]
+        }
     }
 }

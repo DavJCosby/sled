@@ -1,0 +1,23 @@
+# A static reference point. At initialization, directions, distances, etc relative to this point are pre-calculated.
+center_point = [0.0, 1.0]
+density = 30.0
+
+[[line_segment]]
+start = [-2.0, 0.0]
+end = [0.5, -1.0]
+
+[[line_segment]]
+start = [0.5, -1.0]
+end = [3.5, 0.0]
+
+[[line_segment]]
+start = [3.5, 0.0]
+end = [2, 2]
+
+[[line_segment]]
+start = [2.0, 2]
+end = [-2.0, 2]
+
+[[line_segment]]
+start = [-2.0, 2]
+end = [-2.0, 0.0]

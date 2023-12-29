@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{
     color,
     color::{Rgb, Srgb},
@@ -33,6 +35,8 @@ impl Sled {
             .unwrap()
             .index();
 
+        let domain = Sled::calc_domain(&leds);
+
         Ok(Sled {
             center_point: config.center_point,
             leds,
@@ -40,6 +44,7 @@ impl Sled {
             line_segments: config.line_segments,
             index_of_closest,
             index_of_furthest,
+            domain,
             // utility lookup tables
             line_segment_endpoint_indices,
             vertex_indices,
@@ -60,6 +65,20 @@ impl Sled {
             .collect()
     }
 
+    pub fn read_positions(&self) -> Vec<Vec2> {
+        self.leds.iter().map(|led| led.position()).collect()
+    }
+
+    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    where
+        f32: color::stimulus::IntoStimulus<T>,
+    {
+        self.leds
+            .iter()
+            .map(|led| (led.color.into_format(), led.position()))
+            .collect()
+    }
+
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
@@ -74,6 +93,10 @@ impl Sled {
 
     pub fn num_vertices(&self) -> usize {
         self.vertex_indices.len()
+    }
+
+    pub fn domain(&self) -> Range<Vec2> {
+        self.domain.clone()
     }
 
     fn leds_per_segment(config: &Config) -> Vec<usize> {
@@ -143,12 +166,31 @@ impl Sled {
         vertex_indices
     }
 
+    fn calc_domain(leds: &Vec<Led>) -> Range<Vec2> {
+        let mut min_x = f32::MAX;
+        let mut min_y = f32::MAX;
+
+        let mut max_x = f32::MIN;
+        let mut max_y = f32::MIN;
+
+        for led in leds {
+            let p = led.position();
+
+            min_x = min_x.min(p.x);
+            min_y = min_y.min(p.y);
+
+            max_x = max_x.max(p.x);
+            max_y = max_y.max(p.y);
+        }
+
+        Vec2::new(min_x, min_y)..Vec2::new(max_x, max_y)
+    }
+
     pub(crate) fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
         let segment = &self.line_segments[segment_index];
         let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
         let leds_in_segment = segment.num_leds() as f32;
 
-        
         startpoint_index + (segment_alpha * leds_in_segment).floor() as usize
     }
 }
