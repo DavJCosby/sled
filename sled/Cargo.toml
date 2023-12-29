@@ -4,8 +4,9 @@ version = "0.2.0"
 edition = "2021"
 
 [features]
-default = ["drivers"]
-drivers = ["micromap", "compact_str", "spin_sleep"]
+default = ["drivers", "scheduler"]
+drivers = ["micromap", "compact_str"]
+scheduler = ["spin_sleep"]
 named_colors = []
 
 [dependencies]

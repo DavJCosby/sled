@@ -3,8 +3,8 @@ use std::f32::consts::TAU;
 
 use tui::SledTerminalDisplay;
 
-use sled::driver::{Driver, Filters, Scheduler, Sliders, TimeInfo};
-use sled::{color::Rgb, Sled, SledError};
+use sled::driver::{Driver, Filters, Sliders, TimeInfo};
+use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError};
 
 fn startup(sled: &mut Sled, sliders: &mut Sliders, filters: &mut Filters) -> Result<(), SledError> {
     sliders.set("background", Rgb::new(0.0, 0.0, 0.0));
