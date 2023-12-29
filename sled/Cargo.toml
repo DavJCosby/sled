@@ -3,18 +3,29 @@ name = "sled"
 version = "0.2.0"
 edition = "2021"
 
+[features]
+default = ["drivers", "scheduler"]
+drivers = ["micromap", "compact_str"]
+scheduler = ["spin_sleep"]
+named_colors = []
+
 [dependencies]
-glam = { version = "0.24.2", features = ["serde"] }
-serde = "1.0.188"
+glam = { version = "0.24", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
 palette = { version = "0.7.3", default-features = false, features = [
-    "serializing",
     "std",
     "approx",
 ] }
 toml = "0.8.0"
+smallvec = "1.11.2"
+micromap = { version = "0.0.14", optional = true }
+compact_str = { version = "0.7", optional = true }
+spin_sleep = { version = "1.1.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.5.1"
+ratatui = "0.25.0"
+crossterm = "0.27.0"
 
 [profile.bench]
 lto = true
