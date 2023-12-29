@@ -1,5 +1,3 @@
-use std::ops::{IndexMut, Index};
-
 use compact_str::{CompactString, ToCompactString};
 use glam::Vec3;
 use micromap::Map;

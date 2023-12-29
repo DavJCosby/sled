@@ -1,6 +1,4 @@
 mod tui;
-use core::time;
-use std::error::Error;
 use std::f32::consts::TAU;
 
 use tui::SledTerminalDisplay;
@@ -27,8 +25,8 @@ const TRAIL_RADIUS: f32 = 18.0;
 
 fn draw(
     sled: &mut Sled,
-    sliders: &Sliders,
-    filters: &Filters,
+    _sliders: &Sliders,
+    _filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {
     let elapsed = time_info.elapsed.as_secs_f32() * 15.0;
@@ -86,10 +84,9 @@ fn draw(
 // }
 
 fn main() {
-    let mut display = SledTerminalDisplay::new();
-    display.start().unwrap();
-
     let sled = Sled::new("./examples/config.toml").unwrap();
+    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
+
     let mut driver = Driver::new();
 
     driver.set_startup_commands(startup);

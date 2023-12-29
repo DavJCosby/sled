@@ -6,39 +6,42 @@ use crossterm::{
 
 use ratatui::{
     prelude::*,
-    widgets::{canvas::Circle, *},
+    widgets::{
+        canvas::{Canvas, Circle, Context},
+        *,
+    },
 };
 
 use sled::{color::Srgb, Sled, Vec2};
 
-use std::io::{self, stdout, Error, ErrorKind, Stdout};
+use std::{
+    io::{self, stdout, Error, ErrorKind, Stdout},
+    ops::Range,
+};
 
 pub struct SledTerminalDisplay {
+    title: String,
     pub leds: Vec<(Srgb<u8>, Vec2)>,
     on_quit: Box<dyn FnMut()>,
     quit: bool,
     x_bounds: [f64; 2],
     y_bounds: [f64; 2],
-    terminal: Option<Terminal<CrosstermBackend<Stdout>>>,
+    terminal: Terminal<CrosstermBackend<Stdout>>,
 }
 
 impl SledTerminalDisplay {
-    pub fn new() -> Self {
+    pub fn start(title: &str, domain: Range<Vec2>) -> Self {
+        enable_raw_mode().unwrap();
+        stdout().execute(EnterAlternateScreen).unwrap();
         SledTerminalDisplay {
+            title: String::from(title),
             leds: vec![],
-            x_bounds: [-2.5, 3.75],
-            y_bounds: [-1.1, 2.1],
-            terminal: None,
+            x_bounds: [domain.start.x as f64, domain.end.x as f64],
+            y_bounds: [domain.start.y as f64, domain.end.y as f64],
+            terminal: Terminal::new(CrosstermBackend::new(stdout())).unwrap(),
             on_quit: Box::new(|| {}),
             quit: false,
         }
-    }
-
-    pub fn start(&mut self) -> io::Result<()> {
-        enable_raw_mode()?;
-        stdout().execute(EnterAlternateScreen)?;
-        self.terminal = Some(Terminal::new(CrosstermBackend::new(stdout()))?);
-        Ok(())
     }
 
     pub fn on_quit(&mut self, callback: impl FnMut() + 'static) {
@@ -59,40 +62,9 @@ impl SledTerminalDisplay {
             self.stop()?;
             Err(Error::new(ErrorKind::Other, "User closed the terminal."))
         } else {
-            self.draw()?;
+            self.draw_frame()?;
             Ok(())
         }
-    }
-
-    fn draw(&mut self) -> io::Result<()> {
-        if let Some(terminal) = &mut self.terminal {
-            terminal.draw(|frame| {
-                frame.render_widget(
-                    canvas::Canvas::default()
-                        .block(
-                            Block::default()
-                                .borders(Borders::ALL)
-                                .title("Current effect: quirky_trail.rs"),
-                        )
-                        .marker(Marker::HalfBlock)
-                        .background_color(Color::Black)
-                        .paint(|ctx| {
-                            for (col, pos) in &self.leds {
-                                ctx.draw(&Circle {
-                                    x: pos.x as f64,
-                                    y: pos.y as f64,
-                                    radius: 0.0,
-                                    color: Color::Rgb(col.red, col.green, col.blue),
-                                });
-                            }
-                        })
-                        .x_bounds(self.x_bounds)
-                        .y_bounds(self.y_bounds),
-                    frame.size(),
-                );
-            })?;
-        }
-        Ok(())
     }
 
     fn check_for_quit(&self) -> io::Result<bool> {
@@ -105,21 +77,50 @@ impl SledTerminalDisplay {
         }
         Ok(false)
     }
+
+    fn draw_frame(&mut self) -> io::Result<()> {
+        let canvas = build_viewport(&self.title, self.x_bounds, self.y_bounds).paint(|ctx| {
+            for led in &self.leds {
+                draw_led(ctx, led);
+            }
+        });
+
+        self.terminal.draw(|frame| {
+            frame.render_widget(canvas, frame.size());
+        })?;
+
+        Ok(())
+    }
 }
 
-fn ui(frame: &mut Frame, canvas: impl Widget) {
-    frame.render_widget(canvas, frame.size())
+fn draw_led(ctx: &mut Context, led: &(Srgb<u8>, Vec2)) {
+    let (col, pos) = led;
+    ctx.draw(&Circle {
+        x: pos.x as f64,
+        y: pos.y as f64,
+        radius: 0.0,
+        color: Color::Rgb(col.red, col.green, col.blue),
+    });
+}
+
+fn build_viewport<T>(title: &str, x_bounds: [f64; 2], y_bounds: [f64; 2]) -> Canvas<'_, T>
+where
+    T: Fn(&mut Context<'_>),
+{
+    Canvas::default()
+        .block(Block::default().borders(Borders::ALL).title(title))
+        .marker(Marker::HalfBlock)
+        .background_color(Color::Black)
+        .x_bounds(x_bounds)
+        .y_bounds(y_bounds)
 }
 
 fn main() -> io::Result<()> {
-    let mut display = SledTerminalDisplay::new();
     let sled = Sled::new("./examples/config.toml").unwrap();
-    let colors = sled.read_colors::<u8>();
-    let positions = sled.read_positions();
-    let led_data = colors.into_iter().zip(positions.into_iter()).collect();
-    display.leds = led_data;
-    display.start()?;
+
+    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
+    display.leds = sled.read_colors_and_positions();
     display.refresh()?;
-    //display.stop()?;
+
     Ok(())
 }

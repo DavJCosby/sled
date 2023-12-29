@@ -1,8 +1,5 @@
 use spin_sleep::SpinSleeper;
-use std::{
-    error::Error,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 pub struct Scheduler {
     target_delta: Duration,
     sleeper: SpinSleeper,
