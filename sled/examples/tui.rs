@@ -54,6 +54,10 @@ impl SledTerminalDisplay {
         Ok(())
     }
 
+    pub fn set_title(&mut self, title: String) {
+        self.title = title;
+    }
+
     pub fn refresh(&mut self) -> io::Result<()> {
         let should_quit = self.check_for_quit()?;
         if should_quit {
@@ -68,7 +72,7 @@ impl SledTerminalDisplay {
     }
 
     fn check_for_quit(&self) -> io::Result<bool> {
-        if event::poll(std::time::Duration::from_millis(50))? {
+        if event::poll(std::time::Duration::from_nanos(1))? {
             if let Event::Key(key) = event::read()? {
                 if key.kind == event::KeyEventKind::Press && key.code == KeyCode::Char('q') {
                     return Ok(true);

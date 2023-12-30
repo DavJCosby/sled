@@ -50,6 +50,10 @@ impl Driver {
         }
     }
 
+    pub fn elapsed(&self) -> Duration {
+        self.startup.elapsed()
+    }
+
     pub fn set_startup_commands<
         F: Fn(&mut Sled, &mut Sliders, &mut Filters) -> SledResult + 'static,
     >(

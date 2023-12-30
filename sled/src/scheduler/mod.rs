@@ -38,7 +38,7 @@ impl Scheduler {
     ) -> Box<dyn std::error::Error> {
         loop {
             match task() {
-                Ok(_) => continue,
+                Ok(_) => self.sleep_until_next_frame(),
                 Err(e) => return e,
             }
         }

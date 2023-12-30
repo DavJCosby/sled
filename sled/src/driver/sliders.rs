@@ -1,16 +1,16 @@
+use crate::Vec2;
 use compact_str::{CompactString, ToCompactString};
-use glam::Vec3;
 use micromap::Map;
 
 use self::internal_traits::SliderMapForType;
 use crate::color::Rgb;
 
-const MAP_DEPTH: usize = 8;
+const MAP_DEPTH: usize = 10;
 pub struct Sliders {
     colors: Map<CompactString, Rgb, MAP_DEPTH>,
     f32s: Map<CompactString, f32, MAP_DEPTH>,
     bools: Map<CompactString, bool, MAP_DEPTH>,
-    vec3s: Map<CompactString, Vec3, MAP_DEPTH>,
+    vec2s: Map<CompactString, Vec2, MAP_DEPTH>,
     usizes: Map<CompactString, usize, MAP_DEPTH>,
 }
 
@@ -27,7 +27,7 @@ impl Sliders {
             colors: Map::new(),
             f32s: Map::new(),
             bools: Map::new(),
-            vec3s: Map::new(),
+            vec2s: Map::new(),
             usizes: Map::new(),
         }
     }
@@ -37,7 +37,11 @@ impl Sliders {
         Sliders: SliderMapForType<T>,
     {
         let map = self.map_for_type_mut();
-        map.insert(key.to_compact_string(), value);
+        if let Some(v) = map.get_mut(key) {
+            *v = value
+        } else {
+            map.insert(key.to_compact_string(), value);
+        }
     }
 
     pub fn get<T: Copy>(&self, key: &str) -> Option<T>
@@ -90,13 +94,13 @@ impl SliderMapForType<bool> for Sliders {
     }
 }
 
-impl SliderMapForType<Vec3> for Sliders {
-    fn map_for_type(&self) -> &Map<CompactString, Vec3, MAP_DEPTH> {
-        &self.vec3s
+impl SliderMapForType<Vec2> for Sliders {
+    fn map_for_type(&self) -> &Map<CompactString, Vec2, MAP_DEPTH> {
+        &self.vec2s
     }
 
-    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, Vec3, MAP_DEPTH> {
-        &mut self.vec3s
+    fn map_for_type_mut(&mut self) -> &mut Map<CompactString, Vec2, MAP_DEPTH> {
+        &mut self.vec2s
     }
 }
 
@@ -114,12 +118,12 @@ pub trait Slider<T>: SliderMapForType<T> {}
 impl Slider<Rgb> for Sliders {}
 impl Slider<f32> for Sliders {}
 impl Slider<bool> for Sliders {}
-impl Slider<Vec3> for Sliders {}
+impl Slider<Vec2> for Sliders {}
 impl Slider<usize> for Sliders {}
 
 fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
     match option {
         Some(v) => Some(*v),
-        None => todo!(),
+        None => None,
     }
 }
