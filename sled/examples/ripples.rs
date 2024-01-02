@@ -1,7 +1,6 @@
 mod tui;
 
 use std::ops::Range;
-use std::time::Instant;
 
 use rand::Rng;
 use tui::SledTerminalDisplay;
@@ -9,13 +8,13 @@ use tui::SledTerminalDisplay;
 use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError, Vec2};
 
-const MAX_RIPPLES: usize = 10;
+const MAX_RIPPLES: usize = 12;
 const MAX_RADIUS: f32 = 12.0;
 
 const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
 
-const COLS: [Rgb; MAX_RIPPLES] = [
+const COLS: [Rgb; 10] = [
     Rgb::new(0.15, 0.5, 1.0),
     Rgb::new(0.25, 0.3, 1.0),
     Rgb::new(0.05, 0.4, 0.8),
@@ -27,20 +26,6 @@ const COLS: [Rgb; MAX_RIPPLES] = [
     Rgb::new(0.0, 0.0, 1.0),
     Rgb::new(1.0, 0.71, 0.705),
 ];
-
-fn rand_point_in_range(range: &Range<Vec2>) -> Vec2 {
-    let mut rng = rand::thread_rng();
-    Vec2::new(
-        rng.gen_range(range.start.x * 1.25..range.end.x * 1.25),
-        rng.gen_range(range.start.y * 1.25..range.end.y * 1.25),
-    )
-}
-
-fn rand_init_radius() -> f32 {
-    let mut rng = rand::thread_rng();
-    // using a negative radius, we can scheudle a delay before the ripple actually appears
-    rng.gen_range(-25.0..0.0)
-}
 
 fn startup(
     sled: &mut Sled,
@@ -62,29 +47,62 @@ fn startup(
     Ok(())
 }
 
+fn compute(
+    sled: &Sled,
+    buffers: &mut BufferContainer,
+    _filters: &mut Filters,
+    time_info: &TimeInfo,
+) -> Result<(), SledError> {
+    let delta = time_info.delta.as_secs_f32();
+    let bounds = sled.domain();
+    for i in 0..MAX_RIPPLES {
+        let radius: f32 = buffers.get("radii").unwrap()[i];
+        if radius > MAX_RADIUS {
+            let new_pos = rand_point_in_range(&bounds);
+            let new_radius = rand_init_radius();
+            buffers.get_mut("positions").unwrap()[i] = new_pos;
+            buffers.get_mut("radii").unwrap()[i] = new_radius;
+            continue;
+        }
+
+        let new_radius = radius + delta * inv_sqrt(radius.max(1.0));
+        buffers.get_mut("radii").unwrap()[i] = new_radius;
+    }
+    Ok(())
+}
+
+fn rand_point_in_range(range: &Range<Vec2>) -> Vec2 {
+    let mut rng = rand::thread_rng();
+    Vec2::new(
+        rng.gen_range(range.start.x * 1.25..range.end.x * 1.25),
+        rng.gen_range(range.start.y * 1.25..range.end.y * 1.25),
+    )
+}
+
+fn rand_init_radius() -> f32 {
+    let mut rng = rand::thread_rng();
+    // using a negative radius, we can scheudle a delay before the ripple actually appears
+    rng.gen_range(-32.0..0.0)
+}
+
 fn draw(
     sled: &mut Sled,
-    sliders: &BufferContainer,
+    buffers: &BufferContainer,
     _filters: &Filters,
     _time_info: &TimeInfo,
 ) -> Result<(), SledError> {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
     for i in 0..MAX_RIPPLES {
-        try_draw_ripple(sled, sliders, i);
+        let pos = buffers.get("positions").unwrap()[i];
+        let radius = buffers.get("radii").unwrap()[i];
+
+        if radius > -FEATHERING {
+            draw_ripple_at(sled, pos, radius, COLS[i % COLS.len()]);
+        }
     }
 
-    //sled.map(|led| led.color / (Rgb::new(1.0, 1.0, 1.0) + led.color));
-
+    // sled.map(|led| led.color / (Rgb::new(1.0, 1.0, 1.0) + led.color));
     Ok(())
-}
-
-fn try_draw_ripple(sled: &mut Sled, buffers: &BufferContainer, id: usize) {
-    let pos = buffers.get("positions").unwrap()[id];
-    let radius = buffers.get("radii").unwrap()[id];
-
-    if radius > -FEATHERING {
-        draw_ripple_at(sled, pos, radius, COLS[id]);
-    }
 }
 
 fn draw_ripple_at(sled: &mut Sled, pos: Vec2, radius: f32, color: Rgb) {
@@ -117,32 +135,16 @@ fn main() {
     let sled = Sled::new("./examples/config.toml").unwrap();
     let sled_bounds = sled.domain();
 
+    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled_bounds.clone());
     let mut driver = Driver::new();
-
     driver.set_startup_commands(startup);
+    driver.set_compute_commands(compute);
     driver.set_draw_commands(draw);
     driver.mount(sled);
 
-    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled_bounds.clone());
-    let mut last_update = Instant::now();
     let mut scheduler = Scheduler::fixed_hz(500.0);
     scheduler.loop_until_err(|| {
-        let delta = last_update.elapsed().as_secs_f32();
-        last_update = Instant::now();
-
-        for i in 0..MAX_RIPPLES {
-            let radius: f32 = *driver.get_from_buffer("radii", i).unwrap();
-            if radius > MAX_RADIUS {
-                let new_pos = rand_point_in_range(&sled_bounds);
-                driver.set_in_buffer("positions", i, new_pos);
-            }
-
-            let new_radius = radius + delta * inv_sqrt(radius.max(1.0));
-            driver.set_in_buffer("radii", i, new_radius);
-        }
-
         driver.step();
-        display.set_title(format!("{} FPS", (1.0 / delta).ceil() as usize));
         display.leds = driver.read_colors_and_positions();
         display.refresh()?;
         Ok(())

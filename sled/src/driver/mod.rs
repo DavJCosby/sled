@@ -21,11 +21,13 @@ pub struct TimeInfo {
 
 type SledResult = Result<(), SledError>;
 type StartupCommands = Box<dyn Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult>;
+type ComputeCommands = Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
 type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
 pub struct Driver {
     _timing_strategy: RefreshTiming,
     sled: Option<Sled>,
     startup_commands: StartupCommands,
+    compute_commands: ComputeCommands,
     draw_commands: DrawCommands,
     startup: Instant,
     last_update: Instant,
@@ -45,6 +47,7 @@ impl Driver {
             _timing_strategy: RefreshTiming::None,
             sled: None,
             startup_commands: Box::new(|_, _, _| Ok(())),
+            compute_commands: Box::new(|_, _, _, _| Ok(())),
             draw_commands: Box::new(|_, _, _, _| Ok(())),
             startup: Instant::now(),
             last_update: Instant::now(),
@@ -64,6 +67,15 @@ impl Driver {
         startup_commands: F,
     ) {
         self.startup_commands = Box::new(startup_commands);
+    }
+
+    pub fn set_compute_commands<
+        F: Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult + 'static,
+    >(
+        &mut self,
+        compute_commands: F,
+    ) {
+        self.compute_commands = Box::new(compute_commands);
     }
 
     pub fn set_draw_commands<
@@ -90,6 +102,7 @@ impl Driver {
             };
 
             self.last_update = Instant::now();
+            (self.compute_commands)(sled, &mut self.buffers, &mut self.filters, &time_info).unwrap();
             (self.draw_commands)(sled, &self.buffers, &self.filters, &time_info).unwrap();
         }
     }
