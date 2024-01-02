@@ -10,18 +10,6 @@ const MAX_RIPPLES: usize = 12;
 const MAX_RADIUS: f32 = 12.0;
 const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
-const COLORS: [Rgb; 10] = [
-    Rgb::new(0.15, 0.5, 1.0),
-    Rgb::new(0.25, 0.3, 1.0),
-    Rgb::new(0.05, 0.4, 0.8),
-    Rgb::new(0.7, 0.0, 0.6),
-    Rgb::new(0.05, 0.75, 1.0),
-    Rgb::new(0.1, 0.8, 0.6),
-    Rgb::new(0.6, 0.05, 0.2),
-    Rgb::new(0.85, 0.15, 0.3),
-    Rgb::new(0.0, 0.0, 1.0),
-    Rgb::new(1.0, 0.71, 0.705),
-];
 
 fn main() {
     let sled = Sled::new("./examples/config.toml").unwrap();
@@ -58,6 +46,20 @@ fn startup(
     for _ in 0..MAX_RIPPLES {
         positions.push(rand_point_in_range(&sled_bounds));
     }
+
+    let colors = buffers.create("colors");
+    colors.extend([
+        Rgb::new(0.15, 0.5, 1.0),
+        Rgb::new(0.25, 0.3, 1.0),
+        Rgb::new(0.05, 0.4, 0.8),
+        Rgb::new(0.7, 0.0, 0.6),
+        Rgb::new(0.05, 0.75, 1.0),
+        Rgb::new(0.1, 0.8, 0.6),
+        Rgb::new(0.6, 0.05, 0.2),
+        Rgb::new(0.85, 0.15, 0.3),
+        Rgb::new(0.0, 0.0, 1.0),
+        Rgb::new(1.0, 0.71, 0.705),
+    ]);
 
     Ok(())
 }
@@ -107,12 +109,13 @@ fn draw(
     _time_info: &TimeInfo,
 ) -> Result<(), SledError> {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+    let colors = buffers.get_buffer("colors").unwrap();
     for i in 0..MAX_RIPPLES {
         let pos = buffers.get("positions", i).unwrap();
         let radius = buffers.get("radii", i).unwrap();
 
         if radius > -FEATHERING {
-            draw_ripple_at(sled, pos, radius, COLORS[i % COLORS.len()]);
+            draw_ripple_at(sled, pos, radius, colors[i % colors.len()]);
         }
     }
 
