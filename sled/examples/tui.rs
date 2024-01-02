@@ -29,6 +29,7 @@ pub struct SledTerminalDisplay {
     terminal: Terminal<CrosstermBackend<Stdout>>,
 }
 
+#[allow(dead_code)]
 impl SledTerminalDisplay {
     pub fn start(title: &str, domain: Range<Vec2>) -> Self {
         enable_raw_mode().unwrap();
@@ -119,6 +120,7 @@ where
         .y_bounds(y_bounds)
 }
 
+#[allow(dead_code)]
 fn main() -> io::Result<()> {
     let sled = Sled::new("./examples/config.toml").unwrap();
 

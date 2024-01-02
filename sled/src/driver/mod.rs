@@ -1,4 +1,4 @@
-use crate::{color::Srgb, Filter, Sled, SledError, Vec2};
+use crate::{color::Srgb, Sled, SledError, Vec2};
 use std::time::{Duration, Instant};
 
 mod filters;
@@ -6,8 +6,6 @@ mod filters;
 mod buffers;
 pub use buffers::{Buffer, BufferContainer};
 pub use filters::Filters;
-
-use self::buffers::MapForType;
 
 pub enum RefreshTiming {
     None,
@@ -21,7 +19,8 @@ pub struct TimeInfo {
 
 type SledResult = Result<(), SledError>;
 type StartupCommands = Box<dyn Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult>;
-type ComputeCommands = Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
+type ComputeCommands =
+    Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
 type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
 pub struct Driver {
     _timing_strategy: RefreshTiming,
@@ -102,7 +101,8 @@ impl Driver {
             };
 
             self.last_update = Instant::now();
-            (self.compute_commands)(sled, &mut self.buffers, &mut self.filters, &time_info).unwrap();
+            (self.compute_commands)(sled, &mut self.buffers, &mut self.filters, &time_info)
+                .unwrap();
             (self.draw_commands)(sled, &self.buffers, &self.filters, &time_info).unwrap();
         }
     }
@@ -116,53 +116,6 @@ impl Driver {
         let sled = self.sled.unwrap();
         self.sled = None;
         sled
-    }
-
-    pub fn create_buffer<T>(&mut self, key: &str) -> &mut Buffer<T>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        self.buffers.create_buffer(key)
-    }
-
-    pub fn get_buffer<T>(&self, key: &str) -> Option<&Buffer<T>>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        self.buffers.get(key)
-    }
-
-    pub fn get_buffer_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        self.buffers.get_mut(key)
-    }
-
-    pub fn get_from_buffer<T>(&self, buffer_key: &str, index: usize) -> Option<&T>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let buffer = self.get_buffer(buffer_key)?;
-        buffer.get(index)
-    }
-
-    pub fn set_in_buffer<T>(&mut self, buffer_key: &str, index: usize, value: T)
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let buffer = self
-            .get_buffer_mut(buffer_key)
-            .expect("No buffer of matching key and type exists.");
-        buffer[index] = value
-    }
-
-    pub fn add_filter(&mut self, key: &str, set: Filter) {
-        self.filters.set(key, set);
-    }
-
-    pub fn get_filter(&self, key: &str) -> Option<&Filter> {
-        self.filters.get(key)
     }
 
     pub fn read_colors<T>(&self) -> Vec<Srgb<T>>

@@ -1,3 +1,5 @@
+use std::any::type_name;
+
 use compact_str::{CompactString, ToCompactString};
 use glam::Vec2;
 use micromap::Map;
@@ -80,6 +82,8 @@ mod internal_traits {
     }
 }
 
+use crate::SledError;
+
 pub use self::internal_traits::MapForType;
 
 #[allow(dead_code)]
@@ -94,29 +98,77 @@ impl BufferContainer {
         }
     }
 
-    pub fn create_buffer<T>(&mut self, key: &str) -> &mut Buffer<T>
+    pub fn create_buffer<T>(&mut self, buffer_name: &str) -> &mut Buffer<T>
     where
         BufferContainer: MapForType<T>,
     {
         let map = self.map_for_type_mut();
-        map.insert(key.to_compact_string(), Buffer::new());
-        &mut map[key]
+        map.insert(buffer_name.to_compact_string(), Buffer::new());
+        &mut map[buffer_name]
     }
 
-    pub fn get<T>(&self, key: &str) -> Option<&Buffer<T>>
+    pub fn get_buffer<T>(&self, buffer_name: &str) -> Option<&Buffer<T>>
     where
         BufferContainer: MapForType<T>,
     {
         let map = self.map_for_type();
-        map.get(key)
+        map.get(buffer_name)
     }
 
-    pub fn get_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
+    pub fn get_buffer_mut<T>(&mut self, buffer_name: &str) -> Option<&mut Buffer<T>>
     where
         BufferContainer: MapForType<T>,
     {
         let map = self.map_for_type_mut();
-        map.get_mut(key)
+        map.get_mut(buffer_name)
+    }
+
+    pub fn get<T>(&self, buffer_name: &str, index: usize) -> Option<T>
+    where
+        BufferContainer: MapForType<T>,
+        T: Copy,
+    {
+        let buffer = self.get_buffer(buffer_name)?;
+        deref_option(buffer.get(index))
+    }
+
+    pub fn set<T>(&mut self, buffer_name: &str, index: usize, value: T) -> Result<(), SledError>
+    where
+        BufferContainer: MapForType<T>,
+    {
+        let buffer = self.get_buffer_mut(buffer_name).ok_or_else(|| {
+            SledError::new(format!(
+                "There is no Buffer<{}> with the name `{}`.",
+                type_name::<T>(),
+                buffer_name
+            ))
+        })?;
+
+        buffer[index] = value;
+        Ok(())
+    }
+
+    pub fn push<T>(&mut self, buffer_name: &str, value: T) -> Result<(), SledError>
+    where
+        BufferContainer: MapForType<T>,
+    {
+        let buffer = self.get_buffer_mut(buffer_name).ok_or_else(|| {
+            SledError::new(format!(
+                "There is no Buffer<{}> with the name `{}`.",
+                type_name::<T>(),
+                buffer_name
+            ))
+        })?;
+
+        buffer.push(value);
+        Ok(())
+    }
+}
+
+fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
+    match option {
+        Some(v) => Some(*v),
+        None => None,
     }
 }
 
