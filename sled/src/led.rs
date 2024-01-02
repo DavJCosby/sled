@@ -30,7 +30,7 @@ impl Led {
 
         let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
         if angle < 0.0 {
-            angle = TAU + angle;
+            angle += TAU;
         }
         let distance = position.distance(center_point);
 

@@ -6,10 +6,24 @@ pub struct SledError {
 }
 
 impl SledError {
+    pub fn new(message: String) -> Self {
+        SledError { message }
+    }
+
     pub fn from_error(e: impl Error) -> Self {
         SledError {
             message: e.to_string(),
         }
+    }
+
+    pub fn as_err<T>(self) -> Result<T, Self> {
+        Err(self)
+    }
+}
+
+impl std::convert::From<&str> for SledError {
+    fn from(value: &str) -> Self {
+        SledError::new(value.to_string())
     }
 }
 

@@ -2,13 +2,13 @@ use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 use std::{collections::HashSet, ops::Range};
 
 /// Segment-based read and write methods.
 impl Sled {
-    pub fn get_segment(&self, segment_index: usize) -> Option<Set> {
+    pub fn get_segment(&self, segment_index: usize) -> Option<Filter> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
         let led_range = &self.leds[start..end];
         Some(led_range.into())
@@ -20,9 +20,11 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!("Segment of index {} does not exist.", segment_index),
-            });
+            return SledError::new(format!(
+                "Segment of index {} does not exist.",
+                segment_index
+            ))
+            .as_err();
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
@@ -35,9 +37,11 @@ impl Sled {
 
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!("No line segment of index {} exists.", segment_index),
-            });
+            return SledError::new(format!(
+                "No line segment of index {} exists.",
+                segment_index
+            ))
+            .as_err();
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
@@ -45,7 +49,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_segments(&self, range: Range<usize>) -> Option<Set> {
+    pub fn get_segments(&self, range: Range<usize>) -> Option<Filter> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             None
         } else {
@@ -62,11 +66,11 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!(
-                    "Segment index range extends beyond the number of segments in the system."
-                ),
-            });
+            return SledError::new(
+                "Segment index range extends beyond the number of segments in the system."
+                    .to_string(),
+            )
+            .as_err();
         }
 
         let (start, _) = self.line_segment_endpoint_indices[range.start];
@@ -79,11 +83,11 @@ impl Sled {
 
     pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
-            return Err(SledError {
-                message: format!(
-                    "Segment index range extends beyond the number of segments in the system."
-                ),
-            });
+            return SledError::new(
+                "Segment index range extends beyond the number of segments in the system."
+                    .to_string(),
+            )
+            .as_err();
         }
 
         let (start, _) = self.line_segment_endpoint_indices[range.start];
@@ -133,36 +137,37 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
-            return Err(SledError {
-                message: format!("Vertex of index {} does not exist.", vertex_index),
-            });
+            return SledError::new(format!("Vertex of index {} does not exist.", vertex_index))
+                .as_err();
         }
 
         let led = &mut self.leds[vertex_index];
-        led.color = color_rule(&led);
+        led.color = color_rule(led);
         Ok(())
     }
 
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
-            return Err(SledError {
-                message: format!("Vertex with index {} does not exist.", vertex_index),
-            });
+            return SledError::new(format!(
+                "Vertex with index {} does not exist.",
+                vertex_index
+            ))
+            .as_err();
         }
 
         self.leds[self.vertex_indices[vertex_index]].color = color;
         Ok(())
     }
 
-    pub fn get_vertices(&self) -> Set {
-        let hs: HashSet<&Led> = self.vertex_indices.iter().map(|i| &self.leds[*i]).collect();
+    pub fn get_vertices(&self) -> Filter {
+        let hs: HashSet<usize> = self.vertex_indices.iter().copied().collect();
         hs.into()
     }
 
     pub fn modulate_vertices<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
-            led.color = color_rule(&led);
+            led.color = color_rule(led);
         }
     }
 

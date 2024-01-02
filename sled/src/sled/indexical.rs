@@ -4,7 +4,7 @@ use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 
 /// Index-based read and write methods.
@@ -19,21 +19,17 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if index >= self.num_leds {
-            return Err(SledError {
-                message: format!("LED at index {} does not exist.", index),
-            });
+            return SledError::new(format!("LED at index {} does not exist.", index)).as_err();
         }
 
         let led = &mut self.leds[index];
-        led.color = color_rule(&led);
+        led.color = color_rule(led);
         Ok(())
     }
 
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
         if index >= self.num_leds {
-            return Err(SledError {
-                message: format!("LED at index {} does not exist.", index),
-            });
+            return SledError::new(format!("LED at index {} does not exist.", index)).as_err();
         }
 
         self.leds[index].color = color;
@@ -55,14 +51,12 @@ impl Sled {
 
 /// Index range-based read and write methods
 impl Sled {
-    pub fn get_range(&self, index_range: Range<usize>) -> Result<Set, SledError> {
+    pub fn get_range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
             Ok(led_range.into())
         } else {
-            Err(SledError {
-                message: format!("Index range extends beyond size of system."),
-            })
+            SledError::new("Index range extends beyond size of system.".to_string()).as_err()
         }
     }
 
@@ -72,9 +66,8 @@ impl Sled {
         color_rule: F,
     ) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
-            return Err(SledError {
-                message: format!("Index range extends beyond size of system."),
-            });
+            return SledError::new("Index range extends beyond size of system.".to_string())
+                .as_err();
         }
 
         for led in &mut self.leds[index_range] {
@@ -86,9 +79,8 @@ impl Sled {
 
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
-            return Err(SledError {
-                message: format!("Index range extends beyond size of system."),
-            });
+            return SledError::new("Index range extends beyond size of system.".to_string())
+                .as_err();
         }
 
         self.leds[index_range]
@@ -97,11 +89,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn for_each_in_range<F: FnMut(&mut Led)>(
-        &mut self,
-        index_range: Range<usize>,
-        mut func: F,
-    ) {
-        self.leds[index_range].iter_mut().for_each(|led| func(led));
+    pub fn for_each_in_range<F: FnMut(&mut Led)>(&mut self, index_range: Range<usize>, func: F) {
+        self.leds[index_range].iter_mut().for_each(func);
     }
 }

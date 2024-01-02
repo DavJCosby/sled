@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{color::Rgb, error::SledError, led::Led, Set, Sled};
+use crate::{color::Rgb, error::SledError, led::Led, Filter, Sled};
 use glam::Vec2;
 use smallvec::SmallVec;
 
@@ -23,16 +23,16 @@ impl Sled {
 
     /* direction setters/getters */
 
-    pub fn get_at_dir(&self, dir: Vec2) -> Set {
+    pub fn get_at_dir(&self, dir: Vec2) -> Filter {
         self.get_at_dir_from(dir, self.center_point)
     }
 
-    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Set {
+    pub fn get_at_dir_from(&self, dir: Vec2, pos: Vec2) -> Filter {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
             .iter()
-            .map(|i| &self.leds[*i])
-            .collect::<HashSet<&Led>>()
+            .copied()
+            .collect::<HashSet<usize>>()
             .into()
     }
 
@@ -53,14 +53,12 @@ impl Sled {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LED in directon: {} from {}", dir, pos),
-            });
+            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
         }
 
         for index in intersecting_indices {
             let led = &mut self.leds[index];
-            led.color = color_rule(&led);
+            led.color = color_rule(led);
         }
         Ok(())
     }
@@ -73,9 +71,7 @@ impl Sled {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LED in directon: {} from {}", dir, pos),
-            });
+            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
         }
 
         for index in intersecting_indices {
@@ -86,12 +82,12 @@ impl Sled {
 
     /* angle setters/getters */
 
-    pub fn get_at_angle(&self, angle: f32) -> Set {
+    pub fn get_at_angle(&self, angle: f32) -> Filter {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir(dir)
     }
 
-    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Set {
+    pub fn get_at_angle_from(&self, angle: f32, center_point: Vec2) -> Filter {
         let dir = Vec2::from_angle(angle);
         self.get_at_dir_from(dir, center_point)
     }

@@ -81,20 +81,21 @@
 //! > *Note, the example about automatically converts the Rgbs to a 0-255 scale (8 bits/channel).
 //! > Replace the u8 with f32 if you need a 0.0 - 1.0 scale (32 bits/channel).*
 
+pub mod color;
 mod config;
 mod error;
 mod led;
 mod sled;
 
+#[cfg(feature = "drivers")]
+pub mod driver;
+
+#[cfg(feature = "scheduler")]
+pub mod scheduler;
+
 pub use error::SledError;
 /// [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
 pub use led::Led;
-pub use sled::Set;
+pub use sled::Filter;
 pub use sled::Sled;
-
-/// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
-pub mod color {
-    pub use palette::rgb::Rgb;
-    pub use palette::*;
-}

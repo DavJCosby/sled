@@ -4,7 +4,7 @@ use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
-    sled::{Set, Sled},
+    sled::{Filter, Sled},
 };
 use glam::Vec2;
 use smallvec::{smallvec, SmallVec};
@@ -119,17 +119,17 @@ impl Sled {
         all_at_distance
     }
 
-    pub fn get_at_dist(&self, dist: f32) -> Set {
+    pub fn get_at_dist(&self, dist: f32) -> Filter {
         self.get_at_dist_from(dist, self.center_point)
     }
 
-    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Set {
+    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
         let mut all_at_distance = HashSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
                 let index = self.alpha_to_index(alpha, segment_index);
-                all_at_distance.insert(&self.leds[index]);
+                all_at_distance.insert(index);
             }
         }
 
@@ -153,9 +153,11 @@ impl Sled {
         let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
-            return Err(SledError {
-                message: format!("No LEDs exist at a distance of {} from {}", dist, pos),
-            });
+            return SledError::new(format!(
+                "No LEDs exist at a distance of {} from {}",
+                dist, pos
+            ))
+            .as_err();
         }
 
         for i in indices {
@@ -174,12 +176,11 @@ impl Sled {
         let indices = self.indices_at_dist(pos, dist);
 
         if indices.is_empty() {
-            return Err(SledError {
-                message: format!(
-                    "No LEDs exist at a distance of {} from the center point.",
-                    dist
-                ),
-            });
+            return SledError::new(format!(
+                "No LEDs exist at a distance of {} from the center point.",
+                dist
+            ))
+            .as_err();
         }
 
         for index in indices {
@@ -191,23 +192,23 @@ impl Sled {
 
     /* within distance methods */
 
-    pub fn get_within_dist(&self, dist: f32) -> Set {
+    pub fn get_within_dist(&self, dist: f32) -> Filter {
         self.get_within_dist_from(dist, self.center_point)
     }
 
-    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Set {
+    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
         let mut all_within_distance = HashSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             let intersections = segment.intersects_solid_circle(pos, dist);
-            let first = intersections.get(0);
+            let first = intersections.first();
             let second = intersections.get(1);
 
             if first.is_some() && second.is_some() {
                 let first = self.alpha_to_index(*first.unwrap(), segment_index);
                 let second = self.alpha_to_index(*second.unwrap(), segment_index);
                 let range = first.min(second)..first.max(second);
-                all_within_distance.extend(&self.leds[range]);
+                all_within_distance.extend(range);
             }
         }
 

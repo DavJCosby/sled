@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use crate::{config::LineSegment, led::Led, Vec2};
 
 #[allow(dead_code)]
@@ -11,6 +13,7 @@ pub struct Sled {
     vertex_indices: Vec<usize>,
     index_of_closest: usize,
     index_of_furthest: usize,
+    domain: Range<Vec2>
 }
 
 // goofy spacing to preserve order after auto-formatting.
@@ -28,5 +31,5 @@ mod positional;
 
 mod maps_and_filters;
 
-mod sets;
-pub use sets::Set;
+mod filter;
+pub use filter::Filter;
