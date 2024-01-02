@@ -103,20 +103,20 @@ impl BufferContainer {
         &mut map[key]
     }
 
-    pub fn get_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let map = self.map_for_type_mut();
-        map.get_mut(key)
-    }
-
     pub fn get<T>(&self, key: &str) -> Option<&Buffer<T>>
     where
         BufferContainer: MapForType<T>,
     {
         let map = self.map_for_type();
         map.get(key)
+    }
+
+    pub fn get_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
+    where
+        BufferContainer: MapForType<T>,
+    {
+        let map = self.map_for_type_mut();
+        map.get_mut(key)
     }
 }
 

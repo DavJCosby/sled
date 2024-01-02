@@ -3,7 +3,7 @@ use std::f32::consts::TAU;
 
 use tui::SledTerminalDisplay;
 
-use sled::driver::{Driver, Filters, Sliders, TimeInfo};
+use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError};
 
 const GREEN_RADIUS: f32 = 2.33;
@@ -18,7 +18,7 @@ const TRAIL_RADIUS: f32 = 1.2;
 
 fn draw(
     sled: &mut Sled,
-    _sliders: &Sliders,
+    _sliders: &BufferContainer,
     _filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {

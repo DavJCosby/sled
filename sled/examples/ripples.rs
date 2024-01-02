@@ -6,7 +6,7 @@ use std::time::Instant;
 use rand::Rng;
 use tui::SledTerminalDisplay;
 
-use sled::driver::{Driver, Filters, Sliders, TimeInfo};
+use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError, Vec2};
 
 const MAX_RIPPLES: usize = 10;
@@ -14,9 +14,6 @@ const MAX_RADIUS: f32 = 12.0;
 
 const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
-
-// I'm dumb and couldn't find a performant way to turn a usize into a &str
-const STR_IDS: [&str; MAX_RIPPLES] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
 const COLS: [Rgb; MAX_RIPPLES] = [
     Rgb::new(0.15, 0.5, 1.0),
@@ -45,9 +42,29 @@ fn rand_init_radius() -> f32 {
     rng.gen_range(-25.0..0.0)
 }
 
+fn startup(
+    sled: &mut Sled,
+    buffers: &mut BufferContainer,
+    _filters: &mut Filters,
+) -> Result<(), SledError> {
+    let sled_bounds = sled.domain();
+
+    let radii = buffers.create_buffer::<f32>("radii");
+    for _ in 0..MAX_RIPPLES {
+        radii.push(rand_init_radius());
+    }
+
+    let positions = buffers.create_buffer::<Vec2>("positions");
+    for _ in 0..MAX_RIPPLES {
+        positions.push(rand_point_in_range(&sled_bounds));
+    }
+
+    Ok(())
+}
+
 fn draw(
     sled: &mut Sled,
-    sliders: &Sliders,
+    sliders: &BufferContainer,
     _filters: &Filters,
     _time_info: &TimeInfo,
 ) -> Result<(), SledError> {
@@ -61,10 +78,9 @@ fn draw(
     Ok(())
 }
 
-fn try_draw_ripple(sled: &mut Sled, sliders: &Sliders, id: usize) {
-    let str_id = STR_IDS[id];
-    let pos = sliders.get::<Vec2>(str_id).unwrap();
-    let radius = sliders.get::<f32>(str_id).unwrap();
+fn try_draw_ripple(sled: &mut Sled, buffers: &BufferContainer, id: usize) {
+    let pos = buffers.get("positions").unwrap()[id];
+    let radius = buffers.get("radii").unwrap()[id];
 
     if radius > -FEATHERING {
         draw_ripple_at(sled, pos, radius, COLS[id]);
@@ -100,39 +116,29 @@ fn inv_sqrt(x: f32) -> f32 {
 fn main() {
     let sled = Sled::new("./examples/config.toml").unwrap();
     let sled_bounds = sled.domain();
-    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
 
     let mut driver = Driver::new();
 
+    driver.set_startup_commands(startup);
     driver.set_draw_commands(draw);
     driver.mount(sled);
 
-    let mut scheduler = Scheduler::fixed_hz(500.0);
+    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled_bounds.clone());
     let mut last_update = Instant::now();
-
-    let mut positions: [Vec2; MAX_RIPPLES] = [Vec2::new(0.0, 0.0); MAX_RIPPLES];
-    let mut radii: [f32; MAX_RIPPLES] = [0.0; MAX_RIPPLES];
-
-    for i in 0..MAX_RIPPLES {
-        positions[i] = rand_point_in_range(&sled_bounds);
-        radii[i] = rand_init_radius();
-        driver.set_slider::<Vec2>(STR_IDS[i], positions[i]);
-    }
-
+    let mut scheduler = Scheduler::fixed_hz(500.0);
     scheduler.loop_until_err(|| {
         let delta = last_update.elapsed().as_secs_f32();
         last_update = Instant::now();
 
         for i in 0..MAX_RIPPLES {
-            let str_id = STR_IDS[i];
-            if radii[i] > MAX_RADIUS {
-                positions[i] = rand_point_in_range(&sled_bounds);
-                radii[i] = rand_init_radius();
-                driver.set_slider::<Vec2>(str_id, positions[i]);
+            let radius: f32 = *driver.get_from_buffer("radii", i).unwrap();
+            if radius > MAX_RADIUS {
+                let new_pos = rand_point_in_range(&sled_bounds);
+                driver.set_in_buffer("positions", i, new_pos);
             }
 
-            radii[i] += delta * inv_sqrt(radii[i].max(1.0));
-            driver.set_slider::<f32>(str_id, radii[i]);
+            let new_radius = radius + delta * inv_sqrt(radius.max(1.0));
+            driver.set_in_buffer("radii", i, new_radius);
         }
 
         driver.step();

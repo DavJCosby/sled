@@ -114,16 +114,34 @@ impl Driver {
 
     pub fn get_buffer<T>(&self, key: &str) -> Option<&Buffer<T>>
     where
-        BufferContainer: buffers::MapForType<T>,
+        BufferContainer: MapForType<T>,
     {
         self.buffers.get(key)
     }
 
     pub fn get_buffer_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
     where
-        BufferContainer: buffers::MapForType<T>,
+        BufferContainer: MapForType<T>,
     {
         self.buffers.get_mut(key)
+    }
+
+    pub fn get_from_buffer<T>(&self, buffer_key: &str, index: usize) -> Option<&T>
+    where
+        BufferContainer: MapForType<T>,
+    {
+        let buffer = self.get_buffer(buffer_key)?;
+        buffer.get(index)
+    }
+
+    pub fn set_in_buffer<T>(&mut self, buffer_key: &str, index: usize, value: T)
+    where
+        BufferContainer: MapForType<T>,
+    {
+        let buffer = self
+            .get_buffer_mut(buffer_key)
+            .expect("No buffer of matching key and type exists.");
+        buffer[index] = value
     }
 
     pub fn add_filter(&mut self, key: &str, set: Filter) {
