@@ -25,10 +25,9 @@ const COLORS: [Rgb; 10] = [
 
 fn main() {
     let sled = Sled::new("./examples/config.toml").unwrap();
-    let sled_bounds = sled.domain();
-
-    let mut display = SledTerminalDisplay::start("Current Effect: Ripples", sled_bounds.clone());
+    let mut display = SledTerminalDisplay::start("Current Effect: Ripples", sled.domain());
     let mut driver = Driver::new();
+
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);
     driver.set_draw_commands(draw);
