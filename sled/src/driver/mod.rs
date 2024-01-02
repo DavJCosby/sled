@@ -122,7 +122,7 @@ impl Driver {
         self.buffers.get_mut(key)
     }
 
-    pub fn insert_filter(&mut self, key: &str, set: Filter) {
+    pub fn add_filter(&mut self, key: &str, set: Filter) {
         self.filters.set(key, set);
     }
 
