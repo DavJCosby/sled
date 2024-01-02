@@ -18,7 +18,7 @@ const TRAIL_RADIUS: f32 = 1.2;
 
 fn draw(
     sled: &mut Sled,
-    _sliders: &BufferContainer,
+    _buffers: &BufferContainer,
     _filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {
