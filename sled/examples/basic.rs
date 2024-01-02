@@ -3,12 +3,17 @@ use std::f32::consts::TAU;
 
 use tui::SledTerminalDisplay;
 
-use sled::driver::{Driver, Filters, Sliders, TimeInfo};
+use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError};
 
-fn startup(sled: &mut Sled, sliders: &mut Sliders, filters: &mut Filters) -> Result<(), SledError> {
-    sliders.set("background", Rgb::new(0.0, 0.0, 0.0));
-    sliders.set("light_color", Rgb::new(1.0, 1.0, 1.0));
+fn startup(
+    sled: &mut Sled,
+    buffers: &mut BufferContainer,
+    filters: &mut Filters,
+) -> Result<(), SledError> {
+    buffers
+        .create_buffer("palette")
+        .extend([Rgb::new(1.0, 1.0, 1.0), Rgb::new(0.0, 0.0, 0.0)]);
 
     filters.set("left_wall", sled.get_segment(2).unwrap());
     filters.set("cone", sled.filter_by_angle(|a| a > 0.2 && a <= 0.6));
@@ -27,7 +32,7 @@ const TRAIL_RADIUS: f32 = 1.2;
 
 fn draw(
     sled: &mut Sled,
-    _sliders: &Sliders,
+    _sliders: &BufferContainer,
     _filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {

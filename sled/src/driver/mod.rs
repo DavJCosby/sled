@@ -2,9 +2,12 @@ use crate::{color::Srgb, Filter, Sled, SledError, Vec2};
 use std::time::{Duration, Instant};
 
 mod filters;
-mod sliders;
+// mod sliders;
+mod buffers;
+pub use buffers::{Buffer, BufferContainer};
 pub use filters::Filters;
-pub use sliders::{Slider, Sliders};
+
+use self::buffers::MapForType;
 
 pub enum RefreshTiming {
     None,
@@ -17,8 +20,8 @@ pub struct TimeInfo {
 }
 
 type SledResult = Result<(), SledError>;
-type StartupCommands = Box<dyn Fn(&mut Sled, &mut Sliders, &mut Filters) -> SledResult>;
-type DrawCommands = Box<dyn Fn(&mut Sled, &Sliders, &Filters, &TimeInfo) -> SledResult>;
+type StartupCommands = Box<dyn Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult>;
+type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
 pub struct Driver {
     _timing_strategy: RefreshTiming,
     sled: Option<Sled>,
@@ -26,7 +29,7 @@ pub struct Driver {
     draw_commands: DrawCommands,
     startup: Instant,
     last_update: Instant,
-    sliders: Sliders,
+    buffers: BufferContainer,
     filters: Filters,
 }
 
@@ -45,13 +48,13 @@ impl Driver {
             draw_commands: Box::new(|_, _, _, _| Ok(())),
             startup: Instant::now(),
             last_update: Instant::now(),
-            sliders: Sliders::new(),
+            buffers: BufferContainer::new(),
             filters: Filters::new(),
         }
     }
 
     pub fn set_startup_commands<
-        F: Fn(&mut Sled, &mut Sliders, &mut Filters) -> SledResult + 'static,
+        F: Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult + 'static,
     >(
         &mut self,
         startup_commands: F,
@@ -60,7 +63,7 @@ impl Driver {
     }
 
     pub fn set_draw_commands<
-        F: Fn(&mut Sled, &Sliders, &Filters, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         draw_commands: F,
@@ -69,7 +72,7 @@ impl Driver {
     }
 
     pub fn mount(&mut self, mut sled: Sled) {
-        (self.startup_commands)(&mut sled, &mut self.sliders, &mut self.filters).unwrap();
+        (self.startup_commands)(&mut sled, &mut self.buffers, &mut self.filters).unwrap();
         self.startup = Instant::now();
         self.last_update = self.startup;
         self.sled = Some(sled);
@@ -83,7 +86,7 @@ impl Driver {
             };
 
             self.last_update = Instant::now();
-            (self.draw_commands)(sled, &self.sliders, &self.filters, &time_info).unwrap();
+            (self.draw_commands)(sled, &self.buffers, &self.filters, &time_info).unwrap();
         }
     }
 
@@ -98,21 +101,28 @@ impl Driver {
         sled
     }
 
-    pub fn set_slider<T>(&mut self, key: &str, value: T)
+    pub fn create_buffer<T>(&mut self, key: &str) -> &mut Buffer<T>
     where
-        Sliders: Slider<T>,
+        BufferContainer: MapForType<T>,
     {
-        self.sliders.set(key, value)
+        self.buffers.create_buffer(key)
     }
 
-    pub fn get_slider<T: Copy>(&self, key: &str) -> Option<T>
+    pub fn get_buffer<T>(&self, key: &str) -> Option<&Buffer<T>>
     where
-        Sliders: Slider<T>,
+        BufferContainer: buffers::MapForType<T>,
     {
-        self.sliders.get(key)
+        self.buffers.get(key)
     }
 
-    pub fn insert_filter(&mut self, key: &str, set: Filter) {
+    pub fn get_buffer_mut<T>(&mut self, key: &str) -> Option<&mut Buffer<T>>
+    where
+        BufferContainer: buffers::MapForType<T>,
+    {
+        self.buffers.get_mut(key)
+    }
+
+    pub fn add_filter(&mut self, key: &str, set: Filter) {
         self.filters.set(key, set);
     }
 
