@@ -127,3 +127,4 @@ fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
         None => None,
     }
 }
+
