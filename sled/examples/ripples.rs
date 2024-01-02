@@ -50,12 +50,12 @@ fn startup(
 ) -> Result<(), SledError> {
     let sled_bounds = sled.domain();
 
-    let radii = buffers.create_buffer::<f32>("radii");
+    let radii = buffers.create("radii");
     for _ in 0..MAX_RIPPLES {
         radii.push(rand_init_radius());
     }
 
-    let positions = buffers.create_buffer::<Vec2>("positions");
+    let positions = buffers.create("positions");
     for _ in 0..MAX_RIPPLES {
         positions.push(rand_point_in_range(&sled_bounds));
     }

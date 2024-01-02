@@ -98,7 +98,7 @@ impl BufferContainer {
         }
     }
 
-    pub fn create_buffer<T>(&mut self, buffer_name: &str) -> &mut Buffer<T>
+    pub fn create<T>(&mut self, buffer_name: &str) -> &mut Buffer<T>
     where
         BufferContainer: MapForType<T>,
     {
@@ -180,13 +180,4 @@ impl std::ops::Index<&str> for BufferContainer {
     fn index(&self, index: &str) -> &Self::Output {
         &self.f32s[index]
     }
-}
-
-#[allow(dead_code)]
-fn main() {
-    let mut t = BufferContainer::new();
-    let _buf = t.create_buffer::<f32>("numbers");
-    let b2 = t.create_buffer("strs");
-
-    b2.push(12.0);
 }
