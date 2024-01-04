@@ -18,7 +18,7 @@ palette = { version = "0.7.3", default-features = false, features = [
 ] }
 toml = "0.8.0"
 smallvec = "1.11.2"
-micromap = { version = "0.0.14", optional = true }
+micromap = { version = "0.0.15", optional = true }
 compact_str = { version = "0.7", optional = true }
 spin_sleep = { version = "1.1.1", optional = true }
 
@@ -31,13 +31,12 @@ rand = "0.8.5"
 [profile.bench]
 lto = true
 
-[[example]]
-name = "quirky_trail"
-path = "examples/quirky_trail.rs"
-doc-scrape-examples = true
-
 [[bench]]
 name = "quirky_trail"
+harness = false
+
+[[bench]]
+name = "ripples"
 harness = false
 
 [lib]
