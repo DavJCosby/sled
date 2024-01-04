@@ -13,45 +13,12 @@
 //! let mut sled = Sled::new("/path/to/config.toml").unwrap();
 //! ````
 //!
-//! These config files are used to map the LEDs in your setup to 2D space. Here's an example .toml file:
-//!
-//! ```ignore
-//! // config.toml
-//! center_point = [0.0, 0.5]
-//! density = 30.0
-//!
-//! [[line_segment]]
-//! start = [-2.0, 0.0]
-//! end = [0.5, -1.0]
-//!
-//! [[line_segment]]
-//! start = [0.5, -1.0]
-//! end = [3.5, 0.0]
-//!
-//! [[line_segment]]
-//! start = [3.5, 0.0]
-//! end = [2, 2]
-//!
-//! [[line_segment]]
-//! start = [2.0, 2]
-//! end = [-2.0, 2]
-//!
-//! [[line_segment]]
-//! start = [-2.0, 2]
-//! end = [-2.0, 0.0]
-//! ```
-//! `center_point` is a static reference point you can use to speed up draw calls.
-//! At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
-//!
-//! `density` represents how many LED's per unit we can expect for the line segments below. If one or more
-//! LED has a different density for whatever reason, you can override this default for each line_segment.
-//!
-//! Add as many `[[line_segment]]`s as you need to represent your scene.
+//! These config files are used to map the LEDs in your setup to 2D space.
+//! See [Sled::new()] for an example .toml file.
 //!
 //! ## Drawing
 //! Once you have your Sled struct, you can start drawing to it right away!
 //! Here's a taste of some of the things Sled lets you do:
-//!
 //! ```rust
 //! use sled::{Sled, Vec2, Filter, color::Rgb};
 //! let mut sled = Sled::new("./examples/config.toml").unwrap();
@@ -78,11 +45,11 @@
 //! let c1: Filter = sled.get_within_dist_from(
 //!     2.0, Vec2::new(-0.5, 0.0)
 //! );
-//! 
+//!
 //! let c2: Filter = sled.get_within_dist_from(
 //!     1.0, Vec2::new(0.5, 0.5)
 //! );
-//! 
+//!
 //! let overlap = c1.and(&c2);
 //! sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 //! ```
@@ -94,9 +61,9 @@
 //! use sled::{Sled, Vec2, color::Rgb};
 //! let sled = Sled::new("./examples/config.toml").unwrap();
 //!
-//! let colors_32bit: Vec<Rgb> = sled.read_colors();
+//! let colors_f32: Vec<Rgb> = sled.read_colors();
 //!
-//! let colors_8bit: Vec<Rgb<_, u8>> = sled.read_colors();
+//! let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
 //!
 //! let positions: Vec<Vec2> = sled.read_positions();
 //!
@@ -117,7 +84,7 @@ pub mod driver;
 pub mod scheduler;
 
 pub use error::SledError;
-/// [glam](https://crates.io/crates/glam)'s implementation.
+/// Using [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
 pub use led::Led;
 pub use sled::Filter;

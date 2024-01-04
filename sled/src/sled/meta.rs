@@ -12,6 +12,42 @@ use crate::{
 
 /// Construction, output, and basic sled info.
 impl Sled {
+    /// Constructs a new Sled struct given the path to a config toml file.
+    /// This is an expensive operation as many values are pre-calculated
+    /// on construction (i.e, distances/angles from each LED to the center).
+    /// 
+    /// Example .toml file:
+    /// ```ignore
+    /// center_point = [0.0, 0.5]
+    /// density = 30.0
+    ///
+    /// [[line_segment]]
+    /// start = [-2.0, 0.0]
+    /// end = [0.5, -1.0]
+    ///
+    /// [[line_segment]]
+    /// start = [0.5, -1.0]
+    /// end = [3.5, 0.0]
+    ///
+    /// [[line_segment]]
+    /// start = [3.5, 0.0]
+    /// end = [2, 2]
+    ///
+    /// [[line_segment]]
+    /// start = [2.0, 2]
+    /// end = [-2.0, 2]
+    ///
+    /// [[line_segment]]
+    /// start = [-2.0, 2]
+    /// end = [-2.0, 0.0]
+    /// ```
+    /// * `center_point` is a static reference point you can use to speed up draw calls.
+    /// At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
+    ///
+    /// * `density` represents how many LED's per unit we can expect for the line segments below. If one or more
+    /// LED has a different density for whatever reason, you can override this default for each line_segment.
+    ///
+    /// * Add as many `[[line_segment]]` tags as you need to represent your scene.
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_segment = Sled::leds_per_segment(&config);
@@ -51,10 +87,29 @@ impl Sled {
         })
     }
 
+    /// Returns a copy of the system's LEDs, stored in a vector.
+    /// ```rust
+    ///# use sled::{Sled};
+    ///# let sled = Sled::new("./examples/config.toml").unwrap();
+    /// for led in sled.read() {
+    ///     println!("Segment {}, Index {}: {:?}",
+    ///         led.segment(), led.index(), led.color
+    ///     );
+    /// }
+    /// ```
     pub fn read(&self) -> Vec<Led> {
         self.leds.clone()
     }
 
+    /// Returns the colors of each LED in the system, stored in a vector.
+    /// ```rust
+    ///# use sled::{Sled, color::Rgb};
+    ///# let sled = Sled::new("./examples/config.toml").unwrap();
+    /// // 32 bits/channel by default
+    /// let colors: Vec<Rgb> = sled.read_colors();
+    /// // coerce to 8 bits/channel
+    /// let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
+    /// ```
     pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
     where
         f32: color::stimulus::IntoStimulus<T>,
@@ -65,10 +120,13 @@ impl Sled {
             .collect()
     }
 
+    /// Returns the positions of each LED in the system, stored in a vector.
     pub fn read_positions(&self) -> Vec<Vec2> {
         self.leds.iter().map(|led| led.position()).collect()
     }
 
+    /// Returns the positions and colors of each LED in the system, stored in a vector of `(Rgb, Vec2)`.
+    /// Supports color coercion just like [Sled::read_colors()](read_colors())
     pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
         f32: color::stimulus::IntoStimulus<T>,
@@ -79,22 +137,32 @@ impl Sled {
             .collect()
     }
 
+    /// Returns the static reference point declared in the config file.
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
 
+    /// Returns the total number of LEDs in the system.
     pub fn num_leds(&self) -> usize {
         self.num_leds
     }
 
+    /// Returns the total number of line segments in the system.
     pub fn num_segments(&self) -> usize {
         self.line_segments.len()
     }
 
+    /// Returns the total number of vertices in the system.
+    ///
+    /// Touching endpoints are merged into one vertex, meaning that a
+    /// configuration of two line segments that meet at one point to form
+    /// a corner would have three vertices, rather than four.
     pub fn num_vertices(&self) -> usize {
         self.vertex_indices.len()
     }
 
+    /// Returns a bounding box around the LEDs where the minimum x and y
+    /// position is [Range::start], maximum x and y is [Range::end].
     pub fn domain(&self) -> Range<Vec2> {
         self.domain.clone()
     }
