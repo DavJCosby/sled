@@ -79,6 +79,8 @@ impl Sled {
 
 /// Index range-based read and write methods
 impl Sled {
+    /// Returns a [Filter] containing all LEDs with indices within `index_range`.
+    /// Returns an error if the range extends beyond the size of the system.
     pub fn get_range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
@@ -88,6 +90,16 @@ impl Sled {
         }
     }
 
+    /// Modulates the color of the each LED with indices in `index_range` given a color rule function.
+    /// Returns an error if the range extends beyond the size of the system.
+    /// ```rust
+    ///# use sled::{Sled, SledError};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/config.toml")?;
+    /// sled.modulate_range(0..50, |led| led.color * 0.5)?;
+    ///# Ok(())
+    ///# }
+    /// ```
     pub fn modulate_range<F: Fn(&Led) -> Rgb>(
         &mut self,
         index_range: Range<usize>,
@@ -105,6 +117,8 @@ impl Sled {
         Ok(())
     }
 
+    /// Sets the color of the each LED with indices in `index_range` to `color`.
+    /// Returns an error if the range extends beyond the size of the system.
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return SledError::new("Index range extends beyond size of system.".to_string())
@@ -117,6 +131,18 @@ impl Sled {
         Ok(())
     }
 
+    /// For each method granting mutable access to each LED with an index in `index_range`
+    /// ```rust
+    ///# use sled::{Sled, color::Rgb};
+    ///# let mut sled = Sled::new("./examples/config.toml").unwrap();
+    /// sled.for_each_in_range(50..100, |led| {
+    ///     if led.index() % 2 == 1 {
+    ///         led.color = Rgb::new(1.0, 0.0, 0.0);
+    ///     } else {
+    ///         led.color = Rgb::new(0.0, 1.0, 0.0);
+    ///     }
+    /// });
+    /// ```
     pub fn for_each_in_range<F: FnMut(&mut Led)>(&mut self, index_range: Range<usize>, func: F) {
         self.leds[index_range].iter_mut().for_each(func);
     }
