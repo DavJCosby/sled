@@ -119,6 +119,7 @@ fn draw(
         }
     }
 
+    // reinhard tonemapping
     // sled.map(|led| led.color / (Rgb::new(1.0, 1.0, 1.0) + led.color));
     Ok(())
 }

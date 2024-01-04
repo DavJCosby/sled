@@ -16,10 +16,12 @@ pub struct Led {
     segment: usize,
 }
 
+/// *All properties listed below are pre-calculated on construction;
+/// there is no substantial overhead for calling these methods.*
 impl Led {
     /// Constructs an LED struct.
     /// Fields like `position`, `angle`, and `distance` are derived from `center_point`.
-    pub fn new(
+    pub(crate) fn new(
         color: Rgb,
         position: Vec2,
         index: usize,

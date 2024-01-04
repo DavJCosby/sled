@@ -92,4 +92,11 @@ impl Sled {
             led.color = color_rule(led)
         }
     }
+
+    pub fn for_each_in_filter<F: FnMut(&mut Led)>(&mut self, filter: &Filter, mut func: F) {
+        for i in filter {
+            let led = &mut self.leds[i];
+            func(led);
+        }
+    }
 }
