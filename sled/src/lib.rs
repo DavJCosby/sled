@@ -8,7 +8,8 @@
 //!
 //! # Basic Setup
 //! To create a Sled struct, you need to create a configuration file and pass the file path in to the constructor:
-//! ```rust, ignore
+//! ```rust, no_run
+//! use sled::Sled;
 //! let mut sled = Sled::new("/path/to/config.toml").unwrap();
 //! ````
 //!
@@ -51,35 +52,57 @@
 //! Once you have your Sled struct, you can start drawing to it right away!
 //! Here's a taste of some of the things Sled lets you do:
 //!
-//! Set all vertices to white
-//! ```ignore
+//! ```rust
+//! use sled::{Sled, Vec2, Filter, color::Rgb};
+//! let mut sled = Sled::new("./examples/config.toml").unwrap();
+//!
+//! // Set all vertices to white
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
-//! ```
-//! > Set all LEDs within 1 unit of the center_point to red
-//! ```ignore
-//! sled.set_within_dist(1.0, Rgb::new(1.0, 0.0, 0.0));
-//! ```
-//! Set each LED using a function of its direction from the point `(2, 1)`
-//! ```rust, ignore
+//!
+//! // Set all LEDs at 1 unit of the center_point to red
+//! sled.set_at_dist(1.0, Rgb::new(1.0, 0.0, 0.0));
+//!
+//! // Set each LED using a function of its direction
+//! // from the point `(2, 1)`
 //! sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!     let red = (dir.x + 1.0) * 0.5;
 //!     let green = (dir.y + 1.0) * 0.5;
 //!     Rgb::new(red, green, 0.5)
 //! });
+//!
+//! // Dim one of our walls by 50%
+//! sled.modulate_segment(2, |led| led.color * 0.5).unwrap();
+//!
+//! // Set all LEDs within the overlap of two different circles
+//! // to blue
+//! let c1: Filter = sled.get_within_dist_from(
+//!     2.0, Vec2::new(-0.5, 0.0)
+//! );
+//! 
+//! let c2: Filter = sled.get_within_dist_from(
+//!     1.0, Vec2::new(0.5, 0.5)
+//! );
+//! 
+//! let overlap = c1.and(&c2);
+//! sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 //! ```
-//! Dim one of our walls by 50%
-//! ```rust, ignore
-//! sled.modulate_segment(2, |led| led.color * 0.5)?;
-//! ```
-//! For more examples see the page for the [Sled] struct.
+//! For more examples, see the page for the [Sled] struct.
 //!
 //! ## Output
-//! Once you're ready to display these colors, you'll probably want them packed in a nice contiguous array of RGB values. With Sled, that's as easy as:
-//! ```rust, ignore
-//!     let colors: Vec<Rgb<_, u8>> = sled.read_colors();
+//! Once you're ready to display these colors, you'll probably want them packed in a nice contiguous array of RGB values. There are a few methods available to pack germane data.
+//! ```rust
+//! use sled::{Sled, Vec2, color::Rgb};
+//! let sled = Sled::new("./examples/config.toml").unwrap();
+//!
+//! let colors_32bit: Vec<Rgb> = sled.read_colors();
+//!
+//! let colors_8bit: Vec<Rgb<_, u8>> = sled.read_colors();
+//!
+//! let positions: Vec<Vec2> = sled.read_positions();
+//!
+//! let colors_and_positions: Vec<(Rgb, Vec2)> =
+//!     sled.read_colors_and_positions();
 //! ```
-//! > *Note, the example about automatically converts the Rgbs to a 0-255 scale (8 bits/channel).
-//! > Replace the u8 with f32 if you need a 0.0 - 1.0 scale (32 bits/channel).*
 
 pub mod color;
 mod config;
