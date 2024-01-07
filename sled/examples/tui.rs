@@ -98,6 +98,12 @@ impl SledTerminalDisplay {
     }
 }
 
+impl Drop for SledTerminalDisplay {
+    fn drop(&mut self) {
+        disable_raw_mode().unwrap();
+    }
+}
+
 fn draw_led(ctx: &mut Context, led: &(Srgb<u8>, Vec2)) {
     let (col, pos) = led;
     ctx.draw(&Circle {
