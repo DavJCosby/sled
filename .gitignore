@@ -16,3 +16,4 @@ Cargo.lock
 *.pdb
 sandbox/src/slc.code-workspace
 sled/.DS_Store
+.DS_Store
