@@ -1,12 +1,12 @@
-mod tui;
+mod resources;
+use resources::tui::SledTerminalDisplay;
 
 use glam::Vec2;
 use sled::{color::Rgb, Sled, SledError};
-use tui::SledTerminalDisplay;
 
 fn main() -> Result<(), SledError> {
-    let mut sled = Sled::new("./examples/config.toml").unwrap();
-    let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
+    let mut sled = Sled::new("./examples/resources/config.toml")?;
+    let mut display = SledTerminalDisplay::start("Calibration", sled.domain());
 
     sled.set_all(Rgb::new(0.1, 0.1, 0.1));
     sled.set_vertices(Rgb::new(0.75, 0.75, 0.75));

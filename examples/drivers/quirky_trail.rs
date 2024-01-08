@@ -1,7 +1,7 @@
-use std::{f32::consts::TAU, time::Duration};
-
 use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, Sled, SledError};
+
+use std::f32::consts::TAU;
 
 const GREEN_RADIUS: f32 = 2.33;
 const GREEN_COUNT: usize = 64;
@@ -13,9 +13,17 @@ const BLUE: Rgb = Rgb::new(0.4, 0.51, 0.93);
 
 const TRAIL_RADIUS: f32 = 1.2;
 
+#[allow(dead_code)]
+pub fn build_driver() -> Driver {
+    let mut driver = Driver::new();
+    driver.set_draw_commands(draw);
+    driver
+}
+
+#[allow(dead_code)]
 fn draw(
     sled: &mut Sled,
-    _sliders: &BufferContainer,
+    _buffers: &BufferContainer,
     _filters: &Filters,
     time_info: &TimeInfo,
 ) -> Result<(), SledError> {
@@ -48,35 +56,3 @@ fn draw(
 
     Ok(())
 }
-
-fn trail(c: &mut Criterion) {
-    let sled = Sled::new("./benches/config1.toml").unwrap();
-    let mut driver = Driver::new();
-    driver.set_draw_commands(draw);
-    driver.mount(sled);
-
-    let simulated_duration = 30.0;
-    let simulated_hz = 144.0;
-    let total_steps = (simulated_duration * simulated_hz) as usize;
-    let timestep = Duration::from_secs_f32(1.0 / simulated_hz);
-    c.bench_function("quirky_trail", |b| {
-        b.iter(|| {
-            for _ in 0..total_steps {
-                driver.step_by(timestep);
-            }
-        })
-    });
-}
-
-use criterion::{criterion_group, criterion_main, Criterion};
-
-criterion_group! {
-    name = benches;
-    config = Criterion::default()
-        .significance_level(0.05)
-        .sample_size(500)
-        .warm_up_time(Duration::from_secs_f32(10.0))
-        .measurement_time(Duration::from_secs_f32(45.0));
-    targets = trail
-}
-criterion_main!(benches);
