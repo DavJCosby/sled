@@ -90,7 +90,7 @@ impl Sled {
     /// Returns a copy of the system's LEDs, stored in a vector.
     /// ```rust
     ///# use sled::{Sled};
-    ///# let sled = Sled::new("./examples/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
     /// for led in sled.read() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
@@ -104,7 +104,7 @@ impl Sled {
     /// Returns the colors of each LED in the system, stored in a vector.
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
     /// // 32 bits/channel by default
     /// let colors: Vec<Rgb> = sled.read_colors();
     /// // coerce to 8 bits/channel

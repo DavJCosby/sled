@@ -22,9 +22,7 @@ jobs:
         workspaces: sled
 
     - name: Build
-      working-directory: ./sled
       run: cargo build
       
     - name: Run tests
-      working-directory: ./sled
       run: cargo test

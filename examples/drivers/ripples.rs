@@ -1,33 +1,20 @@
-mod tui;
-
 use rand::Rng;
 use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
-use sled::{color::Rgb, scheduler::Scheduler, Sled, SledError, Vec2};
+use sled::{color::Rgb, Sled, SledError, Vec2};
 use std::ops::Range;
-use tui::SledTerminalDisplay;
 
 const MAX_RIPPLES: usize = 12;
 const MAX_RADIUS: f32 = 12.0;
 const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
 
-fn main() {
-    let sled = Sled::new("./examples/config.toml").unwrap();
-    let mut display = SledTerminalDisplay::start("Current Effect: Ripples", sled.domain());
+pub fn build_driver() -> Driver {
     let mut driver = Driver::new();
 
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);
     driver.set_draw_commands(draw);
-    driver.mount(sled);
-
-    let mut scheduler = Scheduler::fixed_hz(500.0);
-    scheduler.loop_until_err(|| {
-        driver.step();
-        display.leds = driver.read_colors_and_positions();
-        display.refresh()?;
-        Ok(())
-    });
+    return driver;
 }
 
 fn startup(
