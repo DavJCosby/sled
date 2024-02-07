@@ -61,13 +61,13 @@ Once you have your Sled struct, you can start drawing to it right away! Here’s
 ```rust
 sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 ```
-![[images/vertices.png]]
+![Set all Vertices](images/vertices.png)
 
 **Set all LEDs 2 units away from the `center_point` to red:**
 ```rust
 sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
 ```
-![[images/at_distance.png]]
+![Set at Distance](images/at_distance.png)
 
 **Set each LED using a function of its direction from point `(2, 1)`:**
 ```rust
@@ -77,13 +77,13 @@ sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
      Rgb::new(red, green, 0.5)
  });
 ```
-![[images/dir_map.png]]
+![Map by Direction](images/dir_map.png)
 
 **Dim one of the walls by 75%:**
 ```rust
 sled.modulate_segment(3, |led| led.color * 0.25)?;
 ```
-![[images/segment_modulate.png]]
+![Modulate Segment](images/segment_modulate.png)
 
 **Set all LEDs within the overlapping areas of two different circles to blue:**
 ```rust
@@ -100,5 +100,5 @@ let circle_2: Filter = sled.get_within_dist_from(
 let overlap = circle_1.and(&circle_2);
 sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 ```
-![[images/filter_and.png]]
+![Set Overlapping Areas](images/filter_and.png)
 For more examples, see the documentation comments on the Sled struct.
