@@ -19,3 +19,4 @@ fn main() -> Result<(), SledError> {
     display.refresh().unwrap();
     Ok(())
 }
+

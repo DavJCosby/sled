@@ -11,17 +11,20 @@ What SLED **does** do:
 - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with compiler features):
 	- `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime. 
 	- `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
-    
-What SLED **does not do**:
+
+What SLED **does not** do:
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out my personal [raspberry pi implementation](https://github.com/DavJCosby/rasp-pi-setup) to get an idea of what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 ## The Basics
+In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 ### Setup
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
+type Rgb8 = Rgb<_, u8>;
+
 use sled::Sled;
 fn main() -> Result<(), sled::SledError> {
-    let mut sled = Sled::new("/path/to/config.toml")?;
+    let mut sled = Sled::new::<Rgb8>("/path/to/config.toml")?;
     Ok(())
 }
 ```
@@ -103,3 +106,28 @@ sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 ```
 ![Set Overlapping Areas](images/filter_and.png)
 For more examples, see the documentation comments on the Sled struct.
+
+## Output
+
+Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of RGB values. There are a few methods available to pack the information you need.
+
+```rust
+// collect an ordered vector of Rgbs, 32-bits/channel
+let colors_f32: Vec<Rgb> = sled.read_colors();
+// collect an ordered vector of Rgbs, 8-bits/channel (overhead for conversion)
+let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
+
+let positions: Vec<Vec2> = sled.read_positions();
+
+let colors_and_positions: Vec<(Rgb, Vec2)> =
+    sled.read_colors_and_positions();
+```
+
+# Advanced Features
+TODO, but will cover:
+- Drivers 
+    - Draw, Compute, and Startup commands
+    - Buffers
+    - The Filter Container
+- Scheduler
+- Named Color consts? (opt-in feature)
