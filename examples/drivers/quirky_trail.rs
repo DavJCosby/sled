@@ -1,7 +1,8 @@
 use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, Sled, SledError};
 
-use std::f32::consts::TAU;
+use std::f32::consts::{PI, TAU};
+const INV_TAU: f32 = 1.0 / TAU;
 
 const GREEN_RADIUS: f32 = 2.33;
 const GREEN_COUNT: usize = 64;
@@ -20,7 +21,6 @@ pub fn build_driver() -> Driver {
     driver
 }
 
-#[allow(dead_code)]
 fn draw(
     sled: &mut Sled,
     _buffers: &BufferContainer,
@@ -47,10 +47,10 @@ fn draw(
     // brighten or darken points depending on time and angle to simulate a sweeping
     // trail thing.
     let radar_time_scale = elapsed / TRAIL_RADIUS;
-    let angle = radar_time_scale % TAU;
+    let angle = (radar_time_scale % TAU) + TAU;
     sled.map(|led| {
         let da = (led.angle() + angle) % TAU;
-        let fac = 1.0 - (da / (TAU)).powf(1.25);
+        let fac = 1.0 - (da * INV_TAU).powf(1.25);
         led.color * fac
     });
 

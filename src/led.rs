@@ -9,11 +9,9 @@ use std::f32::consts::TAU;
 pub struct Led {
     pub color: Rgb,
     position: Vec2,
-    direction: Vec2,
-    angle: f32,
-    distance: f32,
-    index: usize,
-    segment: usize,
+    offset: Vec2,
+    index: u16,
+    segment: u8,
 }
 
 /// *All properties listed below are pre-calculated on construction;
@@ -24,24 +22,22 @@ impl Led {
     pub(crate) fn new(
         color: Rgb,
         position: Vec2,
-        index: usize,
-        segment: usize,
+        index: u16,
+        segment: u8,
         center_point: Vec2,
     ) -> Self {
-        let direction = (position - center_point).normalize();
+        let offset = position - center_point;
 
-        let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
-        if angle < 0.0 {
-            angle += TAU;
-        }
-        let distance = position.distance(center_point);
+        // let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
+        // if angle < 0.0 {
+        //     angle += TAU;
+        // }
+        // let distance = position.distance(center_point);
 
         Led {
             color,
             position,
-            direction,
-            angle,
-            distance,
+            offset,
             index,
             segment,
         }
@@ -54,27 +50,37 @@ impl Led {
 
     /// Returns the direction from the Sled's `center_point` to this Led. A normalized vector.
     pub fn direction(&self) -> Vec2 {
-        self.direction
+        self.offset.normalize()
     }
 
     /// Returns the angle from the Sled's `center_point` to this Led in radians.
     /// The direction `(1, 0)` is considered 0 radians, `(0, -1)` is pi/2 radian.
     pub fn angle(&self) -> f32 {
-        self.angle
+        return self.offset.x.atan2(self.offset.y);
+        // let angle = Self::fast_angle_between(self.offset, Self::POSITIVE_X);
+        // if angle < 0.0 {
+        //     angle + TAU
+        // } else {
+        //     angle
+        // }
     }
 
     /// Returns the distance from the Sled's `center_point` to this Led.
     pub fn distance(&self) -> f32 {
-        self.distance
+        self.offset.length()
+    }
+
+    pub fn distance_squared(&self) -> f32 {
+        self.offset.length_squared()
     }
 
     /// Returns the index of the Led, keeping in mind that Leds in a Sled are treated in memory as one continuous strip.
-    pub fn index(&self) -> usize {
+    pub fn index(&self) -> u16 {
         self.index
     }
 
     /// Returns the index of the LineSegment this Led belongs to.
-    pub fn segment(&self) -> usize {
+    pub fn segment(&self) -> u8 {
         self.segment
     }
 }

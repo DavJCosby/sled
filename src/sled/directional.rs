@@ -6,14 +6,14 @@ use smallvec::SmallVec;
 
 /// directional read and write methods
 impl Sled {
-    fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[usize; 4]> {
+    fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[u16; 4]> {
         let dist = 100_000.0;
         let end = start + dir * dist;
 
         let mut intersections = smallvec::smallvec![];
         for (seg_index, segment) in self.line_segments.iter().enumerate() {
             if let Some(t) = segment.intersects_line(start, end) {
-                let index = self.alpha_to_index(t, seg_index);
+                let index = self.alpha_to_index(t, seg_index) as u16;
                 intersections.push(index);
             }
         }
@@ -32,7 +32,7 @@ impl Sled {
         intersecting_indices
             .iter()
             .copied()
-            .collect::<HashSet<usize>>()
+            .collect::<HashSet<u16>>()
             .into()
     }
 
@@ -57,7 +57,7 @@ impl Sled {
         }
 
         for index in intersecting_indices {
-            let led = &mut self.leds[index];
+            let led = &mut self.leds[index as usize];
             led.color = color_rule(led);
         }
         Ok(())
@@ -75,7 +75,7 @@ impl Sled {
         }
 
         for index in intersecting_indices {
-            self.leds[index].color = color;
+            self.leds[index as usize].color = color;
         }
         Ok(())
     }

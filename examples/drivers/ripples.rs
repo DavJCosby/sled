@@ -8,6 +8,7 @@ const MAX_RADIUS: f32 = 12.0;
 const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
 
+#[allow(dead_code)]
 pub fn build_driver() -> Driver {
     let mut driver = Driver::new();
 

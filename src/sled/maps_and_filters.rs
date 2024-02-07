@@ -17,11 +17,11 @@ impl Sled {
     }
 
     pub fn map_by_index(&mut self, index_to_color_map: impl Fn(usize) -> Rgb) {
-        self.map(|led| index_to_color_map(led.index()));
+        self.map(|led| index_to_color_map(led.index() as usize));
     }
 
     pub fn map_by_segment(&mut self, segment_index_to_color_map: impl Fn(usize) -> Rgb) {
-        self.map(|led| segment_index_to_color_map(led.segment()));
+        self.map(|led| segment_index_to_color_map(led.segment() as usize));
     }
 
     pub fn map_by_pos(&mut self, pos_to_color_map: impl Fn(Vec2) -> Rgb) {
@@ -70,7 +70,7 @@ impl Sled {
 /// Filters
 impl Sled {
     pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Filter {
-        let filtered: HashSet<usize> = self
+        let filtered: HashSet<u16> = self
             .leds
             .iter()
             .filter_map(|led| if filter(led) { Some(led.index()) } else { None })

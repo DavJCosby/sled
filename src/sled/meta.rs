@@ -15,7 +15,7 @@ impl Sled {
     /// Constructs a new Sled struct given the path to a config toml file.
     /// This is an expensive operation as many values are pre-calculated
     /// on construction (i.e, distances/angles from each LED to the center).
-    /// 
+    ///
     /// Example .toml file:
     /// ```ignore
     /// center_point = [0.0, 0.5]
@@ -63,13 +63,13 @@ impl Sled {
             .iter()
             .min_by(|l, r| l.distance().partial_cmp(&r.distance()).unwrap())
             .unwrap()
-            .index();
+            .index() as usize;
 
         let index_of_furthest = leds
             .iter()
             .max_by(|l, r| l.distance().partial_cmp(&r.distance()).unwrap())
             .unwrap()
-            .index();
+            .index() as usize;
 
         let domain = Sled::calc_domain(&leds);
 
@@ -188,7 +188,13 @@ impl Sled {
                 let segment = &line_segments[segment_index];
                 let alpha = (i + 1) as f32 / *segment_size as f32;
                 let pos = segment.start.lerp(segment.end, alpha);
-                let led = Led::new(default_color, pos, leds.len(), segment_index, *center_point);
+                let led = Led::new(
+                    default_color,
+                    pos,
+                    leds.len() as u16,
+                    segment_index as u8,
+                    *center_point,
+                );
 
                 leds.push(led);
             }
@@ -256,7 +262,7 @@ impl Sled {
 
     pub(crate) fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
         let segment = &self.line_segments[segment_index];
-        let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
+        let startpoint_index = self.line_segment_endpoint_indices[segment_index].0 as usize;
         let leds_in_segment = segment.num_leds() as f32;
 
         (startpoint_index + (segment_alpha * leds_in_segment).floor() as usize) % self.num_leds

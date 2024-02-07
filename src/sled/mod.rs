@@ -13,7 +13,7 @@ pub struct Sled {
     vertex_indices: Vec<usize>,
     index_of_closest: usize,
     index_of_furthest: usize,
-    domain: Range<Vec2>
+    domain: Range<Vec2>,
 }
 
 // goofy spacing to preserve order after auto-formatting.
