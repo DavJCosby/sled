@@ -211,16 +211,18 @@ impl Sled {
     }
 
     pub fn modulate_within_dist<F: Fn(&Led) -> Rgb>(&mut self, dist: f32, color_rule: F) {
+        let target_sq = dist.powi(2);
         for led in &mut self.leds {
-            if led.distance() < dist {
+            if led.distance_squared() < target_sq {
                 led.color = color_rule(led);
             }
         }
     }
 
     pub fn set_within_dist(&mut self, dist: f32, color: Rgb) {
+        let target_sq = dist.powi(2);
         for led in &mut self.leds {
-            if led.distance() < dist {
+            if led.distance_squared() < target_sq {
                 led.color = color;
             }
         }

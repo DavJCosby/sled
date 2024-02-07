@@ -1,7 +1,7 @@
 use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
 use sled::{color::Rgb, Sled, SledError};
 
-use std::f32::consts::{PI, TAU};
+use std::f32::consts::TAU;
 const INV_TAU: f32 = 1.0 / TAU;
 
 const GREEN_RADIUS: f32 = 2.33;
