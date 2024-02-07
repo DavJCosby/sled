@@ -199,16 +199,11 @@ impl Sled {
     pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
         let mut all_within_distance = HashSet::new();
 
-        for (segment_index, segment) in self.line_segments.iter().enumerate() {
-            let intersections = segment.intersects_solid_circle(pos, dist);
-            let first = intersections.first();
-            let second = intersections.get(1);
+        let target_sq = dist.powi(2);
 
-            if first.is_some() && second.is_some() {
-                let first = self.alpha_to_index(*first.unwrap(), segment_index);
-                let second = self.alpha_to_index(*second.unwrap(), segment_index);
-                let range = first.min(second)..first.max(second);
-                all_within_distance.extend(range);
+        for led in &self.leds {
+            if led.position().distance_squared(pos) < target_sq {
+                all_within_distance.insert(led.index());
             }
         }
 

@@ -35,7 +35,6 @@ impl Filter {
 
     pub fn and(&self, other: &Self) -> Self {
         let mut filtered = self.led_indices.clone();
-
         for led in &self.led_indices {
             if !other.led_indices.contains(led) {
                 filtered.remove(led);
