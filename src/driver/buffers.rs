@@ -162,8 +162,6 @@ fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
     }
 }
 
-trait TypedIndex<T> {}
-
 impl std::ops::Index<&str> for BufferContainer {
     type Output = Vec<f32>;
 
