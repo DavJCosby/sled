@@ -24,7 +24,7 @@ spin_sleep = { version = "1.1.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.5.1"
-ratatui = "0.25.0"
+ratatui = "0.26.0"
 crossterm = "0.27.0"
 rand = "0.8.5"
 

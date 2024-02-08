@@ -155,12 +155,12 @@ impl Sled {
             .as_err();
         }
 
-        self.leds[self.vertex_indices[vertex_index]].color = color;
+        self.leds[self.vertex_indices[vertex_index] as usize].color = color;
         Ok(())
     }
 
     pub fn get_vertices(&self) -> Filter {
-        let hs: HashSet<usize> = self.vertex_indices.iter().copied().collect();
+        let hs: HashSet<u16> = self.vertex_indices.iter().map(|i| *i as u16).collect();
         hs.into()
     }
 

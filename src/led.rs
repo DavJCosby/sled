@@ -1,19 +1,16 @@
 use crate::color::Rgb;
 use glam::Vec2;
 
-use std::f32::consts::TAU;
-
 #[derive(Clone)]
 
 /// An LED in our Sled configuration, representing both the color of the LED as well as it's spatial information.
 pub struct Led {
     pub color: Rgb,
     position: Vec2,
-    direction: Vec2,
     angle: f32,
     distance: f32,
-    index: usize,
-    segment: usize,
+    index: u16,
+    segment: u8,
 }
 
 /// *All properties listed below are pre-calculated on construction;
@@ -24,22 +21,22 @@ impl Led {
     pub(crate) fn new(
         color: Rgb,
         position: Vec2,
-        index: usize,
-        segment: usize,
+        index: u16,
+        segment: u8,
         center_point: Vec2,
     ) -> Self {
-        let direction = (position - center_point).normalize();
-
-        let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
-        if angle < 0.0 {
-            angle += TAU;
-        }
-        let distance = position.distance(center_point);
+        let offset = position - center_point;
+        let angle = offset.y.atan2(offset.x);
+        let distance = offset.length();
+        // let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
+        // if angle < 0.0 {
+        //     angle += TAU;
+        // }
+        // let distance = position.distance(center_point);
 
         Led {
             color,
             position,
-            direction,
             angle,
             distance,
             index,
@@ -54,7 +51,7 @@ impl Led {
 
     /// Returns the direction from the Sled's `center_point` to this Led. A normalized vector.
     pub fn direction(&self) -> Vec2 {
-        self.direction
+        Vec2::new(self.angle.cos(), self.angle.sin())
     }
 
     /// Returns the angle from the Sled's `center_point` to this Led in radians.
@@ -69,12 +66,12 @@ impl Led {
     }
 
     /// Returns the index of the Led, keeping in mind that Leds in a Sled are treated in memory as one continuous strip.
-    pub fn index(&self) -> usize {
+    pub fn index(&self) -> u16 {
         self.index
     }
 
     /// Returns the index of the LineSegment this Led belongs to.
-    pub fn segment(&self) -> usize {
+    pub fn segment(&self) -> u8 {
         self.segment
     }
 }
