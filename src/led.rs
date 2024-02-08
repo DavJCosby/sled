@@ -7,7 +7,8 @@ use glam::Vec2;
 pub struct Led {
     pub color: Rgb,
     position: Vec2,
-    offset: Vec2,
+    angle: f32,
+    distance: f32,
     index: u16,
     segment: u8,
 }
@@ -25,7 +26,8 @@ impl Led {
         center_point: Vec2,
     ) -> Self {
         let offset = position - center_point;
-
+        let angle = offset.y.atan2(offset.x);
+        let distance = offset.length();
         // let mut angle = direction.angle_between(Vec2::new(1.0, 0.0));
         // if angle < 0.0 {
         //     angle += TAU;
@@ -35,7 +37,8 @@ impl Led {
         Led {
             color,
             position,
-            offset,
+            angle,
+            distance,
             index,
             segment,
         }
@@ -48,28 +51,18 @@ impl Led {
 
     /// Returns the direction from the Sled's `center_point` to this Led. A normalized vector.
     pub fn direction(&self) -> Vec2 {
-        self.offset.normalize()
+        Vec2::new(self.angle.cos(), self.angle.sin())
     }
 
     /// Returns the angle from the Sled's `center_point` to this Led in radians.
     /// The direction `(1, 0)` is considered 0 radians, `(0, -1)` is pi/2 radian.
     pub fn angle(&self) -> f32 {
-        return self.offset.x.atan2(self.offset.y);
-        // let angle = Self::fast_angle_between(self.offset, Self::POSITIVE_X);
-        // if angle < 0.0 {
-        //     angle + TAU
-        // } else {
-        //     angle
-        // }
+        self.angle
     }
 
     /// Returns the distance from the Sled's `center_point` to this Led.
     pub fn distance(&self) -> f32 {
-        self.offset.length()
-    }
-
-    pub fn distance_squared(&self) -> f32 {
-        self.offset.length_squared()
+        self.distance
     }
 
     /// Returns the index of the Led, keeping in mind that Leds in a Sled are treated in memory as one continuous strip.

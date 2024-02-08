@@ -28,9 +28,9 @@ criterion_group! {
     name = benches;
     config = Criterion::default()
         .significance_level(0.05)
-        .sample_size(500)
+        .sample_size(50)
         .warm_up_time(Duration::from_secs_f32(10.0))
-        .measurement_time(Duration::from_secs_f32(45.0));
+        .measurement_time(Duration::from_secs_f32(25.0));
     targets = ripples
 }
 criterion_main!(benches);

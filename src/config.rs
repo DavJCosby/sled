@@ -1,7 +1,7 @@
 use crate::error::SledError;
 use glam::Vec2;
 use serde::{Deserialize, Deserializer, Serialize};
-use smallvec::{smallvec, SmallVec};
+use smallvec::SmallVec;
 use std::fs;
 
 static mut DEFAULT_DENSITY: f32 = 0.0;
@@ -82,43 +82,6 @@ impl LineSegment {
             return_values.push(t2);
         }
 
-        return_values
-    }
-
-    // similar to intersects circle, but includes anywhere
-    // the line is inside the circle, rather than passes through it.
-    pub fn intersects_solid_circle(
-        &self,
-        circle_center: Vec2,
-        circle_radius: f32,
-    ) -> SmallVec<[f32; 2]> {
-        let mut return_values = smallvec![];
-        let radius_sq = circle_radius.powi(2);
-        let v1 = self.end - self.start;
-        // LineSegment should probably just have its length stored
-        let v1_lensq = v1.length_squared();
-
-        // if fully enclosed, we can skip some steps
-        if v1_lensq <= radius_sq && self.start.distance_squared(circle_center) <= radius_sq && self.end.distance_squared(circle_center) <= radius_sq {
-            return smallvec![0.0, 1.0];
-        }
-
-        let v2 = self.start - circle_center;
-        let b = -2.0 * v1.dot(v2);
-        let c = 2.0 * v1_lensq;
-
-        let mut d = b * b - 2.0 * c * (v2.length_squared() - radius_sq);
-        if d < 0.0 {
-            return return_values;
-        }
-
-        d = d.sqrt();
-
-        let alpha1 = ((b - d) / c).clamp(0.0, 1.0);
-        let alpha2 = ((b + d) / c).clamp(0.0, 1.0);
-
-        return_values.push(alpha1);
-        return_values.push(alpha2);
         return_values
     }
 
