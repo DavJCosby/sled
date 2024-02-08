@@ -1,10 +1,9 @@
-use compact_str::{CompactString, ToCompactString};
-use micromap::Map;
-
 use crate::Filter;
+use compact_str::{CompactString, ToCompactString};
+use std::collections::HashMap;
 
 pub struct Filters {
-    map: Map<CompactString, Filter, 12>,
+    map: HashMap<CompactString, Filter>,
 }
 
 impl Default for Filters {
@@ -15,7 +14,9 @@ impl Default for Filters {
 
 impl Filters {
     pub fn new() -> Self {
-        Filters { map: Map::new() }
+        Filters {
+            map: HashMap::new(),
+        }
     }
 
     pub fn set(&mut self, key: &str, value: Filter) {
