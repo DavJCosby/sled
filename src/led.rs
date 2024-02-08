@@ -1,8 +1,6 @@
 use crate::color::Rgb;
 use glam::Vec2;
 
-use std::f32::consts::TAU;
-
 #[derive(Clone)]
 
 /// An LED in our Sled configuration, representing both the color of the LED as well as it's spatial information.
