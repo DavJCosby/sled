@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 mod filters;
 // mod sliders;
 mod buffers;
-pub use buffers::{Buffer, BufferContainer};
+pub use buffers::BufferContainer;
 pub use filters::Filters;
 
 pub enum RefreshTiming {
@@ -23,7 +23,6 @@ type ComputeCommands =
     Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
 type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
 pub struct Driver {
-    _timing_strategy: RefreshTiming,
     sled: Option<Sled>,
     startup_commands: StartupCommands,
     compute_commands: ComputeCommands,
@@ -43,7 +42,6 @@ impl Default for Driver {
 impl Driver {
     pub fn new() -> Self {
         Driver {
-            _timing_strategy: RefreshTiming::None,
             sled: None,
             startup_commands: Box::new(|_, _, _| Ok(())),
             compute_commands: Box::new(|_, _, _, _| Ok(())),

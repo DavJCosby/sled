@@ -1,5 +1,4 @@
 mod resources;
-use std::mem::size_of;
 
 use resources::tui::SledTerminalDisplay;
 
@@ -7,7 +6,6 @@ use glam::Vec2;
 use sled::{color::Rgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
-    print!("{}", size_of::<Sled>());
     let mut sled = Sled::new("./examples/resources/config.toml")?;
     let mut display = SledTerminalDisplay::start("Calibration", sled.domain());
 
@@ -22,4 +20,3 @@ fn main() -> Result<(), SledError> {
     display.refresh().unwrap();
     Ok(())
 }
-
