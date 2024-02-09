@@ -61,7 +61,7 @@ impl Sled {
         let num_leds = leds.len();
         let index_of_closest = leds
             .iter()
-            .min_by(|l, r| l.distance().partial_cmp(&&r.distance()).unwrap())
+            .min_by(|l, r| l.distance().partial_cmp(&r.distance()).unwrap())
             .unwrap()
             .index() as usize;
 
