@@ -262,7 +262,7 @@ impl Sled {
 
     pub(crate) fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
         let segment = &self.line_segments[segment_index];
-        let startpoint_index = self.line_segment_endpoint_indices[segment_index].0 as usize;
+        let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
         let leds_in_segment = segment.num_leds() as f32;
 
         (startpoint_index + (segment_alpha * leds_in_segment).floor() as usize) % self.num_leds
