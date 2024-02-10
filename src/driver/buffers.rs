@@ -90,6 +90,7 @@ impl BufferContainer {
         *self.get_buffer_item_mut(key, index)? = value;
         Ok(())
     }
+
 }
 trait Buffer {
     fn as_any(&self) -> &dyn Any;
