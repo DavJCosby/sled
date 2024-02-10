@@ -156,10 +156,7 @@ impl BufferContainer {
 }
 
 fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
-    match option {
-        Some(v) => Some(*v),
-        None => None,
-    }
+    option.map(|v| *v)
 }
 
 impl std::ops::Index<&str> for BufferContainer {

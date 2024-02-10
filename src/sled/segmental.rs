@@ -155,7 +155,7 @@ impl Sled {
             .as_err();
         }
 
-        self.leds[self.vertex_indices[vertex_index] as usize].color = color;
+        self.leds[self.vertex_indices[vertex_index]].color = color;
         Ok(())
     }
 
