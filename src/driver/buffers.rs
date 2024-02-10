@@ -1,168 +1,111 @@
-use std::any::type_name;
+use std::any::{type_name, Any};
 
 use compact_str::{CompactString, ToCompactString};
-use glam::Vec2;
-use palette::rgb::Rgb;
 use std::collections::HashMap;
-
-pub struct BufferContainer {
-    f32s: HashMap<CompactString, Vec<f32>>,
-    rgbs: HashMap<CompactString, Vec<Rgb>>,
-    bools: HashMap<CompactString, Vec<bool>>,
-    vec2s: HashMap<CompactString, Vec<Vec2>>,
-    usizes: HashMap<CompactString, Vec<usize>>,
-}
-
-mod internal_traits {
-    use super::BufferContainer;
-    use super::{CompactString, HashMap};
-    use super::{Rgb, Vec2};
-    pub trait MapForType<T> {
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<T>>;
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<T>>;
-    }
-
-    impl MapForType<usize> for BufferContainer {
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<usize>> {
-            &self.usizes
-        }
-
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<usize>> {
-            &mut self.usizes
-        }
-    }
-
-    impl MapForType<bool> for BufferContainer {
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<bool>> {
-            &mut self.bools
-        }
-
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<bool>> {
-            &self.bools
-        }
-    }
-
-    impl MapForType<f32> for BufferContainer {
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<f32>> {
-            &mut self.f32s
-        }
-
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<f32>> {
-            &self.f32s
-        }
-    }
-
-    impl MapForType<Rgb> for BufferContainer {
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<Rgb>> {
-            &mut self.rgbs
-        }
-
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<Rgb>> {
-            &self.rgbs
-        }
-    }
-
-    impl MapForType<Vec2> for BufferContainer {
-        fn map_for_type_mut(&mut self) -> &mut HashMap<CompactString, Vec<Vec2>> {
-            &mut self.vec2s
-        }
-
-        fn map_for_type(&self) -> &HashMap<CompactString, Vec<Vec2>> {
-            &self.vec2s
-        }
-    }
-}
 
 use crate::SledError;
 
-pub use self::internal_traits::MapForType;
+pub struct BufferContainer {
+    buffers: HashMap<CompactString, Box<dyn Buffer>>,
+}
 
 impl BufferContainer {
     pub fn new() -> Self {
         BufferContainer {
-            f32s: HashMap::new(),
-            rgbs: HashMap::new(),
-            bools: HashMap::new(),
-            vec2s: HashMap::new(),
-            usizes: HashMap::new(),
+            buffers: HashMap::new(),
         }
     }
 
-    pub fn create<T>(&mut self, buffer_name: &str) -> &mut Vec<T>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let map = self.map_for_type_mut();
-        map.insert(buffer_name.to_compact_string(), Vec::new());
-        map.get_mut(buffer_name).unwrap()
+    pub fn create_buffer<T: BufferableData>(&mut self, key: &str) -> &mut Vec<T> {
+        self.buffers
+            .insert(key.to_compact_string(), Box::new(Vec::<T>::new()));
+        self.get_buffer_mut(key).unwrap()
     }
 
-    pub fn get_buffer<T>(&self, buffer_name: &str) -> Option<&Vec<T>>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let map = self.map_for_type();
-        map.get(buffer_name)
-    }
-
-    pub fn get_buffer_mut<T>(&mut self, buffer_name: &str) -> Option<&mut Vec<T>>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let map = self.map_for_type_mut();
-        map.get_mut(buffer_name)
-    }
-
-    pub fn get<T>(&self, buffer_name: &str, index: usize) -> Option<T>
-    where
-        BufferContainer: MapForType<T>,
-        T: Copy,
-    {
-        let buffer = self.get_buffer(buffer_name)?;
-        deref_option(buffer.get(index))
-    }
-
-    pub fn set<T>(&mut self, buffer_name: &str, index: usize, value: T) -> Result<(), SledError>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let buffer = self.get_buffer_mut(buffer_name).ok_or_else(|| {
-            SledError::new(format!(
-                "There is no Vec<{}> with the name `{}`.",
-                type_name::<T>(),
-                buffer_name
-            ))
+    pub fn get_buffer<T: BufferableData>(&self, key: &str) -> Result<&Vec<T>, SledError> {
+        let buffer_trait_obj = self.buffers.get(key).ok_or_else(|| {
+            SledError::new(format!("There is no Buffer with the name `{}`.", key))
         })?;
 
-        buffer[index] = value;
+        buffer_trait_obj
+            .as_any()
+            .downcast_ref::<Vec<T>>()
+            .ok_or_else(|| {
+                SledError::new(format!(
+                    "Buffer with name `{}` exists but it is not a buffer of {} values.",
+                    key,
+                    type_name::<T>()
+                ))
+            })
+    }
+
+    pub fn get_buffer_mut<T: BufferableData>(
+        &mut self,
+        key: &str,
+    ) -> Result<&mut Vec<T>, SledError> {
+        let buffer_trait_obj = self.buffers.get_mut(key).ok_or_else(|| {
+            SledError::new(format!("There is no Buffer with the name `{}`.", key))
+        })?;
+
+        buffer_trait_obj
+            .as_any_mut()
+            .downcast_mut::<Vec<T>>()
+            .ok_or_else(|| {
+                SledError::new(format!(
+                    "Buffer with name `{}` exists but it is not a buffer of {} values.",
+                    key,
+                    type_name::<T>()
+                ))
+            })
+    }
+
+    pub fn get_buffer_item<T: BufferableData>(
+        &self,
+        key: &str,
+        index: usize,
+    ) -> Result<&T, SledError> {
+        let buffer = self.get_buffer(key)?;
+        buffer
+            .get(index)
+            .ok_or_else(|| SledError::new(format!("Buffer has no item at index {}", index)))
+    }
+
+    pub fn get_buffer_item_mut<T: BufferableData>(
+        &mut self,
+        key: &str,
+        index: usize,
+    ) -> Result<&mut T, SledError> {
+        let buffer = self.get_buffer_mut(key)?;
+        buffer
+            .get_mut(index)
+            .ok_or_else(|| SledError::new(format!("Buffer has no item at index {}", index)))
+    }
+
+    pub fn set_buffer_item<T: BufferableData>(
+        &mut self,
+        key: &str,
+        index: usize,
+        value: T,
+    ) -> Result<(), SledError> {
+        *self.get_buffer_item_mut(key, index)? = value;
         Ok(())
     }
 
-    pub fn push<T>(&mut self, buffer_name: &str, value: T) -> Result<(), SledError>
-    where
-        BufferContainer: MapForType<T>,
-    {
-        let buffer = self.get_buffer_mut(buffer_name).ok_or_else(|| {
-            SledError::new(format!(
-                "There is no Vec<{}> with the name `{}`.",
-                type_name::<T>(),
-                buffer_name
-            ))
-        })?;
+}
+trait Buffer {
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
 
-        buffer.push(value);
-        Ok(())
+pub trait BufferableData: 'static {}
+impl<T: Sized + 'static> BufferableData for T {}
+
+impl<T: BufferableData> Buffer for Vec<T> {
+    fn as_any(&self) -> &dyn Any {
+        self
     }
-}
 
-fn deref_option<T: Copy>(option: Option<&T>) -> Option<T> {
-    option.map(|v| *v)
-}
-
-impl std::ops::Index<&str> for BufferContainer {
-    type Output = Vec<f32>;
-
-    fn index(&self, index: &str) -> &Self::Output {
-        &self.f32s[index]
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
     }
 }
