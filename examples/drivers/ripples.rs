@@ -25,17 +25,17 @@ fn startup(
 ) -> Result<(), SledError> {
     let sled_bounds = sled.domain();
 
-    let radii = buffers.create("radii");
+    let radii = buffers.create_buffer("radii");
     for _ in 0..MAX_RIPPLES {
         radii.push(rand_init_radius());
     }
 
-    let positions = buffers.create("positions");
+    let positions = buffers.create_buffer("positions");
     for _ in 0..MAX_RIPPLES {
         positions.push(rand_point_in_range(&sled_bounds));
     }
 
-    let colors = buffers.create("colors");
+    let colors = buffers.create_buffer::<Rgb>("colors");
     colors.extend([
         Rgb::new(0.15, 0.5, 1.0),
         Rgb::new(0.25, 0.3, 1.0),
@@ -61,17 +61,17 @@ fn compute(
     let delta = time_info.delta.as_secs_f32();
     let bounds = sled.domain();
     for i in 0..MAX_RIPPLES {
-        let radius: f32 = buffers.get("radii", i).unwrap();
+        let radius: f32 = *buffers.get_buffer_item("radii", i)?;
         if radius > MAX_RADIUS {
             let new_pos = rand_point_in_range(&bounds);
             let new_radius = rand_init_radius();
-            buffers.set("positions", i, new_pos)?;
-            buffers.set("radii", i, new_radius)?;
+            buffers.set_buffer_item("positions", i, new_pos)?;
+            buffers.set_buffer_item("radii", i, new_radius)?;
             continue;
         }
 
         let new_radius = radius + delta * radius.max(1.0).sqrt().recip();
-        buffers.set("radii", i, new_radius)?;
+        buffers.set_buffer_item("radii", i, new_radius)?;
     }
     Ok(())
 }
@@ -97,10 +97,12 @@ fn draw(
     _time_info: &TimeInfo,
 ) -> Result<(), SledError> {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-    let colors = buffers.get_buffer("colors").unwrap();
+    let colors = buffers.get_buffer("colors")?;
+    let positions = buffers.get_buffer("positions")?;
+    let radii = buffers.get_buffer("radii")?;
     for i in 0..MAX_RIPPLES {
-        let pos = buffers.get("positions", i).unwrap();
-        let radius = buffers.get("radii", i).unwrap();
+        let pos = positions[i];
+        let radius = radii[i];
 
         if radius > -FEATHERING {
             draw_ripple_at(sled, pos, radius, colors[i % colors.len()]);
