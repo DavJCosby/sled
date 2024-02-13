@@ -89,3 +89,28 @@ impl std::hash::Hash for Led {
         self.index.hash(state);
     }
 }
+
+impl std::fmt::Debug for Led {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let dir = self.direction();
+        f.debug_struct("Led")
+            .field("color", &self.color.into_components())
+            .field("position", &(self.position.x, self.position.y))
+            .field("direction", &(dir.x, dir.y))
+            .field("angle", &self.angle)
+            .field("distance", &self.distance)
+            .field("index", &self.index)
+            .field("segment", &self.segment)
+            .finish()
+    }
+}
+
+impl std::fmt::Display for Led {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}: ({}, {}, {})",
+            self.index, self.color.red, self.color.green, self.color.blue
+        )
+    }
+}
