@@ -168,6 +168,11 @@ loop {
 ```
 ![Basic Time-Driven Effect Using Buffers](resources/driver1.gif)
 
+If you need to retrieve ownership of your sled later, you can do:
+```rust
+let sled = driver.dismount();
+```
+
 `.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
 
 `set_draw_commands()` - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over Sled, and immutable access to BufferContainer, Filters, and TimeInfo.
