@@ -229,10 +229,32 @@ let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
 *color /= 2.0;
 ```
 
-TODO, but will cover:
-- Drivers 
-    - Draw, Compute, and Startup commands
-    - Buffers
-    - The Filter Container
-- Scheduler
-- Named Color consts? (opt-in feature)
+### Filters
+For exceptionally performance-sensitive applications, Filters can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
+
+Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
+
+```rust
+let startup_commands = |sled, buffers, filters| {
+    let area_filter: Filter = sled.get_within_dist_from(5.0, Vec2::new(-0.25, 1.5));
+
+    filters.set("area_of_effect", area);
+    Ok(())
+}
+
+
+let draw_commands = |sled, buffers, filters, _| {
+    let area_filter = filters.get("area_of_effect")?;
+    sled.map_filter(area_filter, |led| {
+        // expensive computation
+    });
+    Ok(())
+}
+```
+Most `.get` methods on sled will return a Filter, but if you need more precise control you can do something like this:
+```rust
+let even_filter = sled.filter(|led| led.index() % 2 == 0);
+```
+
+I imagine this feature will get less love than buffers, but I can still imagine a handful of scenarios where this can be very useful. In a future version this may become an opt-in compiler feature.
+
