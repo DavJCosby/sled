@@ -145,4 +145,12 @@ impl Driver {
             vec![]
         }
     }
+
+    pub fn buffers(&self) -> &BufferContainer {
+        &self.buffers
+    }
+
+    pub fn buffers_mut(&mut self) -> &mut BufferContainer {
+        &mut self.buffers
+    }
 }

@@ -92,6 +92,13 @@ impl Sled {
         }
     }
 
+    pub fn map_filter<F: Fn(&Led) -> Rgb>(&mut self, filter: &Filter, map: impl Fn(&Led) -> Rgb) {
+        for i in filter {
+            let led = &mut self.leds[i as usize];
+            led.color = map(led)
+        }
+    }
+
     pub fn for_each_in_filter<F: FnMut(&mut Led)>(&mut self, filter: &Filter, mut func: F) {
         for i in filter {
             let led = &mut self.leds[i as usize];
