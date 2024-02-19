@@ -269,7 +269,7 @@ scheduler.loop_forever(|| {
     driver.step();
 });
 ```
-Scheduler utilizes [spin_sleep](https://crates.io/crates/spin_sleep/1.2.0/dependencies) to minimize the high CPU usage that comes when you use a simple spinning strategy to wait for the next update.
+Scheduler utilizes [spin_sleep](https://crates.io/crates/spin_sleep/) to minimize the high CPU usage you typically see when you spin to wait for the next update.
 
 Here are a few other methods that you might also consider:
 
