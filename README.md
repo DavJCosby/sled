@@ -174,6 +174,8 @@ loop {
 
 `set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled, mutable control over BufferContainer and Filters and immutable access to TimeInfo.
 
+If you don't Drivers for your project, you can bring down your binary and shed a dependency or two by disabling the `drivers` compiler feature.
+
 ### Buffers
 A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 
@@ -258,3 +260,37 @@ let even_filter = sled.filter(|led| led.index() % 2 == 0);
 I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
 
 ## Scheduler
+The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
+
+```rust
+let mut scheduler = Scheduler::fixed_hz(120.0);
+
+scheduler.loop_forever(|| {
+    driver.step();
+});
+```
+Scheduler utilizes [spin_sleep](https://crates.io/crates/spin_sleep/1.2.0/dependencies) to minimize the high CPU usage that comes when you use a simple spinning strategy to wait for the next update.
+
+Here are a few other methods that you might also consider:
+
+```rust
+// loops until false is returned
+scheduler.loop_while_true(|| {
+    // -snip-
+    return true;
+});
+
+// loops until an error of any type is returned
+scheduler.loop_until_err(|| {
+    // -snip-
+    Ok(())
+});
+
+// best for where you don't wanna pass everything through a closure
+loop {
+    // -snip-
+    scheduler.sleep_until_next_frame();
+}
+```
+
+If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
