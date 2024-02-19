@@ -166,7 +166,7 @@ loop {
     driver.step();
 }
 ```
-![Basic Time-Driven Effect Using Buffers](resources/driver1.mp4)
+![Basic Time-Driven Effect Using Buffers](resources/driver1.gif)
 
 `.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
 
@@ -218,10 +218,13 @@ let draw_commands = |sled, buffers, _, _| {
 
 If you need to mutate buffer values:
 ```rust
-let buffer_mut: &mut Vec<bool> = buffers.get_buffer_mut("wall_toggles")?;
-// or: item-by-item access. Helpful in some situations due to borrow checker rules.
+// Mutable reference to the whole buffer
+let buffer_mut = buffers.get_buffer_mut::<bool>("wall_toggles")?;
+
+// Modify just one item
 buffers.set_buffer_item("wall_toggles", 1, false);
 
+// Mutable reference to just one item
 let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
 *color /= 2.0;
 ```
