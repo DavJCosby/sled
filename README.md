@@ -240,8 +240,7 @@ let startup_commands = |sled, buffers, filters| {
 
     filters.set("area_of_effect", area);
     Ok(())
-}
-
+};
 
 let draw_commands = |sled, buffers, filters, _| {
     let area_filter = filters.get("area_of_effect")?;
@@ -249,12 +248,13 @@ let draw_commands = |sled, buffers, filters, _| {
         // expensive computation
     });
     Ok(())
-}
+};
 ```
 Most `.get` methods on sled will return a Filter, but if you need more precise control you can do something like this:
 ```rust
 let even_filter = sled.filter(|led| led.index() % 2 == 0);
 ```
 
-I imagine this feature will get less love than buffers, but I can still imagine a handful of scenarios where this can be very useful. In a future version this may become an opt-in compiler feature.
+I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
 
+## Scheduler
