@@ -65,13 +65,14 @@ Once you have your Sled struct, you can start drawing to it right away! Here’s
 ```rust
 sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 ```
-![Set all Vertices](images/vertices.png)
+![Set all Vertices](resources/vertices.png)
+> Note that this is a custom terminal UI visualization that is not packaged as part of the sled crate. It is ultimately up to you to decide how to visualize your LEDs, Sled just handles the computation.
 
 **Set all LEDs 2 units away from the `center_point` to red:**
 ```rust
 sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
 ```
-![Set at Distance](images/at_distance.png)
+![Set at Distance](resources/at_distance.png)
 
 **Set each LED using a function of its direction from point `(2, 1)`:**
 ```rust
@@ -81,13 +82,13 @@ sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
      Rgb::new(red, green, 0.5)
  });
 ```
-![Map by Direction](images/dir_map.png)
+![Map by Direction](resources/dir_map.png)
 
 **Dim one of the walls by 75%:**
 ```rust
 sled.modulate_segment(3, |led| led.color * 0.25)?;
 ```
-![Modulate Segment](images/segment_modulate.png)
+![Modulate Segment](resources/segment_modulate.png)
 
 **Set all LEDs within the overlapping areas of two different circles to blue:**
 ```rust
@@ -104,7 +105,7 @@ let circle_2: Filter = sled.get_within_dist_from(
 let overlap = circle_1.and(&circle_2);
 sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 ```
-![Set Overlapping Areas](images/filter_and.png)
+![Set Overlapping Areas](resources/filter_and.png)
 For more examples, see the documentation comments on the Sled struct.
 
 ## Output
@@ -124,6 +125,107 @@ let colors_and_positions: Vec<(Rgb, Vec2)> =
 ```
 
 # Advanced Features
+For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
+
+## Drivers
+Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
+
+```rust
+let mut driver = Driver::new();
+
+driver.set_startup_commands(|_sled, buffers, _filters| {
+    let colors = buffers.create_buffer::<Rgb>("colors");
+    colors.push(Rgb::new(1.0, 0.0, 0.0));
+    colors.push(Rgb::new(0.0, 1.0, 0.0));
+    colors.push(Rgb::new(0.0, 0.0, 1.0));
+    Ok(())
+});
+
+driver.set_draw_commands(|sled, buffers, _filters, time_info| {
+    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+
+    let elapsed = time_info.elapsed.as_secs_f32();
+    let colors = buffers.get_buffer::<Rgb>("colors")?;
+    let num_colors = colors.len();
+
+    for i in 0..num_colors {
+        let alpha = i as f32 / num_colors as f32;
+        let angle = elapsed + (TAU * alpha);
+        sled.set_at_angle(angle, colors[i])?;
+    }
+
+    Ok(())
+});
+```
+To start using the Driver, give it ownership over a Sled using `.mount()` and use `.step()` to manually refresh it.
+```rust
+let sled = Sled::new("path/to/config.toml")?;
+driver.mount(sled); // sled gets moved into driver here.
+
+loop {
+    driver.step();
+}
+```
+![Basic Time-Driven Effect Using Buffers](resources/driver1.mp4)
+
+`.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
+
+`set_draw_commands()` - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over Sled, and immutable access to BufferContainer, Filters, and TimeInfo.
+
+`set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled, mutable control over BufferContainer and Filters and immutable access to TimeInfo.
+
+### Buffers
+A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
+
+It's best practice to create buffers with startup commands, and then modify them either through compute commands or from outside the driver depending on your needs.
+
+```rust
+fn startup(sled: &mut Sled, buffers: &mut BufferContainer, _filters: &mut Filters) -> Result<(), SledError> {
+    let wall_toggles: &mut Vec<bool> = buffer.create_buffer("wall_toggles");
+    let wall_colors: &mut Vec<Rgb> = buffer.create_buffer("wall_colors");
+    let some_important_data = buffer.create_buffer::<MY_CUSTOM_TYPE>("important_data");
+    Ok(())
+}
+
+driver.set_startup_commands(startup);
+```
+
+To maniplate buffers from outside driver, just do:
+```rust
+let buffers: &BufferContainer = driver.buffers();
+// or
+let buffers: &mut BufferContainer = driver.buffers_mut();
+```
+
+Using a BufferContainer is relatively straightforward.
+```rust
+let draw_commands = |sled, buffers, _, _| {
+    let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
+    let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
+    let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
+
+    for i in 0..wall_toggles.len() {
+        if wall_toggles[i] == true {
+            sled.set_segment(i, wall_colors[i])?;
+        } else {
+            sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
+        }
+    }
+    
+    Ok(())
+}
+```
+
+If you need to mutate buffer values:
+```rust
+let buffer_mut: &mut Vec<bool> = buffers.get_buffer_mut("wall_toggles")?;
+// or: item-by-item access. Helpful in some situations due to borrow checker rules.
+buffers.set_buffer_item("wall_toggles", 1, false);
+
+let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
+*color /= 2.0;
+```
+
 TODO, but will cover:
 - Drivers 
     - Draw, Compute, and Startup commands
