@@ -1,6 +1,6 @@
 use std::{error::Error, fmt};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct SledError {
     pub message: String,
 }
