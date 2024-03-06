@@ -16,7 +16,7 @@ fn main() -> Result<(), SledError> {
     sled.set_at_dir(Vec2::new(0.0, 1.0), Rgb::new(0.0, 1.0, 0.0))?;
     sled.set_at_dir(Vec2::new(0.0, -1.0), Rgb::new(0.0, 0.5, 0.0))?;
 
-    display.leds = sled.read_colors_and_positions();
+    display.leds = sled.colors_and_positions();
     display.refresh().unwrap();
     Ok(())
 }

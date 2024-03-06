@@ -15,7 +15,7 @@ fn main() {
     let mut scheduler = Scheduler::fixed_hz(500.0);
     scheduler.loop_until_err(|| {
         driver.step();
-        display.leds = driver.read_colors_and_positions();
+        display.leds = driver.colors_and_positions();
         display.refresh()?;
         Ok(())
     });

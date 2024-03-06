@@ -131,7 +131,7 @@ fn main() -> io::Result<()> {
     let sled = Sled::new("./examples/resources/config.toml").unwrap();
 
     let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
-    display.leds = sled.read_colors_and_positions();
+    display.leds = sled.colors_and_positions();
     display.refresh()?;
 
     Ok(())

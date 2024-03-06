@@ -106,11 +106,11 @@ impl Sled {
     ///# use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
     /// // 32 bits/channel by default
-    /// let colors: Vec<Rgb> = sled.read_colors();
+    /// let colors: Vec<Rgb> = sled.colors();
     /// // coerce to 8 bits/channel
-    /// let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
+    /// let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
     /// ```
-    pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
+    pub fn colors<T>(&self) -> Vec<Srgb<T>>
     where
         f32: color::stimulus::IntoStimulus<T>,
     {
@@ -121,13 +121,13 @@ impl Sled {
     }
 
     /// Returns the positions of each LED in the system, stored in a vector.
-    pub fn read_positions(&self) -> Vec<Vec2> {
+    pub fn positions(&self) -> Vec<Vec2> {
         self.leds.iter().map(|led| led.position()).collect()
     }
 
     /// Returns the positions and colors of each LED in the system, stored in a vector of `(Rgb, Vec2)`.
     /// Supports color coercion just like [Sled::read_colors()](read_colors())
-    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
         f32: color::stimulus::IntoStimulus<T>,
     {

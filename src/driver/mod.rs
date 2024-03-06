@@ -116,12 +116,12 @@ impl Driver {
         sled
     }
 
-    pub fn read_colors<T>(&self) -> Vec<Srgb<T>>
+    pub fn colors<T>(&self) -> Vec<Srgb<T>>
     where
         f32: crate::color::stimulus::IntoStimulus<T>,
     {
         if let Some(sled) = &self.sled {
-            sled.read_colors()
+            sled.colors()
         } else {
             vec![]
         }
@@ -129,18 +129,18 @@ impl Driver {
 
     pub fn read_positions(&self) -> Vec<Vec2> {
         if let Some(sled) = &self.sled {
-            sled.read_positions()
+            sled.positions()
         } else {
             vec![]
         }
     }
 
-    pub fn read_colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
         f32: crate::color::stimulus::IntoStimulus<T>,
     {
         if let Some(sled) = &self.sled {
-            sled.read_colors_and_positions()
+            sled.colors_and_positions()
         } else {
             vec![]
         }
