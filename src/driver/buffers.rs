@@ -9,6 +9,12 @@ pub struct BufferContainer {
     buffers: HashMap<CompactString, Box<dyn Buffer>>,
 }
 
+impl Default for BufferContainer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BufferContainer {
     pub fn new() -> Self {
         BufferContainer {
@@ -18,7 +24,7 @@ impl BufferContainer {
 
     pub fn create_buffer<T: BufferableData>(&mut self, key: &str) -> &mut Vec<T> {
         self.buffers
-            .insert(key.to_compact_string(), Box::new(Vec::<T>::new()));
+            .insert(key.to_compact_string(), Box::<Vec<T>>::default());
         self.get_buffer_mut(key).unwrap()
     }
 
@@ -91,8 +97,27 @@ impl BufferContainer {
         Ok(())
     }
 
+    pub fn iter(&self) -> std::collections::hash_map::Iter<CompactString, Box<dyn Buffer>> {
+        self.buffers.iter()
+    }
+
+    pub fn iter_mut(
+        &mut self,
+    ) -> std::collections::hash_map::IterMut<CompactString, Box<dyn Buffer>> {
+        self.buffers.iter_mut()
+    }
 }
-trait Buffer {
+
+impl std::iter::IntoIterator for BufferContainer {
+    type Item = (CompactString, Box<dyn Buffer>);
+    type IntoIter = std::collections::hash_map::IntoIter<CompactString, Box<dyn Buffer>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.buffers.into_iter()
+    }
+}
+
+pub trait Buffer {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
