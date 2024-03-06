@@ -41,3 +41,23 @@ impl IntoIterator for Filters {
         self.map.into_iter()
     }
 }
+
+impl FromIterator<(CompactString, Filter)> for Filters {
+    fn from_iter<T: IntoIterator<Item = (CompactString, Filter)>>(iter: T) -> Self {
+        let mut f = Filters::new();
+
+        for (key, value) in iter {
+            f.map.insert(key, value);
+        }
+
+        f
+    }
+}
+
+impl Extend<(CompactString, Filter)> for Filters {
+    fn extend<T: IntoIterator<Item = (CompactString, Filter)>>(&mut self, iter: T) {
+        for (key, value) in iter {
+            self.map.insert(key, value);
+        }
+    }
+}

@@ -70,11 +70,30 @@ impl IntoIterator for Filter {
 
 impl IntoIterator for &Filter {
     type Item = u16;
-    type IntoIter = hash_set::IntoIter<Self::Item>;
+    type IntoIter = hash_set::IntoIter<u16>;
 
     fn into_iter(self) -> Self::IntoIter {
         // this doesn't seem right; revisit
         self.led_indices.clone().into_iter()
+    }
+}
+
+impl FromIterator<u16> for Filter {
+    fn from_iter<T: IntoIterator<Item = u16>>(iter: T) -> Self {
+        let mut set = HashSet::<u16>::new();
+        for i in iter {
+            set.insert(i);
+        }
+
+        Filter { led_indices: set }
+    }
+}
+
+impl Extend<u16> for Filter {
+    fn extend<T: IntoIterator<Item = u16>>(&mut self, iter: T) {
+        for i in iter {
+            self.led_indices.insert(i);
+        }
     }
 }
 

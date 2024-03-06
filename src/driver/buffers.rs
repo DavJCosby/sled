@@ -133,6 +133,26 @@ impl std::iter::IntoIterator for BufferContainer {
     }
 }
 
+impl std::iter::FromIterator<(CompactString, Box<dyn Buffer>)> for BufferContainer {
+    fn from_iter<T: IntoIterator<Item = (CompactString, Box<dyn Buffer>)>>(iter: T) -> Self {
+        let mut bc = BufferContainer::new();
+
+        for (key, value) in iter {
+            bc.buffers.insert(key, value);
+        }
+
+        bc
+    }
+}
+
+impl std::iter::Extend<(CompactString, Box<dyn Buffer>)> for BufferContainer {
+    fn extend<T: IntoIterator<Item = (CompactString, Box<dyn Buffer>)>>(&mut self, iter: T) {
+        for (key, value) in iter {
+            self.buffers.insert(key, value);
+        }
+    }
+}
+
 impl Default for BufferContainer {
     fn default() -> Self {
         Self::new()
