@@ -26,4 +26,17 @@ impl Filters {
     pub fn get(&self, key: &str) -> Option<&Filter> {
         self.map.get(key)
     }
+
+    pub fn iter(&self) -> std::collections::hash_map::Iter<CompactString, Filter> {
+        self.map.iter()
+    }
+}
+
+impl IntoIterator for Filters {
+    type Item = (CompactString, Filter);
+    type IntoIter = std::collections::hash_map::IntoIter<CompactString, Filter>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.map.into_iter()
+    }
 }
