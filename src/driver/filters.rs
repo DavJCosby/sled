@@ -2,6 +2,7 @@ use crate::Filter;
 use compact_str::{CompactString, ToCompactString};
 use std::collections::HashMap;
 
+#[derive(Clone, Debug)]
 pub struct Filters {
     map: HashMap<CompactString, Filter>,
 }

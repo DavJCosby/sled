@@ -1,19 +1,32 @@
 use spin_sleep::SpinSleeper;
 use std::time::{Duration, Instant};
+
+#[derive(Debug, Copy, Clone, Hash)]
 pub struct Scheduler {
     target_delta: Duration,
     sleeper: SpinSleeper,
     last_loop_end: Instant,
 }
 
+impl Default for Scheduler {
+    /// assumes a default hz of 60
+    fn default() -> Self {
+        Scheduler::new(60.0)
+    }
+}
+
 impl Scheduler {
-    pub fn fixed_hz(target_hz: f32) -> Self {
-        let target_delta = Duration::from_secs_f32(1.0 / target_hz);
+    pub fn new(target_hz: f32) -> Self {
+        let target_delta = Duration::from_secs_f32(target_hz.recip());
         Scheduler {
             target_delta,
             sleeper: SpinSleeper::default(),
             last_loop_end: Instant::now(),
         }
+    }
+
+    pub fn change_hz(&mut self, new_target_hz: f32) {
+        self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
     }
 
     pub fn loop_forever(&mut self, mut task: impl FnMut()) -> ! {

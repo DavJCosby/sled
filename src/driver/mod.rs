@@ -12,6 +12,7 @@ pub enum RefreshTiming {
     Fixed(f32),
 }
 
+#[derive(Clone, Debug)]
 pub struct TimeInfo {
     pub elapsed: Duration,
     pub delta: Duration,
@@ -22,6 +23,7 @@ type StartupCommands = Box<dyn Fn(&mut Sled, &mut BufferContainer, &mut Filters)
 type ComputeCommands =
     Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
 type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
+
 pub struct Driver {
     sled: Option<Sled>,
     startup_commands: StartupCommands,
@@ -31,12 +33,6 @@ pub struct Driver {
     last_update: Instant,
     buffers: BufferContainer,
     filters: Filters,
-}
-
-impl Default for Driver {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl Driver {
@@ -152,5 +148,11 @@ impl Driver {
 
     pub fn buffers_mut(&mut self) -> &mut BufferContainer {
         &mut self.buffers
+    }
+}
+
+impl Default for Driver {
+    fn default() -> Self {
+        Self::new()
     }
 }

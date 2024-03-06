@@ -16,7 +16,7 @@ pub(crate) struct Config {
     pub line_segments: Vec<LineSegment>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub(crate) struct LineSegment {
     pub start: Vec2,
     pub end: Vec2,

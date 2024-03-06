@@ -2,7 +2,7 @@ use std::collections::{hash_set, HashSet};
 
 use crate::{color::Rgb, led::Led, sled::Sled};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Filter {
     led_indices: HashSet<u16>,
 }

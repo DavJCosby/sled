@@ -1,18 +1,16 @@
-use std::any::{type_name, Any};
+use std::{
+    any::{type_name, Any},
+    fmt::Debug,
+};
 
 use compact_str::{CompactString, ToCompactString};
 use std::collections::HashMap;
 
 use crate::SledError;
 
+#[derive(Debug)]
 pub struct BufferContainer {
     buffers: HashMap<CompactString, Box<dyn Buffer>>,
-}
-
-impl Default for BufferContainer {
-    fn default() -> Self {
-        Self::new()
-    }
 }
 
 impl BufferContainer {
@@ -22,7 +20,7 @@ impl BufferContainer {
         }
     }
 
-    pub fn create_buffer<T: BufferableData>(&mut self, key: &str) -> &mut Vec<T> {
+    pub fn create_buffer<T: BufferableData + Debug>(&mut self, key: &str) -> &mut Vec<T> {
         self.buffers
             .insert(key.to_compact_string(), Box::<Vec<T>>::default());
         self.get_buffer_mut(key).unwrap()
@@ -108,6 +106,24 @@ impl BufferContainer {
     }
 }
 
+pub trait Buffer: std::fmt::Debug {
+    fn as_any(&self) -> &dyn Any;
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+}
+
+pub trait BufferableData: 'static {}
+impl<T: Sized + 'static> BufferableData for T {}
+
+impl<T: BufferableData + Debug> Buffer for Vec<T> {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+}
+
 impl std::iter::IntoIterator for BufferContainer {
     type Item = (CompactString, Box<dyn Buffer>);
     type IntoIter = std::collections::hash_map::IntoIter<CompactString, Box<dyn Buffer>>;
@@ -117,20 +133,8 @@ impl std::iter::IntoIterator for BufferContainer {
     }
 }
 
-pub trait Buffer {
-    fn as_any(&self) -> &dyn Any;
-    fn as_any_mut(&mut self) -> &mut dyn Any;
-}
-
-pub trait BufferableData: 'static {}
-impl<T: Sized + 'static> BufferableData for T {}
-
-impl<T: BufferableData> Buffer for Vec<T> {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self
+impl Default for BufferContainer {
+    fn default() -> Self {
+        Self::new()
     }
 }

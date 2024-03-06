@@ -3,6 +3,7 @@ use std::ops::Range;
 use crate::{config::LineSegment, led::Led, Vec2};
 
 #[allow(dead_code)]
+#[derive(Clone, Debug)]
 pub struct Sled {
     center_point: Vec2,
     leds: Vec<Led>,
