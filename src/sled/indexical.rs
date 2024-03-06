@@ -81,7 +81,7 @@ impl Sled {
 impl Sled {
     /// Returns a [Filter] containing all LEDs with indices within `index_range`.
     /// Returns an error if the range extends beyond the size of the system.
-    pub fn get_range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
+    pub fn range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
             Ok(led_range.into())

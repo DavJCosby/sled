@@ -92,12 +92,12 @@ sled.modulate_segment(3, |led| led.color * 0.25)?;
 
 **Set all LEDs within the overlapping areas of two different circles to blue:**
 ```rust
-let circle_1: Filter = sled.get_within_dist_from(
+let circle_1: Filter = sled.within_dist_from(
         2.0,
         Vec2::new(1.0, 0.5)
     );
     
-let circle_2: Filter = sled.get_within_dist_from(
+let circle_2: Filter = sled.within_dist_from(
 	2.5,
 	Vec2::new(-1.0, 1.5)
 );

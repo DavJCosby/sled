@@ -14,7 +14,7 @@ use smallvec::{smallvec, SmallVec};
 impl Sled {
     /* closest getters/setters */
 
-    pub fn get_index_of_closest_to(&self, pos: Vec2) -> usize {
+    pub fn index_of_closest_to(&self, pos: Vec2) -> usize {
         // get the closest point on each segment and bundle relevant info,
         // then find the closest of those points
         let (alpha, _dist_sq, segment_index) = self
@@ -32,12 +32,12 @@ impl Sled {
         self.alpha_to_index(alpha, segment_index)
     }
 
-    pub fn get_closest(&self) -> &Led {
+    pub fn closest(&self) -> &Led {
         &self.leds[self.index_of_closest]
     }
 
-    pub fn get_closest_to(&self, pos: Vec2) -> &Led {
-        let index_of_closest = self.get_index_of_closest_to(pos);
+    pub fn closest_to(&self, pos: Vec2) -> &Led {
+        let index_of_closest = self.index_of_closest_to(pos);
         &self.leds[index_of_closest]
     }
 
@@ -47,7 +47,7 @@ impl Sled {
     }
 
     pub fn modulate_closest_to<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
-        let index_of_closest = self.get_index_of_closest_to(pos);
+        let index_of_closest = self.index_of_closest_to(pos);
         let led = &mut self.leds[index_of_closest];
         led.color = color_rule(led);
     }
@@ -57,13 +57,13 @@ impl Sled {
     }
 
     pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
-        let index_of_closest = self.get_index_of_closest_to(pos);
+        let index_of_closest = self.index_of_closest_to(pos);
         self.leds[index_of_closest].color = color;
     }
 
     /* furthest getters/setters */
 
-    pub fn get_index_of_furthest_from(&self, pos: Vec2) -> usize {
+    pub fn index_of_furthest_from(&self, pos: Vec2) -> usize {
         let (index_of_furthest, _dist) = self
             .vertex_indices
             .iter()
@@ -77,12 +77,16 @@ impl Sled {
         index_of_furthest
     }
 
-    pub fn get_furthest(&self) -> &Led {
+    pub fn index_of_furthest(&self) -> usize {
+        self.index_of_furthest
+    }
+
+    pub fn furthest(&self) -> &Led {
         &self.leds[self.index_of_furthest]
     }
 
-    pub fn get_furthest_from(&self, pos: Vec2) -> &Led {
-        let index_of_furthest = self.get_index_of_furthest_from(pos);
+    pub fn furthest_from(&self, pos: Vec2) -> &Led {
+        let index_of_furthest = self.index_of_furthest_from(pos);
         &self.leds[index_of_furthest]
     }
 
@@ -92,7 +96,7 @@ impl Sled {
     }
 
     pub fn modulate_furthest_from<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
-        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        let index_of_furthest = self.index_of_furthest_from(pos);
         let led = &mut self.leds[index_of_furthest];
         led.color = color_rule(led);
     }
@@ -102,7 +106,7 @@ impl Sled {
     }
 
     pub fn set_furthest_from(&mut self, pos: Vec2, color: Rgb) {
-        let index_of_furthest = self.get_index_of_furthest_from(pos);
+        let index_of_furthest = self.index_of_furthest_from(pos);
         self.leds[index_of_furthest].color = color;
     }
 
@@ -120,11 +124,11 @@ impl Sled {
         all_at_distance
     }
 
-    pub fn get_at_dist(&self, dist: f32) -> Filter {
-        self.get_at_dist_from(dist, self.center_point)
+    pub fn at_dist(&self, dist: f32) -> Filter {
+        self.at_dist_from(dist, self.center_point)
     }
 
-    pub fn get_at_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
+    pub fn at_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
         let mut all_at_distance = HashSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
@@ -193,11 +197,11 @@ impl Sled {
 
     /* within distance methods */
 
-    pub fn get_within_dist(&self, dist: f32) -> Filter {
-        self.get_within_dist_from(dist, self.center_point)
+    pub fn within_dist(&self, dist: f32) -> Filter {
+        self.within_dist_from(dist, self.center_point)
     }
 
-    pub fn get_within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
+    pub fn within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
         let mut all_within_distance = HashSet::new();
 
         let target_sq = dist.powi(2);

@@ -64,12 +64,12 @@
 //!# use sled::{Sled, SledError, Vec2, Filter, color::Rgb};
 //!# fn main() -> Result<(), SledError> {
 //!# let mut sled = Sled::new("./examples/resources/config.toml")?;
-//! let circle_1: Filter = sled.get_within_dist_from(
+//! let circle_1: Filter = sled.within_dist_from(
 //!     2.0,
 //!     Vec2::new(-0.5, 0.0)
 //! );
 //!
-//! let circle_2: Filter = sled.get_within_dist_from(
+//! let circle_2: Filter = sled.within_dist_from(
 //!     1.0,
 //!     Vec2::new(0.5, 0.5)
 //! );
@@ -88,7 +88,7 @@
 //!# let sled = Sled::new("./examples/resources/config.toml").unwrap();
 //! let colors_f32: Vec<Rgb> = sled.colors();
 //! let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
-//! 
+//!
 //! let positions: Vec<Vec2> = sled.positions();
 //!
 //! let colors_and_positions: Vec<(Rgb, Vec2)> =

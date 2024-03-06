@@ -20,7 +20,7 @@ pub struct Config {
 pub struct LineSegment {
     pub start: Vec2,
     pub end: Vec2,
-    #[serde(default = "Config::get_default_density")]
+    #[serde(default = "Config::default_density")]
     pub density: f32,
 }
 
@@ -113,7 +113,7 @@ impl Config {
         Ok(unsafe { DEFAULT_DENSITY })
     }
 
-    fn get_default_density() -> f32 {
+    fn default_density() -> f32 {
         unsafe { DEFAULT_DENSITY }
     }
 }

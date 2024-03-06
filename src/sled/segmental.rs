@@ -8,7 +8,7 @@ use std::{collections::HashSet, ops::Range};
 
 /// Segment-based read and write methods.
 impl Sled {
-    pub fn get_segment(&self, segment_index: usize) -> Option<Filter> {
+    pub fn segment(&self, segment_index: usize) -> Option<Filter> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
         let led_range = &self.leds[start..end];
         Some(led_range.into())
@@ -49,7 +49,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_segments(&self, range: Range<usize>) -> Option<Filter> {
+    pub fn segment_range(&self, range: Range<usize>) -> Option<Filter> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             None
         } else {
@@ -123,7 +123,7 @@ impl Sled {
 
 /// Vertex-based read and write methods.
 impl Sled {
-    pub fn get_vertex(&self, vertex_index: usize) -> Option<&Led> {
+    pub fn vertex(&self, vertex_index: usize) -> Option<&Led> {
         if vertex_index >= self.vertex_indices.len() {
             return None;
         }
@@ -159,7 +159,7 @@ impl Sled {
         Ok(())
     }
 
-    pub fn get_vertices(&self) -> Filter {
+    pub fn vertices(&self) -> Filter {
         let hs: HashSet<u16> = self.vertex_indices.iter().map(|i| *i as u16).collect();
         hs.into()
     }
