@@ -7,7 +7,7 @@ use std::fs;
 static mut DEFAULT_DENSITY: f32 = 0.0;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Config {
+pub(crate) struct Config {
     pub center_point: Vec2,
     #[serde(rename = "density")]
     #[serde(deserialize_with = "Config::set_default_density")]
@@ -17,7 +17,7 @@ pub struct Config {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct LineSegment {
+pub(crate) struct LineSegment {
     pub start: Vec2,
     pub end: Vec2,
     #[serde(default = "Config::default_density")]
