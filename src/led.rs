@@ -1,7 +1,7 @@
 use crate::color::Rgb;
 use glam::Vec2;
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 
 /// An LED in our Sled configuration, representing both the color of the LED as well as it's spatial information.
 pub struct Led {
@@ -83,6 +83,18 @@ impl PartialEq for Led {
 }
 
 impl Eq for Led {}
+
+impl PartialOrd for Led {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Led {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.index.cmp(&other.index())
+    }
+}
 
 impl std::hash::Hash for Led {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
