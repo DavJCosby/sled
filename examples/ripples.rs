@@ -12,7 +12,7 @@ fn main() {
     let mut driver = ripples::build_driver();
     driver.mount(sled);
 
-    let mut scheduler = Scheduler::fixed_hz(500.0);
+    let mut scheduler = Scheduler::new(500.0);
     scheduler.loop_until_err(|| {
         driver.step();
         display.leds = driver.colors_and_positions();

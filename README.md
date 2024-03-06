@@ -268,7 +268,7 @@ I imagine this feature will get less love than buffers, but I can still see a ha
 The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
 
 ```rust
-let mut scheduler = Scheduler::fixed_hz(120.0);
+let mut scheduler = Scheduler::new(120.0);
 
 scheduler.loop_forever(|| {
     driver.step();
