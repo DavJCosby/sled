@@ -9,6 +9,12 @@ pub struct BufferContainer {
     buffers: HashMap<CompactString, Box<dyn Buffer>>,
 }
 
+impl Default for BufferContainer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BufferContainer {
     pub fn new() -> Self {
         BufferContainer {
@@ -18,7 +24,7 @@ impl BufferContainer {
 
     pub fn create_buffer<T: BufferableData>(&mut self, key: &str) -> &mut Vec<T> {
         self.buffers
-            .insert(key.to_compact_string(), Box::new(Vec::<T>::new()));
+            .insert(key.to_compact_string(), Box::<Vec<T>>::default());
         self.get_buffer_mut(key).unwrap()
     }
 
