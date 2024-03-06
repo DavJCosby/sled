@@ -114,14 +114,14 @@ Once you’re ready to display these colors, you’ll probably want them packed 
 
 ```rust
 // collect an ordered vector of Rgbs, 32-bits/channel
-let colors_f32: Vec<Rgb> = sled.read_colors();
+let colors_f32: Vec<Rgb> = sled.colors();
 // collect an ordered vector of Rgbs, 8-bits/channel (overhead for conversion)
-let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
+let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
 
-let positions: Vec<Vec2> = sled.read_positions();
+let positions: Vec<Vec2> = sled.positions();
 
 let colors_and_positions: Vec<(Rgb, Vec2)> =
-    sled.read_colors_and_positions();
+    sled.colors_and_positions();
 ```
 
 # Advanced Features

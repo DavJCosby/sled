@@ -127,7 +127,7 @@ impl Driver {
         }
     }
 
-    pub fn read_positions(&self) -> Vec<Vec2> {
+    pub fn positions(&self) -> Vec<Vec2> {
         if let Some(sled) = &self.sled {
             sled.positions()
         } else {

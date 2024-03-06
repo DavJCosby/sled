@@ -91,13 +91,13 @@ impl Sled {
     /// ```rust
     ///# use sled::{Sled};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
-    /// for led in sled.read() {
+    /// for led in sled.leds() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
     ///     );
     /// }
     /// ```
-    pub fn read(&self) -> Vec<Led> {
+    pub fn leds(&self) -> Vec<Led> {
         self.leds.clone()
     }
 
@@ -126,7 +126,7 @@ impl Sled {
     }
 
     /// Returns the positions and colors of each LED in the system, stored in a vector of `(Rgb, Vec2)`.
-    /// Supports color coercion just like [Sled::read_colors()](read_colors())
+    /// Supports color coercion just like [Sled::colors()](colors())
     pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
         f32: color::stimulus::IntoStimulus<T>,

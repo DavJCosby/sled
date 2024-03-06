@@ -86,19 +86,19 @@
 //! ```rust
 //!# use sled::{Sled, Vec2, color::Rgb};
 //!# let sled = Sled::new("./examples/resources/config.toml").unwrap();
-//! let colors_f32: Vec<Rgb> = sled.read_colors();
-//! let colors_u8: Vec<Rgb<_, u8>> = sled.read_colors();
+//! let colors_f32: Vec<Rgb> = sled.colors();
+//! let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
 //! 
-//! let positions: Vec<Vec2> = sled.read_positions();
+//! let positions: Vec<Vec2> = sled.positions();
 //!
 //! let colors_and_positions: Vec<(Rgb, Vec2)> =
-//!     sled.read_colors_and_positions();
+//!     sled.colors_and_positions();
 //! ```
 //! Or, if you just want the [Led] structs raw...
 //! ```rust
 //!# use sled::{Sled, Led};
 //!# let sled = Sled::new("./examples/resources/config.toml").unwrap();
-//! let leds: Vec<Led> = sled.read();
+//! let leds: Vec<Led> = sled.leds();
 //! ```
 
 pub mod color;
