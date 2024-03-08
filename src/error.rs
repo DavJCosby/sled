@@ -33,4 +33,4 @@ impl fmt::Display for SledError {
     }
 }
 
-impl Error for SledError {} // seems we can't have both. Might not be the best design; reconsider.
+impl Error for SledError {}

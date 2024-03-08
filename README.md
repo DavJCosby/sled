@@ -20,11 +20,9 @@ In absence of an official guide, this will serve as a basic introduction to Sled
 ### Setup
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
-type Rgb8 = Rgb<_, u8>;
-
 use sled::Sled;
 fn main() -> Result<(), sled::SledError> {
-    let mut sled = Sled::new::<Rgb8>("/path/to/config.toml")?;
+    let mut sled = Sled::new("/path/to/config.toml")?;
     Ok(())
 }
 ```
@@ -188,9 +186,9 @@ It's best practice to create buffers with startup commands, and then modify them
 
 ```rust
 fn startup(sled: &mut Sled, buffers: &mut BufferContainer, _filters: &mut Filters) -> Result<(), SledError> {
-    let wall_toggles: &mut Vec<bool> = buffer.create_buffer("wall_toggles");
-    let wall_colors: &mut Vec<Rgb> = buffer.create_buffer("wall_colors");
-    let some_important_data = buffer.create_buffer::<MY_CUSTOM_TYPE>("important_data");
+    let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
+    let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
+    let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
     Ok(())
 }
 

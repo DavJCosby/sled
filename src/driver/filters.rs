@@ -1,4 +1,4 @@
-use crate::Filter;
+use crate::{Filter, SledError};
 use compact_str::{CompactString, ToCompactString};
 use std::collections::HashMap;
 
@@ -24,8 +24,10 @@ impl Filters {
         self.map.insert(key.to_compact_string(), value);
     }
 
-    pub fn get(&self, key: &str) -> Option<&Filter> {
-        self.map.get(key)
+    pub fn get(&self, key: &str) -> Result<&Filter, SledError> {
+        self.map
+            .get(key)
+            .ok_or_else(|| SledError::new(format!("No filter found with key '{}'", key)))
     }
 
     pub fn iter(&self) -> std::collections::hash_map::Iter<CompactString, Filter> {
