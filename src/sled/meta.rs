@@ -101,7 +101,11 @@ impl Sled {
         self.leds.clone()
     }
 
-    /// Returns the colors of each [LED](Led) in the system, stored in a vector. Type annotations allow you to coerce from 32-bit RGB into another format.
+    /// Returns the colors of each [LED](Led) in the system, stored in a vector.
+    /// Type annotations allow you to coerce from 32-bit RGB into another format.
+    /// 
+    /// O(LEDS)
+    /// 
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
@@ -121,12 +125,16 @@ impl Sled {
     }
 
     /// Returns the positions of each [LED](Led) in the system, stored in a vector.
+    ///
+    /// O(LEDS)
     pub fn positions(&self) -> Vec<Vec2> {
         self.leds.iter().map(|led| led.position()).collect()
     }
 
     /// Returns the positions and colors of each [LED](Led) in the system, stored in a vector of `(Rgb, Vec2)`.
     /// Supports color coercion just like [Sled::colors()](colors())
+    /// 
+    /// O(LEDS)
     pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
         f32: color::stimulus::IntoStimulus<T>,
@@ -138,16 +146,21 @@ impl Sled {
     }
 
     /// Returns the static reference point declared in the [config file](Sled::new).
+    /// 
+    /// O(1)
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
 
     /// Returns the total number of [LEDs](Led) in the system.
+    /// O(1)
     pub fn num_leds(&self) -> usize {
         self.num_leds
     }
 
     /// Returns the total number of line segments in the system.
+    /// 
+    /// O(1)
     pub fn num_segments(&self) -> usize {
         self.line_segments.len()
     }
@@ -157,12 +170,16 @@ impl Sled {
     /// Touching endpoints are merged into one vertex, meaning that a
     /// configuration of two line segments that meet at one point to form
     /// a corner would have three vertices, rather than four.
+    /// 
+    /// O(1)
     pub fn num_vertices(&self) -> usize {
         self.vertex_indices.len()
     }
 
     /// Returns a bounding box around the LEDs where the minimum x and y
     /// position is [Range::start], maximum x and y is [Range::end].
+    /// 
+    /// O(1)
     pub fn domain(&self) -> Range<Vec2> {
         self.domain.clone()
     }

@@ -4,7 +4,7 @@ use crate::{color::Rgb, error::SledError, led::Led, Filter, Sled};
 use glam::Vec2;
 use smallvec::SmallVec;
 
-/// directional read and write methods
+/// # directional read and write methods
 impl Sled {
     fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[usize; 4]> {
         let dist = 100_000.0;
@@ -22,11 +22,15 @@ impl Sled {
     }
 
     /* direction setters/getters */
-
+    /// Returns A [Filter] containing [LEDs](led) in the given direction from the center_point.
+    /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
+    /// 
+    /// O(SEGMENTS)
     pub fn at_dir(&self, dir: Vec2) -> Filter {
         self.at_dir_from(dir, self.center_point)
     }
 
+    /// Returns the set of all [LEDs](led) in the given direction from a given point.
     pub fn at_dir_from(&self, dir: Vec2, pos: Vec2) -> Filter {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
