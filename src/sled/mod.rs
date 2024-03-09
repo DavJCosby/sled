@@ -1,9 +1,14 @@
+
+
 use std::ops::Range;
 
 use crate::{config::LineSegment, led::Led, Vec2};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
+/// A struct representing the layout of some LED configuration in 2D space, composed of line segments.
+/// Sled structs are [constructed](Sled::new) from a .toml file that describe this layout.
+/// Upon construction, key information like the indices of vertices or the angle from each led from the center_point is precalculated and cached for faster access later.
 pub struct Sled {
     center_point: Vec2,
     leds: Vec<Led>,

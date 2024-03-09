@@ -7,15 +7,15 @@ use crate::{
     sled::{Filter, Sled},
 };
 
-/// Index-based read and write methods.
+/// # Index-based read and write methods.
 impl Sled {
-    /// Returns `Some(&Led)` if an Led at `index` exists, `None` if not.
+    /// Returns `Some(&Led)` if an [LED](Led) at `index` exists, `None` if not.
     pub fn get(&self, index: usize) -> Option<&Led> {
         self.leds.get(index)
     }
 
-    /// Modulates the color of the led at `index` given a color rule function.
-    /// Returns an error if no led exists at that index.
+    /// Modulates the color of the [LED](Led) at `index` given a color rule function.
+    /// Returns an [error](SledError) if no LED exists at that index.
     /// ```rust
     ///# use sled::{Sled, SledError, color::Rgb};
     ///# fn demo() -> Result<(), SledError> {
@@ -40,8 +40,8 @@ impl Sled {
         Ok(())
     }
 
-    /// Set the color of the LED at `index` to `color`.
-    /// Returns an error if no led exists at that index.
+    /// Set the color of the [LED](Led) at `index` to `color`.
+    /// Returns an [error](SledError) if no LED exists at that index.
     pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
         if index >= self.num_leds {
             return SledError::new(format!("LED at index {} does not exist.", index)).as_err();
@@ -51,14 +51,14 @@ impl Sled {
         Ok(())
     }
 
-    /// Sets the color of all LEDs in the system to `color`.
+    /// Sets the color of all [LEDs](Led) in the system to `color`.
     pub fn set_all(&mut self, color: Rgb) {
         for led in &mut self.leds {
             led.color = color;
         }
     }
 
-    /// For each method granting mutable access to each LED in the system.
+    /// For each method that grants mutable access to each [LED](Led) in the system.
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
@@ -77,10 +77,10 @@ impl Sled {
     }
 }
 
-/// Index range-based read and write methods
+/// # Index and range-based read and write methods
 impl Sled {
-    /// Returns a [Filter] containing all LEDs with indices within `index_range`.
-    /// Returns an error if the range extends beyond the size of the system.
+    /// Returns a [Filter] containing all [LEDs](Led) with indices within `index_range`.
+    /// Returns an [error](SledError) if the range extends beyond the size of the system.
     pub fn range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
@@ -90,8 +90,8 @@ impl Sled {
         }
     }
 
-    /// Modulates the color of the each LED with indices in `index_range` given a color rule function.
-    /// Returns an error if the range extends beyond the size of the system.
+    /// Modulates the color of the each [LED](Led) with indices in `index_range` given a color rule function.
+    /// Returns an [error](SledError) if the range extends beyond the size of the system.
     /// ```rust
     ///# use sled::{Sled, SledError};
     ///# fn demo() -> Result<(), SledError> {
@@ -117,8 +117,8 @@ impl Sled {
         Ok(())
     }
 
-    /// Sets the color of the each LED with indices in `index_range` to `color`.
-    /// Returns an error if the range extends beyond the size of the system.
+    /// Sets the color of the each [LED](Led) with indices in `index_range` to `color`.
+    /// Returns an [error](SledError) if the range extends beyond the size of the system.
     pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return SledError::new("Index range extends beyond size of system.".to_string())
@@ -131,7 +131,7 @@ impl Sled {
         Ok(())
     }
 
-    /// For each method granting mutable access to each LED with an index in `index_range`
+    /// For each method granting mutable access to each [LED](Led) with an index in `index_range`
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let mut sled = Sled::new("./examples/resources/config.toml").unwrap();

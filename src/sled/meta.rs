@@ -10,14 +10,14 @@ use crate::{
     Vec2,
 };
 
-/// Construction, output, and basic sled info.
+/// # Construction, output, and basic sled info
 impl Sled {
     /// Constructs a new Sled struct given the path to a config toml file.
     /// This is an expensive operation as many values are pre-calculated
     /// on construction (i.e, distances/angles from each LED to the center).
     ///
     /// Example .toml file:
-    /// ```ignore
+    /// ```toml
     /// center_point = [0.0, 0.5]
     /// density = 30.0
     ///
@@ -87,7 +87,7 @@ impl Sled {
         })
     }
 
-    /// Returns a copy of the system's LEDs, stored in a vector.
+    /// Returns a copy of the system's [LEDs](Led), stored in an ordered vector.
     /// ```rust
     ///# use sled::{Sled};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
@@ -101,7 +101,7 @@ impl Sled {
         self.leds.clone()
     }
 
-    /// Returns the colors of each LED in the system, stored in a vector.
+    /// Returns the colors of each [LED](Led) in the system, stored in a vector. Type annotations allow you to coerce from 32-bit RGB into another format.
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
@@ -120,12 +120,12 @@ impl Sled {
             .collect()
     }
 
-    /// Returns the positions of each LED in the system, stored in a vector.
+    /// Returns the positions of each [LED](Led) in the system, stored in a vector.
     pub fn positions(&self) -> Vec<Vec2> {
         self.leds.iter().map(|led| led.position()).collect()
     }
 
-    /// Returns the positions and colors of each LED in the system, stored in a vector of `(Rgb, Vec2)`.
+    /// Returns the positions and colors of each [LED](Led) in the system, stored in a vector of `(Rgb, Vec2)`.
     /// Supports color coercion just like [Sled::colors()](colors())
     pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
@@ -137,12 +137,12 @@ impl Sled {
             .collect()
     }
 
-    /// Returns the static reference point declared in the config file.
+    /// Returns the static reference point declared in the [config file](Sled::new).
     pub fn center_point(&self) -> Vec2 {
         self.center_point
     }
 
-    /// Returns the total number of LEDs in the system.
+    /// Returns the total number of [LEDs](Led) in the system.
     pub fn num_leds(&self) -> usize {
         self.num_leds
     }
