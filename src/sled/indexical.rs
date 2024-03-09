@@ -90,7 +90,7 @@ impl Sled {
         }
     }
 
-    /// Modulates the color of the each [LED](Led) with indices in `index_range` given a color rule function.
+    /// Modulates the color of each [LED](Led) with indices in `index_range` given a color rule function.
     /// Returns an [error](SledError) if the range extends beyond the size of the system.
     /// ```rust
     ///# use sled::{Sled, SledError};
@@ -131,7 +131,7 @@ impl Sled {
         Ok(())
     }
 
-    /// For each method granting mutable access to each [LED](Led) with an index in `index_range`
+    /// For-each method granting mutable access to each [LED](Led) with an index in `index_range`
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let mut sled = Sled::new("./examples/resources/config.toml").unwrap();

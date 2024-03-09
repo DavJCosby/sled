@@ -6,14 +6,23 @@ use crate::{
 };
 use std::{collections::HashSet, ops::Range};
 
-/// Segment-based read and write methods.
+/// # Segment-based read and write methods.
 impl Sled {
+    /// Returns the set of all [LEDs](Led) assigned to the line segment with index `segment_index`.
     pub fn segment(&self, segment_index: usize) -> Option<Filter> {
         let (start, end) = *self.line_segment_endpoint_indices.get(segment_index)?;
         let led_range = &self.leds[start..end];
         Some(led_range.into())
     }
-
+    /// Modulates the color of each [LED](Led) assigned to the line segment with index `segment_index` given a color rule function. Returns an [error](SledError) if there is no line segment with the given index.
+    ///```rust
+    ///# use sled::{Sled, SledError};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_segment(1, |led| led.color * 2.0)?;
+    ///# Ok(())
+    ///# }
+    /// ```
     pub fn modulate_segment<F: Fn(&Led) -> Rgb>(
         &mut self,
         segment_index: usize,
@@ -35,6 +44,7 @@ impl Sled {
         Ok(())
     }
 
+    /// Sets the color of each [LED](Led) assigned to the line segment with index `segment_index`. Returns an [error](SledError) if there is no line segment with the given index.
     pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
             return SledError::new(format!(
@@ -49,7 +59,17 @@ impl Sled {
         Ok(())
     }
 
-    pub fn segment_range(&self, range: Range<usize>) -> Option<Filter> {
+    /// Returns the set of all [LEDs](Led) assigned to the line segments whose indices are within the given range.
+    ///```rust
+    ///# use sled::{Sled, SledError, Filter, color::Rgb};
+    ///# fn main() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// let first_three_walls: Filter = sled.segments(0..3).unwrap();
+    /// sled.set_filter(&first_three_walls, Rgb::new(1.0, 1.0, 1.0));
+    ///# Ok(())
+    ///# }
+    /// ```
+    pub fn segments(&self, range: Range<usize>) -> Option<Filter> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             None
         } else {
@@ -60,6 +80,16 @@ impl Sled {
         }
     }
 
+    /// Modulates the color of each [LED](Led) assigned to the line segments whose indices are within the given range.
+    /// Returns an [error](SledError) if the range exceeds the number of line segments in the system.
+    ///```rust
+    ///# use sled::{Sled, SledError, color::Rgb};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_segments(2..4, |led| led.color * Rgb::new(1.0, 0.0, 0.0))?;
+    ///# Ok(())
+    ///# }
+    /// ```
     pub fn modulate_segments<F: Fn(&Led) -> Rgb>(
         &mut self,
         range: Range<usize>,
@@ -81,6 +111,8 @@ impl Sled {
         Ok(())
     }
 
+    /// Sets the color of each [LED](Led) assigned to the line segments whose indices are within the given range.
+    /// Returns an [error](SledError) if the range exceeds the number of line segments in the system.
     pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return SledError::new(
@@ -98,6 +130,15 @@ impl Sled {
         Ok(())
     }
 
+    /// For-each method granting mutable access to each [LED](Led) assigned to the line segment with index `segment_index`.
+    /// Also passes an "alpha" value into the closure, representing how far along the line segment you are. 0 = first LED in segement, 1 = last.
+    /// ```rust
+    ///# use sled::{Sled, color::Rgb};
+    ///# let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+    /// sled.for_each_in_segment(2, |led, alpha| {
+    ///     led.color = Rgb::new(alpha, alpha, alpha);
+    /// });
+    /// ```
     pub fn for_each_in_segment<F: FnMut(&mut Led, f32)>(
         &mut self,
         segment_index: usize,
