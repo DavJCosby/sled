@@ -10,9 +10,14 @@ use crate::{
 use glam::Vec2;
 use smallvec::{smallvec, SmallVec};
 
-/// position-based read and write methods
+/// # position-based read and write methods
 impl Sled {
     /* closest getters/setters */
+
+    /// Returns the index of the [LED](Led) closest to a given point.
+    /// 
+    /// O(SEGMENTS)
+    /// 
 
     pub fn index_of_closest_to(&self, pos: Vec2) -> usize {
         // get the closest point on each segment and bundle relevant info,
@@ -32,30 +37,65 @@ impl Sled {
         self.alpha_to_index(alpha, segment_index)
     }
 
+    /// Returns the [LED](Led) closest to the center point.
+    /// 
+    /// O(1)
     pub fn closest(&self) -> &Led {
         &self.leds[self.index_of_closest]
     }
 
+    /// Returns the [LED](Led) closest to a given point.
+    /// O(SEGMENTS)
     pub fn closest_to(&self, pos: Vec2) -> &Led {
         let index_of_closest = self.index_of_closest_to(pos);
         &self.leds[index_of_closest]
     }
 
+    /// Modulates the color of the [LED](Led) closest to the center point.
+    ///
+    /// O(1)
+    ///  
+    ///```rust
+    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
+    ///# Ok(())
+    ///# }
     pub fn modulate_closest<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
         let led = &mut self.leds[self.index_of_closest];
         led.color = color_rule(led);
     }
 
+    /// Modulates the color of the [LED](Led) closest to a given point.
+    ///
+    /// O(SEGMENTS)
+    ///  
+    ///```rust
+    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
+    ///     led.color + Rgb::new(0.2, 0.2, 0.2)
+    /// });
+    ///# Ok(())
+    ///# }
     pub fn modulate_closest_to<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
         let index_of_closest = self.index_of_closest_to(pos);
         let led = &mut self.leds[index_of_closest];
         led.color = color_rule(led);
     }
 
+    /// Sets the color of the [LED](Led) closest to the center point.
+    ///
+    /// O(1)
     pub fn set_closest(&mut self, color: Rgb) {
         self.leds[self.index_of_closest].color = color;
     }
 
+    /// Sets the color of the [LED](Led) closest to a given point.
+    ///
+    /// O(SEGMENTS)
     pub fn set_closest_to(&mut self, pos: Vec2, color: Rgb) {
         let index_of_closest = self.index_of_closest_to(pos);
         self.leds[index_of_closest].color = color;
@@ -63,7 +103,11 @@ impl Sled {
 
     /* furthest getters/setters */
 
+    /// Returns the index of the [LED](Led) furthest from a given point.
+    /// 
+    /// O(VERTICES)
     pub fn index_of_furthest_from(&self, pos: Vec2) -> usize {
+        // get the distance_squared of each vertex point, then find out which is the furthest.
         let (index_of_furthest, _dist) = self
             .vertex_indices
             .iter()
@@ -77,34 +121,71 @@ impl Sled {
         index_of_furthest
     }
 
+    /// Returns the index of the [LED](Led) furthest from the center point.
+    /// 
+    /// O(1)
     pub fn index_of_furthest(&self) -> usize {
         self.index_of_furthest
     }
-
+    /// Returns the [LED](Led) furthest from the center point.
+    /// 
+    /// O(1)
     pub fn furthest(&self) -> &Led {
         &self.leds[self.index_of_furthest]
     }
 
+    /// Returns the [LED](Led) furthest from a given point.
+    /// 
+    /// O(VERTICES)
     pub fn furthest_from(&self, pos: Vec2) -> &Led {
         let index_of_furthest = self.index_of_furthest_from(pos);
         &self.leds[index_of_furthest]
     }
 
+    /// Modulates the color of the [LED](Led) furthest from the center point.
+    ///
+    /// O(1)
+    ///```rust
+    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_furthest(|led| led.color / led.distance());
+    ///# Ok(())
+    ///# }
     pub fn modulate_furthest<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
         let led = &mut self.leds[self.index_of_furthest];
         led.color = color_rule(led);
     }
 
+    /// Modulates the color of the [LED](Led) furthest from a given point
+    ///
+    /// O(SEGMENTS)
+    ///  
+    ///```rust
+    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {
+    ///     led.color - Rgb::new(0.2, 0.2, 0.2)
+    /// });
+    ///# Ok(())
+    ///# }
     pub fn modulate_furthest_from<F: Fn(&Led) -> Rgb>(&mut self, pos: Vec2, color_rule: F) {
         let index_of_furthest = self.index_of_furthest_from(pos);
         let led = &mut self.leds[index_of_furthest];
         led.color = color_rule(led);
     }
 
+    /// Sets the color of the [LED](Led) furthest from the center point.
+    ///
+    /// O(1)
     pub fn set_furthest(&mut self, color: Rgb) {
         self.leds[self.index_of_furthest].color = color;
     }
 
+    /// Sets the color of the [LED](Led) furthest from a given point.
+    ///
+    /// O(VERTICES)
     pub fn set_furthest_from(&mut self, pos: Vec2, color: Rgb) {
         let index_of_furthest = self.index_of_furthest_from(pos);
         self.leds[index_of_furthest].color = color;
