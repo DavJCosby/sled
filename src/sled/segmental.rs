@@ -139,6 +139,7 @@ impl Sled {
     ///     led.color = Rgb::new(alpha, alpha, alpha);
     /// });
     /// ```
+    /// ![segment alpha example](https://raw.githubusercontent.com/DavJCosby/sled/master/resources/segment_alpha.png)
     pub fn for_each_in_segment<F: FnMut(&mut Led, f32)>(
         &mut self,
         segment_index: usize,
@@ -162,8 +163,10 @@ impl Sled {
     }
 }
 
-/// Vertex-based read and write methods.
+/// # Vertex-based read and write methods.
 impl Sled {
+    /// Returns the [LED](Led) that represents the vertex the given index, if it exists.
+    /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     pub fn vertex(&self, vertex_index: usize) -> Option<&Led> {
         if vertex_index >= self.vertex_indices.len() {
             return None;
@@ -171,7 +174,17 @@ impl Sled {
 
         Some(&self.leds[vertex_index])
     }
-
+    /// Modulates the color of the [LED](Led) that represents the vertex the given index, if it exists. Returns an [error](SledError) if not.
+    /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
+    /// ```rust
+    ///# use sled::{Sled, SledError, color::Rgb};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// // make the given vertex 25% brighter
+    /// sled.modulate_vertex(3, |led| led.color * 1.25)?;
+    ///# Ok(())
+    ///# }
+    /// ```
     pub fn modulate_vertex<F: Fn(&Led) -> Rgb>(
         &mut self,
         vertex_index: usize,
@@ -187,6 +200,8 @@ impl Sled {
         Ok(())
     }
 
+    /// Sets the color of the [LED](Led) that represents the vertex the given index, if it exists. Returns an [error](SledError) if not.
+    /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
             return SledError::new(format!(
@@ -200,11 +215,23 @@ impl Sled {
         Ok(())
     }
 
+    /// Returns a [Filter] containing all vertices in the system.
     pub fn vertices(&self) -> Filter {
         let hs: HashSet<u16> = self.vertex_indices.iter().map(|i| *i as u16).collect();
         hs.into()
     }
 
+    /// Modulates the color of each [LED](Led) that represents a vertex in the system.
+    /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
+    /// ```rust
+    ///# use sled::{Sled, SledError};
+    ///# fn demo() -> Result<(), SledError> {
+    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    /// // make each vertex 25% brighter
+    /// sled.modulate_vertices(|led| led.color * 1.25);
+    ///# Ok(())
+    ///# }
+    /// ```
     pub fn modulate_vertices<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
@@ -212,6 +239,7 @@ impl Sled {
         }
     }
 
+    /// Sets the color of each [LED](Led) that represents a vertex in the system.
     pub fn set_vertices(&mut self, color: Rgb) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
@@ -219,6 +247,7 @@ impl Sled {
         }
     }
 
+    /// For each method that grants mutable access to each [LED](Led) that represents a vertex in the system.
     pub fn for_each_vertex<F: FnMut(&mut Led)>(&mut self, mut f: F) {
         for i in &self.vertex_indices {
             f(&mut self.leds[*i])
