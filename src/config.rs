@@ -4,7 +4,9 @@ use serde::{Deserialize, Deserializer, Serialize};
 use smallvec::SmallVec;
 use std::fs;
 
-static mut DEFAULT_DENSITY: f32 = 0.0;
+use std::sync::OnceLock;
+
+static DEFAULT_DENSITY: OnceLock<f32> = OnceLock::new();
 
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Config {
@@ -107,13 +109,12 @@ impl Config {
     where
         D: Deserializer<'de>,
     {
-        // I hate this solution, for the record
-        let den = f32::deserialize(des);
-        unsafe { DEFAULT_DENSITY = den.unwrap_or(0.0) };
-        Ok(unsafe { DEFAULT_DENSITY })
+        let deserialized = f32::deserialize(des).unwrap_or(0.0);
+        let density = DEFAULT_DENSITY.get_or_init(|| deserialized);
+        Ok(*density)
     }
 
     fn default_density() -> f32 {
-        unsafe { DEFAULT_DENSITY }
+        *DEFAULT_DENSITY.get().unwrap_or(&0.0)
     }
 }
