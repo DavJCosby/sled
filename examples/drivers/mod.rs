@@ -1,2 +1,2 @@
-pub mod quirky_trail;
+pub mod comet;
 pub mod ripples;

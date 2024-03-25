@@ -1,12 +1,12 @@
 mod resources;
-use resources::drivers::quirky_trail;
+use resources::drivers::comet;
 
 use sled::Sled;
 use std::time::Duration;
 
 fn trail(c: &mut Criterion) {
     let sled = Sled::new("./benches/resources/config.toml").unwrap();
-    let mut driver = quirky_trail::build_driver();
+    let mut driver = comet::build_driver();
     driver.mount(sled);
 
     let simulated_duration = 30.0;

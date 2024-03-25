@@ -36,7 +36,7 @@ strip = "debuginfo"
 lto = true
 
 [[bench]]
-name = "quirky_trail"
+name = "comet"
 harness = false
 
 [[bench]]
