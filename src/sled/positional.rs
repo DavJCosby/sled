@@ -45,6 +45,7 @@ impl Sled {
     }
 
     /// Returns the [LED](Led) closest to a given point.
+    /// 
     /// O(SEGMENTS)
     pub fn closest_to(&self, pos: Vec2) -> &Led {
         let index_of_closest = self.index_of_closest_to(pos);

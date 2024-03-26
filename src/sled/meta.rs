@@ -88,7 +88,10 @@ impl Sled {
     }
 
     /// Returns a copy of the system's [LEDs](Led), stored in an ordered vector.
-    /// ```rust
+    ///
+    /// O(LEDS)
+    ///
+    ///  ```rust
     ///# use sled::{Sled};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
     /// for led in sled.leds() {
@@ -103,9 +106,9 @@ impl Sled {
 
     /// Returns the colors of each [LED](Led) in the system, stored in a vector.
     /// Type annotations allow you to coerce from 32-bit RGB into another format.
-    /// 
+    ///
     /// O(LEDS)
-    /// 
+    ///
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
@@ -133,7 +136,7 @@ impl Sled {
 
     /// Returns the positions and colors of each [LED](Led) in the system, stored in a vector of `(Rgb, Vec2)`.
     /// Supports color coercion just like [Sled::colors()](colors())
-    /// 
+    ///
     /// O(LEDS)
     pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
     where
@@ -146,7 +149,7 @@ impl Sled {
     }
 
     /// Returns the static reference point declared in the [config file](Sled::new).
-    /// 
+    ///
     /// O(1)
     pub fn center_point(&self) -> Vec2 {
         self.center_point
@@ -159,7 +162,7 @@ impl Sled {
     }
 
     /// Returns the total number of line segments in the system.
-    /// 
+    ///
     /// O(1)
     pub fn num_segments(&self) -> usize {
         self.line_segments.len()
@@ -170,7 +173,7 @@ impl Sled {
     /// Touching endpoints are merged into one vertex, meaning that a
     /// configuration of two line segments that meet at one point to form
     /// a corner would have three vertices, rather than four.
-    /// 
+    ///
     /// O(1)
     pub fn num_vertices(&self) -> usize {
         self.vertex_indices.len()
@@ -178,7 +181,7 @@ impl Sled {
 
     /// Returns a bounding box around the LEDs where the minimum x and y
     /// position is [Range::start], maximum x and y is [Range::end].
-    /// 
+    ///
     /// O(1)
     pub fn domain(&self) -> Range<Vec2> {
         self.domain.clone()
