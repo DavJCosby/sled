@@ -17,6 +17,7 @@ fn ripples(c: &mut Criterion) {
         b.iter(|| {
             for _ in 0..total_steps {
                 driver.step_by(timestep);
+                let colors = driver.colors_coerced::<u8>();
             }
         })
     });
