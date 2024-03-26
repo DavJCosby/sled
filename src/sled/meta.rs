@@ -104,48 +104,83 @@ impl Sled {
         self.leds.clone()
     }
 
-    /// Returns the colors of each [LED](Led) in the system, stored in a vector.
-    /// Type annotations allow you to coerce from 32-bit RGB into another format.
+    /// Returns an Iterator of the 32-bit RGB colors for each [LED](Led) in the system
     ///
     /// O(LEDS)
     ///
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
-    /// // 32 bits/channel by default
-    /// let colors: Vec<Rgb> = sled.colors();
-    /// // coerce to 8 bits/channel
-    /// let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
+    /// let colors = sled.colors();
+    ///
+    /// for color in colors {
+    ///     let red: f32 = color.red;
+    ///     /*- snip -*/
+    /// }
     /// ```
-    pub fn colors<T>(&self) -> Vec<Srgb<T>>
+    pub fn colors(&self) -> impl Iterator<Item = Rgb> + '_ {
+        self.leds.iter().map(|led| led.color)
+    }
+
+    /// Returns an Iterator of the RGB colors for each [LED](Led) in the system.
+    /// Type annotations allow you to coerce from 32-bit RGB into another depth.
+    ///
+    /// O(LEDS)
+    ///
+    /// ```rust
+    ///# use sled::{Sled, color::Rgb};
+    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    /// let colors = sled.colors_coerced::<u8>();
+    ///
+    /// for color in colors {
+    ///     let red: u8 = color.red;
+    ///     /*- snip -*/
+    /// }
+    /// ```
+    pub fn colors_coerced<T>(&self) -> impl Iterator<Item = Srgb<T>> + '_
+    where
+        f32: color::stimulus::IntoStimulus<T>,
+    {
+        self.leds.iter().map(|led| led.color.into_format::<T>())
+    }
+
+    /// Returns an Iterator of Vec2s, representing the position of each [LED](Led) in the system.
+    ///
+    /// O(LEDS)
+    pub fn positions(&self) -> impl Iterator<Item = Vec2> + '_ {
+        self.leds.iter().map(|led| led.position())
+    }
+
+    /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
+    ///
+    /// O(LEDS)
+    pub fn colors_and_positions(&self) -> impl Iterator<Item = (Srgb<f32>, Vec2)> + '_ {
+        self.leds.iter().map(|led| (led.color, led.position()))
+    }
+
+    /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
+    /// Supports color coercion just like [Sled::colors_coerced()](colors_coerced())
+    ///
+    /// O(LEDS)
+    /// 
+    /// ```rust
+    /// # use sled::{Sled, color::Rgb};
+    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    /// let col_and_pos = sled.colors_and_positions_coerced::<u8>();
+    ///
+    /// for (color, position) in col_and_pos {
+    ///     let red: u8 = color.red;
+    ///     let x = position.x;
+    ///     /*- snip -*/
+    /// }
+    /// ```
+    pub fn colors_and_positions_coerced<T>(&self) -> impl Iterator<Item = (Srgb<T>, Vec2)> + '_
     where
         f32: color::stimulus::IntoStimulus<T>,
     {
         self.leds
             .iter()
-            .map(|led| led.color.into_format())
-            .collect()
-    }
-
-    /// Returns the positions of each [LED](Led) in the system, stored in a vector.
-    ///
-    /// O(LEDS)
-    pub fn positions(&self) -> Vec<Vec2> {
-        self.leds.iter().map(|led| led.position()).collect()
-    }
-
-    /// Returns the positions and colors of each [LED](Led) in the system, stored in a vector of `(Rgb, Vec2)`.
-    /// Supports color coercion just like [Sled::colors()](colors())
-    ///
-    /// O(LEDS)
-    pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
-    where
-        f32: color::stimulus::IntoStimulus<T>,
-    {
-        self.leds
-            .iter()
-            .map(|led| (led.color.into_format(), led.position()))
-            .collect()
+            .map(|led| (led.color.into_format::<T>(), led.position()))
     }
 
     /// Returns the static reference point declared in the [config file](Sled::new).
