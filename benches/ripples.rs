@@ -18,12 +18,13 @@ fn ripples(c: &mut Criterion) {
         b.iter(|| {
             for _ in 0..total_steps {
                 driver.step_by(timestep);
+
                 let mut colors = driver.colors_coerced::<u8>();
                 r = colors.next().unwrap().red;
             }
-        })
+        });
     });
-    println!("{}", r);
+    println!("{}", r); // prevent compiler from optimizing away output steps
 }
 
 use criterion::{criterion_group, criterion_main, Criterion};
