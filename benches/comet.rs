@@ -13,19 +13,19 @@ fn trail(c: &mut Criterion) {
     let simulated_hz = 144.0;
     let total_steps = (simulated_duration * simulated_hz) as usize;
     let timestep = Duration::from_secs_f32(1.0 / simulated_hz);
-
     let mut r = 0;
 
     c.bench_function("quirky_trail", |b| {
         b.iter(|| {
             for _ in 0..total_steps {
                 driver.step_by(timestep);
-                let colors = driver.colors::<u8>();
-                r = colors[0].red;
+
+                let mut colors = driver.colors_coerced::<u8>();
+                r = colors.next().unwrap().red;
             }
         });
     });
-    println!("{}", r); // prevent compiler from optimizing away output steps
+    println!("{}", r);
 }
 
 use criterion::{criterion_group, criterion_main, Criterion};

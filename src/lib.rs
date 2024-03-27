@@ -124,14 +124,16 @@
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
-//! // collect an ordered vector of Rgbs, 32-bits/channel
-//! let colors_f32: Vec<Rgb> = sled.colors();
-//! // collect an ordered vector of Rgbs, 8-bits/channel (overhead for conversion)
-//! let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
-//! // collect an ordered vector of Vec2s, representing the position of each leds
-//! let positions: Vec<Vec2> = sled.positions();
-//! // collect an ordered vector of Rgb/Vec2 touple pairs representing each leds color and position.
-//! let colors_and_positions: Vec<(Rgb, Vec2)> = sled.colors_and_positions();
+//! // An Iterator of Rgbs, 32-bits/channel
+//! let colors_f32 = sled.colors();
+//! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
+//! let colors_u8 = sled.colors_coerced::<u8>();
+//! // An Iterator of Vec2s, representing the position of each leds
+//! let positions = sled.positions();
+//! // An Iterator of (Rgb, Vec2) tuple pairs representing each leds color and position.
+//! let colorsf32_and_positions = sled.colors_and_positions();
+//! // An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each leds color and position.
+//! let colorsf32_and_positions = sled.colors_and_positions_coerced::<u8>();
 //! ```
 //!
 //! # Advanced Features

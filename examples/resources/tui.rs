@@ -21,7 +21,7 @@ use std::{
 
 pub struct SledTerminalDisplay {
     title: String,
-    pub leds: Vec<(Srgb<u8>, Vec2)>,
+    leds: Vec<(Srgb<u8>, Vec2)>,
     on_quit: Box<dyn FnMut()>,
     quit: bool,
     x_bounds: [f64; 2],
@@ -57,6 +57,11 @@ impl SledTerminalDisplay {
 
     pub fn set_title(&mut self, title: String) {
         self.title = title;
+    }
+
+    pub fn set_leds(&mut self, leds: impl Iterator<Item = (Srgb<u8>, Vec2)>) {
+        // not ideal, look for a workaround later
+        self.leds = leds.collect()
     }
 
     pub fn refresh(&mut self) -> io::Result<()> {
@@ -131,7 +136,7 @@ fn main() -> io::Result<()> {
     let sled = Sled::new("./examples/resources/config.toml").unwrap();
 
     let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
-    display.leds = sled.colors_and_positions();
+    display.set_leds(sled.colors_and_positions_coerced());
     display.refresh()?;
 
     Ok(())

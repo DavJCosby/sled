@@ -15,7 +15,7 @@ fn main() {
     let mut scheduler = Scheduler::new(500.0);
     scheduler.loop_until_err(|| {
         driver.step();
-        display.leds = driver.colors_and_positions();
+        display.set_leds(driver.colors_and_positions_coerced());
         display.refresh()?;
         Ok(())
     });

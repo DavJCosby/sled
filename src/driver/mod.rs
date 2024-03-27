@@ -1,4 +1,7 @@
-use crate::{color::Srgb, Sled, SledError, Vec2};
+use crate::{
+    color::{Rgb, Srgb},
+    Sled, SledError, Vec2,
+};
 use std::time::{Duration, Instant};
 
 mod filters;
@@ -112,33 +115,41 @@ impl Driver {
         sled
     }
 
-    pub fn colors<T>(&self) -> Vec<Srgb<T>>
-    where
-        f32: crate::color::stimulus::IntoStimulus<T>,
-    {
+    pub fn colors(&self) -> impl Iterator<Item = Rgb> + '_ {
         if let Some(sled) = &self.sled {
             sled.colors()
         } else {
-            vec![]
+            panic!("Driver has no Sled assigned!")
         }
     }
 
-    pub fn positions(&self) -> Vec<Vec2> {
-        if let Some(sled) = &self.sled {
-            sled.positions()
-        } else {
-            vec![]
-        }
-    }
-
-    pub fn colors_and_positions<T>(&self) -> Vec<(Srgb<T>, Vec2)>
+    pub fn colors_coerced<T>(&self) -> impl Iterator<Item = Srgb<T>> + '_
     where
         f32: crate::color::stimulus::IntoStimulus<T>,
     {
         if let Some(sled) = &self.sled {
-            sled.colors_and_positions()
+            sled.colors_coerced()
         } else {
-            vec![]
+            panic!("Driver has no Sled assigned!")
+        }
+    }
+
+    pub fn positions(&self) -> impl Iterator<Item = Vec2> + '_ {
+        if let Some(sled) = &self.sled {
+            sled.positions()
+        } else {
+            panic!("Driver has no Sled assigned!")
+        }
+    }
+
+    pub fn colors_and_positions_coerced<T>(&self) -> impl Iterator<Item = (Srgb<T>, Vec2)> + '_
+    where
+        f32: crate::color::stimulus::IntoStimulus<T>,
+    {
+        if let Some(sled) = &self.sled {
+            sled.colors_and_positions_coerced()
+        } else {
+            panic!("Driver has no Sled assigned!")
         }
     }
 
