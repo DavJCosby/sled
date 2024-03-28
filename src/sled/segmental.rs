@@ -66,6 +66,8 @@ impl Sled {
     }
 
     /// Returns the set of all [LEDs](Led) assigned to the line segments whose indices are within the given range.
+    /// 
+    /// If the range exceeds the number of segments in the system, returns None.
     ///
     /// O(LEDS_IN_SEGMENTS)
     ///
@@ -146,6 +148,8 @@ impl Sled {
     /// For-each method granting mutable access to each [LED](Led) assigned to the line segment with index `segment_index`.
     /// Also passes an "alpha" value into the closure, representing how far along the line segment you are. 0 = first LED in segement, 1 = last.
     ///
+    /// Returns an [error](SledError) if the no segment of given index exists.
+    /// 
     /// O(LEDS_IN_SEGMENT)
     ///
     /// ```rust
@@ -196,6 +200,8 @@ impl Sled {
     /// Modulates the color of the [LED](Led) that represents the vertex the given index, if it exists. Returns an [error](SledError) if not.
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
+    /// Returns an [error](SledError) if no vertex of given index exists.
+    /// 
     /// O(1)
     ///
     /// ```rust
@@ -225,6 +231,8 @@ impl Sled {
     /// Sets the color of the [LED](Led) that represents the vertex the given index, if it exists. Returns an [error](SledError) if not.
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
+    /// Returns an [error](SledError) if no vertex of given index exists.
+    /// 
     /// O(1)
     ///
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {

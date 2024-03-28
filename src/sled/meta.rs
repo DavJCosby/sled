@@ -87,7 +87,9 @@ impl Sled {
         })
     }
 
-    /// Returns a copy of the system's [LEDs](Led), stored in an ordered vector.
+    /// Returns a read-only iterator over the system's [LEDs](Led).
+    ///
+    /// If you need owned copies of these values, `.collect()` this iterator into a Vector.
     ///
     /// O(LEDS)
     ///
@@ -100,11 +102,11 @@ impl Sled {
     ///     );
     /// }
     /// ```
-    pub fn leds(&self) -> Vec<Led> {
-        self.leds.clone()
+    pub fn leds(&self) -> impl Iterator<Item = &Led> {
+        self.leds.iter()
     }
 
-    /// Returns an Iterator of the 32-bit RGB colors for each [LED](Led) in the system
+    /// Returns an Iterator over the 32-bit RGB colors for each [LED](Led) in the system
     ///
     /// O(LEDS)
     ///
@@ -122,7 +124,7 @@ impl Sled {
         self.leds.iter().map(|led| led.color)
     }
 
-    /// Returns an Iterator of the RGB colors for each [LED](Led) in the system.
+    /// Returns an Iterator over the RGB colors for each [LED](Led) in the system.
     /// Type annotations allow you to coerce from 32-bit RGB into another depth.
     ///
     /// O(LEDS)
@@ -144,7 +146,7 @@ impl Sled {
         self.leds.iter().map(|led| led.color.into_format::<T>())
     }
 
-    /// Returns an Iterator of Vec2s, representing the position of each [LED](Led) in the system.
+    /// Returns an Iterator over Vec2s, representing the position of each [LED](Led) in the system.
     ///
     /// O(LEDS)
     pub fn positions(&self) -> impl Iterator<Item = Vec2> + '_ {
@@ -162,7 +164,7 @@ impl Sled {
     /// Supports color coercion just like [Sled::colors_coerced()](colors_coerced())
     ///
     /// O(LEDS)
-    /// 
+    ///
     /// ```rust
     /// # use sled::{Sled, color::Rgb};
     ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();

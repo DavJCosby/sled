@@ -93,17 +93,17 @@ impl Sled {
 
 /// # Index and range-based read and write methods
 impl Sled {
-    /// Returns a [Filter] containing all [LEDs](Led) with indices within `index_range`.
-    /// Returns an [error](SledError) if the range extends beyond the size of the system.
+    /// Returns a Some([Filter]) containing all [LEDs](Led) with indices within `index_range`.
+    /// Returns None if the range extends beyond the size of the system.
     ///
     /// O(RANGE_SIZE)
     ///
-    pub fn range(&self, index_range: Range<usize>) -> Result<Filter, SledError> {
+    pub fn range(&self, index_range: Range<usize>) -> Option<Filter> {
         if index_range.end < self.num_leds {
             let led_range = &self.leds[index_range];
-            Ok(led_range.into())
+            Some(led_range.into())
         } else {
-            SledError::new("Index range extends beyond size of system.".to_string()).as_err()
+            None
         }
     }
 
@@ -155,6 +155,8 @@ impl Sled {
     }
 
     /// For-each method granting mutable access to each [LED](Led) with an index in `index_range`
+    /// 
+    /// Returns an [error](SledError) if the range extends beyond the size of the system.
     ///
     /// O(RANGE_SIZE)
     ///
@@ -169,7 +171,16 @@ impl Sled {
     ///     }
     /// });
     /// ```
-    pub fn for_each_in_range<F: FnMut(&mut Led)>(&mut self, index_range: Range<usize>, func: F) {
+    pub fn for_each_in_range<F: FnMut(&mut Led)>(
+        &mut self,
+        index_range: Range<usize>,
+        func: F,
+    ) -> Result<(), SledError> {
+        if index_range.end >= self.num_leds {
+            return SledError::new("Index range extends beyond size of system.".to_string())
+                .as_err();
+        }
         self.leds[index_range].iter_mut().for_each(func);
+        Ok(())
     }
 }
