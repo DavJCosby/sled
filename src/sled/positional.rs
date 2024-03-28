@@ -2,7 +2,6 @@ use std::collections::HashSet;
 
 use crate::{
     color::Rgb,
-    error::SledError,
     led::Led,
     sled::{Filter, Sled},
 };
@@ -15,9 +14,9 @@ impl Sled {
     /* closest getters/setters */
 
     /// Returns the index of the [LED](Led) closest to a given point.
-    /// 
+    ///
     /// O(SEGMENTS)
-    /// 
+    ///
 
     pub fn index_of_closest_to(&self, pos: Vec2) -> usize {
         // get the closest point on each segment and bundle relevant info,
@@ -38,14 +37,14 @@ impl Sled {
     }
 
     /// Returns the [LED](Led) closest to the center point.
-    /// 
+    ///
     /// O(1)
     pub fn closest(&self) -> &Led {
         &self.leds[self.index_of_closest]
     }
 
     /// Returns the [LED](Led) closest to a given point.
-    /// 
+    ///
     /// O(SEGMENTS)
     pub fn closest_to(&self, pos: Vec2) -> &Led {
         let index_of_closest = self.index_of_closest_to(pos);
@@ -105,7 +104,7 @@ impl Sled {
     /* furthest getters/setters */
 
     /// Returns the index of the [LED](Led) furthest from a given point.
-    /// 
+    ///
     /// O(VERTICES)
     pub fn index_of_furthest_from(&self, pos: Vec2) -> usize {
         // get the distance_squared of each vertex point, then find out which is the furthest.
@@ -123,20 +122,20 @@ impl Sled {
     }
 
     /// Returns the index of the [LED](Led) furthest from the center point.
-    /// 
+    ///
     /// O(1)
     pub fn index_of_furthest(&self) -> usize {
         self.index_of_furthest
     }
     /// Returns the [LED](Led) furthest from the center point.
-    /// 
+    ///
     /// O(1)
     pub fn furthest(&self) -> &Led {
         &self.leds[self.index_of_furthest]
     }
 
     /// Returns the [LED](Led) furthest from a given point.
-    /// 
+    ///
     /// O(VERTICES)
     pub fn furthest_from(&self, pos: Vec2) -> &Led {
         let index_of_furthest = self.index_of_furthest_from(pos);
@@ -223,11 +222,7 @@ impl Sled {
         all_at_distance.into()
     }
 
-    pub fn modulate_at_dist<F: Fn(&Led) -> Rgb>(
-        &mut self,
-        dist: f32,
-        color_rule: F,
-    ) -> Result<(), SledError> {
+    pub fn modulate_at_dist<F: Fn(&Led) -> Rgb>(&mut self, dist: f32, color_rule: F) -> bool {
         self.modulate_at_dist_from(dist, self.center_point, color_rule)
     }
 
@@ -236,45 +231,30 @@ impl Sled {
         dist: f32,
         pos: Vec2,
         color_rule: F,
-    ) -> Result<(), SledError> {
+    ) -> bool {
         let indices = self.indices_at_dist(pos, dist);
-
-        if indices.is_empty() {
-            return SledError::new(format!(
-                "No LEDs exist at a distance of {} from {}",
-                dist, pos
-            ))
-            .as_err();
-        }
-
+        let anything_found = !indices.is_empty();
         for i in indices {
             let led = &mut self.leds[i];
             led.color = color_rule(led);
         }
 
-        Ok(())
+        return anything_found;
     }
 
-    pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> bool {
         self.set_at_dist_from(dist, self.center_point, color)
     }
 
-    pub fn set_at_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) -> bool {
         let indices = self.indices_at_dist(pos, dist);
-
-        if indices.is_empty() {
-            return SledError::new(format!(
-                "No LEDs exist at a distance of {} from the center point.",
-                dist
-            ))
-            .as_err();
-        }
+        let anything_found = !indices.is_empty();
 
         for index in indices {
             self.leds[index].color = color;
         }
 
-        Ok(())
+        return anything_found;
     }
 
     /* within distance methods */
@@ -297,20 +277,30 @@ impl Sled {
         all_within_distance.into()
     }
 
-    pub fn modulate_within_dist<F: Fn(&Led) -> Rgb>(&mut self, dist: f32, color_rule: F) {
+    pub fn modulate_within_dist<F: Fn(&Led) -> Rgb>(&mut self, dist: f32, color_rule: F) -> bool {
+        let mut changes_made = false;
+
         for led in &mut self.leds {
             if led.distance() < dist {
                 led.color = color_rule(led);
+                changes_made = true;
             }
         }
+
+        changes_made
     }
 
-    pub fn set_within_dist(&mut self, dist: f32, color: Rgb) {
+    pub fn set_within_dist(&mut self, dist: f32, color: Rgb) -> bool {
+        let mut changes_made = false;
+
         for led in &mut self.leds {
             if led.distance() < dist {
                 led.color = color;
+                changes_made = true;
             }
         }
+
+        changes_made
     }
 
     pub fn modulate_within_dist_from<F: Fn(&Led) -> Rgb>(
@@ -318,23 +308,31 @@ impl Sled {
         dist: f32,
         pos: Vec2,
         color_rule: F,
-    ) {
+    ) -> bool {
         let target_sq = dist.powi(2);
+        let mut changes_made = false;
 
         for led in &mut self.leds {
             if led.position().distance_squared(pos) < target_sq {
                 led.color = color_rule(led);
+                changes_made = true
             }
         }
+
+        changes_made
     }
 
-    pub fn set_within_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) {
+    pub fn set_within_dist_from(&mut self, dist: f32, pos: Vec2, color: Rgb) -> bool {
         let target_sq = dist.powi(2);
+        let mut changes_made = false;
 
         for led in &mut self.leds {
             if led.position().distance_squared(pos) < target_sq {
                 led.color = color;
+                changes_made = true;
             }
         }
+
+        changes_made
     }
 }

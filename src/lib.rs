@@ -44,6 +44,7 @@
 //!  [[line_segment]]
 //!  start = [2.0, 2]
 //!  end = [-2.0, 2]
+//! 
 //!  [[line_segment]]
 //!  start = [-2.0, 2]
 //!  end = [-2.0, 0.0]
@@ -68,7 +69,7 @@
 //! # use sled::{Sled, color::Rgb};
 //! # fn main() -> Result<(), sled::SledError> {
 //! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
-//! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
+//! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
 //! # Ok(())
 //! # }
 //! ```
@@ -165,7 +166,7 @@
 //!     for i in 0..num_colors {
 //!         let alpha = i as f32 / num_colors as f32;
 //!         let angle = elapsed + (std::f32::consts::TAU * alpha);
-//!         sled.set_at_angle(angle, colors[i])?;
+//!         sled.set_at_angle(angle, colors[i]);
 //!     }
 //!
 //!     Ok(())

@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{color::Rgb, error::SledError, led::Led, Filter, Sled};
+use crate::{color::Rgb, led::Led, Filter, Sled};
 use glam::Vec2;
 use smallvec::SmallVec;
 
@@ -26,6 +26,8 @@ impl Sled {
     /// Returns A [Filter] containing each [LED](Led) in the given direction from the center point.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
+    /// If no LEDs exist at the given direction, the Filter will be empty.
+    ///
     /// O(SEGMENTS)
     pub fn at_dir(&self, dir: Vec2) -> Filter {
         self.at_dir_from(dir, self.center_point)
@@ -33,6 +35,8 @@ impl Sled {
 
     /// Returns A [Filter] containing each [LED](Led) in the given direction from a given point.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
+    ///
+    /// Currently returns no more than 4 LEDs, may change in the future.
     pub fn at_dir_from(&self, dir: Vec2, pos: Vec2) -> Filter {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
         intersecting_indices
@@ -45,7 +49,7 @@ impl Sled {
     /// Modulates the color of each [LED](Led) in the given direction from the center point.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
     ///
@@ -53,22 +57,18 @@ impl Sled {
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
-    /// sled.modulate_at_dir(Vec2::new(0.0, 1.0), |led| led.color * 2.0)?;
+    /// sled.modulate_at_dir(Vec2::new(0.0, 1.0), |led| led.color * 2.0);
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_dir<F: Fn(&Led) -> Rgb>(
-        &mut self,
-        dir: Vec2,
-        color_rule: F,
-    ) -> Result<(), SledError> {
+    pub fn modulate_at_dir<F: Fn(&Led) -> Rgb>(&mut self, dir: Vec2, color_rule: F) -> bool {
         self.modulate_at_dir_from(dir, self.center_point, color_rule)
     }
 
     /// Modulates the color of each [LED](Led) in the given direction from a given point.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
     ///
@@ -80,7 +80,7 @@ impl Sled {
     /// let from = Vec2::new(0.25, -0.6);
     /// sled.modulate_at_dir_from(dir, from, |led| {
     ///     led.color * 2.0
-    /// })?;
+    /// });
     ///# Ok(())
     ///# }
     /// ```
@@ -89,47 +89,49 @@ impl Sled {
         dir: Vec2,
         pos: Vec2,
         color_rule: F,
-    ) -> Result<(), SledError> {
+    ) -> bool {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
+            return false;
         }
 
         for index in intersecting_indices {
             let led = &mut self.leds[index];
             led.color = color_rule(led);
         }
-        Ok(())
+
+        true
     }
 
     /// Sets the color of each [LED](Led) in the given direction from the center.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> bool {
         self.set_at_dir_from(dir, self.center_point, color)
     }
 
     /// Sets the color of each [LED](Led) in the given direction from a given point.
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Rgb) -> bool {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
-            return SledError::new(format!("No LED in directon: {} from {}", dir, pos)).as_err();
+            return false;
         }
 
         for index in intersecting_indices {
             self.leds[index].color = color;
         }
-        Ok(())
+
+        true
     }
 
     /* angle setters/getters */
@@ -139,6 +141,10 @@ impl Sled {
     /// Equivalent to `at_dir(Vec2::new(angle.cos(), angle.sin()));`
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
+    ///
+    /// If no LEDs exist at the given direction, the Filter will be empty.
+    ///
+    /// Currently returns no more than 4 LEDs, may change in the future.
     ///
     /// O(SEGMENTS)
     pub fn at_angle(&self, angle: f32) -> Filter {
@@ -152,6 +158,10 @@ impl Sled {
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
+    /// If no LEDs exist at the given direction, the Filter will be empty.
+    ///
+    /// Currently returns no more than 4 LEDs, may change in the future.
+    ///
     /// O(SEGMENTS)
     pub fn at_angle_from(&self, angle: f32, pos: Vec2) -> Filter {
         let dir = Vec2::from_angle(angle);
@@ -164,7 +174,7 @@ impl Sled {
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED at that angle, true otherwise.
     ///
     /// O(SEGMENTS)
     ///
@@ -173,15 +183,11 @@ impl Sled {
     /// use std::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
-    /// sled.modulate_at_angle(PI / 4.0, |led| led.color * 2.0)?;
+    /// sled.modulate_at_angle(PI / 4.0, |led| led.color * 2.0);
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_angle<F: Fn(&Led) -> Rgb>(
-        &mut self,
-        angle: f32,
-        color_rule: F,
-    ) -> Result<(), SledError> {
+    pub fn modulate_at_angle<F: Fn(&Led) -> Rgb>(&mut self, angle: f32, color_rule: F) -> bool {
         self.modulate_at_angle_from(angle, self.center_point, color_rule)
     }
 
@@ -191,7 +197,7 @@ impl Sled {
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
-    /// Returns an [error](SledError) if there is no LED in that direction.
+    /// Returns false if there is no LED at that angle, true otherwise.
     ///
     /// O(SEGMENTS)
     ///
@@ -202,7 +208,7 @@ impl Sled {
     ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
     /// let angle = PI * 1.25;
     /// let from = Vec2::new(0.3, 0.2);
-    /// sled.modulate_at_angle_from(angle, from, |led| led.color * 2.0)?;
+    /// sled.modulate_at_angle_from(angle, from, |led| led.color * 2.0);
     ///# Ok(())
     ///# }
     /// ```
@@ -211,7 +217,7 @@ impl Sled {
         angle: f32,
         pos: Vec2,
         color_rule: F,
-    ) -> Result<(), SledError> {
+    ) -> bool {
         let dir = Vec2::from_angle(angle);
         self.modulate_at_dir_from(dir, pos, color_rule)
     }
@@ -221,8 +227,10 @@ impl Sled {
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
+    /// Returns false if there is no LED at that angle, true otherwise.
+    ///
     /// O(SEGMENTS)
-    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> Result<(), SledError> {
+    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> bool {
         self.set_at_angle_from(angle, self.center_point, color)
     }
 
@@ -231,13 +239,10 @@ impl Sled {
     ///
     /// Calculated by performing a raycast against each line segment and finding the closest LED to the point of contact.
     ///
+    /// Returns false if there is no LED at that angle, true otherwise.
+    ///
     /// O(SEGMENTS)
-    pub fn set_at_angle_from(
-        &mut self,
-        angle: f32,
-        pos: Vec2,
-        color: Rgb,
-    ) -> Result<(), SledError> {
+    pub fn set_at_angle_from(&mut self, angle: f32, pos: Vec2, color: Rgb) -> bool {
         let dir = Vec2::from_angle(angle);
         self.set_at_dir_from(dir, pos, color)
     }

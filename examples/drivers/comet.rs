@@ -35,13 +35,13 @@ fn draw(
     // speckle in swirling green points
     for i in 0..GREEN_COUNT {
         let angle = inner_time_scale + (TAU / GREEN_COUNT as f32) * i as f32 % TAU;
-        sled.modulate_at_angle(angle, |led| led.color + GREEN)?
+        sled.modulate_at_angle(angle, |led| led.color + GREEN);
     }
 
     // speckle in swirling blue points
     for i in 0..BLUE_COUNT {
         let angle = outer_time_scale + (TAU / BLUE_COUNT as f32) * i as f32 % TAU;
-        sled.modulate_at_angle(angle, |led| led.color + BLUE)?
+        sled.modulate_at_angle(angle, |led| led.color + BLUE);
     }
 
     // brighten or darken points depending on time and angle to simulate a sweeping
