@@ -3,9 +3,9 @@
 # Spatial LED (SLED)
 SLED is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, SLED is still in its early stages of development which means there is plenty of room for improvement in both categories.
 
-![warpspeed demo](resources/warpspeed-demo.mp4)
+![warpspeed demo](resources/warpspeed-demo.gif)
 
-![ripples demo](resources/ripples-demo.mp4 | width = 250)
+![ripples demo](resources/ripples-demo.gif)
 
 What SLED **does** do:
 - It exposes an API that lets you:
