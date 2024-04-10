@@ -19,13 +19,11 @@ fn main() {
         Rgb::new(0.0, 0.0, 1.0),
     ]);
 
-    //let mut scheduler = Scheduler::new(500.0);
-    //scheduler.loop_until_err(|| {
-    loop {
+    let mut scheduler = Scheduler::new(500.0);
+    scheduler.loop_until_err(|| {
         driver.step();
         display.set_leds(driver.colors_and_positions_coerced());
         display.refresh().unwrap();
-        //Ok(())
-    }
-    //});
+        Ok(())
+    });
 }
