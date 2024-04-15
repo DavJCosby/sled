@@ -109,9 +109,8 @@ impl Driver {
         self.step();
     }
 
-    pub fn dismount(mut self) -> Sled {
-        let sled = self.sled.unwrap();
-        self.sled = None;
+    pub fn dismount(&mut self) -> Sled {
+        let sled = self.sled.take().unwrap();
         sled
     }
 
