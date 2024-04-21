@@ -127,14 +127,26 @@
 //! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
+//! 
+//! for color in colors_f32 {
+//!     let red: f32 = color.red;
+//!     // -snip- //
+//! }
+//! ```
+//! 
+//! A few other handy output methods:
+//! 
+//! ```rust
+//! # use sled::{Sled, Vec2, color::Rgb};
+//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
 //! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
 //! let colors_u8 = sled.colors_coerced::<u8>();
 //! // An Iterator of Vec2s, representing the position of each leds
 //! let positions = sled.positions();
 //! // An Iterator of (Rgb, Vec2) tuple pairs representing each leds color and position.
-//! let colorsf32_and_positions = sled.colors_and_positions();
+//! let colors_f32_and_positions = sled.colors_and_positions();
 //! // An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each leds color and position.
-//! let colorsf32_and_positions = sled.colors_and_positions_coerced::<u8>();
+//! let colors_f32_and_positions = sled.colors_and_positions_coerced::<u8>();
 //! ```
 //!
 //! # Advanced Features
@@ -150,18 +162,20 @@
 //!
 //! driver.set_startup_commands(|_sled, buffers, _filters| {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
-//!     colors.push(Rgb::new(1.0, 0.0, 0.0));
-//!     colors.push(Rgb::new(0.0, 1.0, 0.0));
-//!     colors.push(Rgb::new(0.0, 0.0, 1.0));
+//!     colors.extend([
+//!         Rgb::new(1.0, 0.0, 0.0),
+//!         Rgb::new(0.0, 1.0, 0.0),
+//!         Rgb::new(0.0, 0.0, 1.0),
+//!     ]);
 //!     Ok(())
 //! });
 //!
 //! driver.set_draw_commands(|sled, buffers, _filters, time_info| {
-//!     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-//!
 //!     let elapsed = time_info.elapsed.as_secs_f32();
 //!     let colors: &Vec<Rgb> = buffers.get_buffer("colors")?;
 //!     let num_colors = colors.len();
+//!     // clear our canvas each frame
+//!     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
 //!
 //!     for i in 0..num_colors {
 //!         let alpha = i as f32 / num_colors as f32;
@@ -179,9 +193,11 @@
 //! let sled = Sled::new("path/to/config.toml")?;
 //! # let mut driver = Driver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
-//!
+//! 
 //! loop {
 //!     driver.step();
+//!     let colors = driver.colors();
+//!     // and so on...
 //! }
 //!
 //! # Ok(())
@@ -273,7 +289,7 @@
 //! let buffer_mut = buffers.get_buffer_mut::<bool>("wall_toggles")?;
 //!
 //! // Modify just one item
-//! buffers.set_buffer_item("wall_toggles", 1, false);
+//! buffers.set_buffer_item("wall_toggles", 1, false)?;
 //!  
 //! // Mutable reference to just one item
 //! let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;

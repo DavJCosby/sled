@@ -1,22 +1,26 @@
 [![Build and Run Tests](https://github.com/DavJCosby/sled/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/DavJCosby/sled/actions/workflows/rust.yml)
 
-# Spatial LED (SLED)
-SLED is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, SLED is still in its early stages of development which means there is plenty of room for improvement in both categories.
+# Spatial LED (Sled)
+<div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
+ </div>
+Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
 
-What SLED **does** do:
+### What Sled **does**:
 - It exposes an API that lets you:
-	- Modify virtual LED colors depending on each LED's position, distance, direction, line segment, etc;
-	- Output that color data in a simple, contiguous data structure for your own usage;
-	- Filter LEDs by their spatial properties to pre-compute important sets;
-- Additionally, some tools are provided to help you build functional apps faster (you may opt-out with compiler features):
-	- `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime. 
-	- `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
+	- Compute colors depending on each LED's position, distance, direction, line segment, etc;
+	- Output colors via a simple, contiguous iterator for your own usage;
+	- Filter LEDs by spatial properties to predefine important sets and regions for faster computation;
+- Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [compiler features](https://doc.rust-lang.org/cargo/reference/features.html)):
+	- [Driver](#drivers) - Pack draw/compute logic into a Driver to simplify the process of swapping between effects, or changing effect settings at runtime. 
+	- [Scheduler](#scheduler) - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
 
-What SLED **does not** do:
+### What Sled does *not* do:
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out my personal [raspberry pi implementation](https://github.com/DavJCosby/rasp-pi-setup) to get an idea of what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
+
+> This project is still somewhat early in development so please report any bugs you discover! Pull requests are more than welcome!
 ## The Basics
-In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
+In absence of an official guide, this will serve as a basic introduction. From here, you can use the documentation comments to learn what else Sled offers.
 ### Setup
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
@@ -31,54 +35,56 @@ A configuration file explains the layout of your LED strips in 2D space. This is
 
  Example .toml file:
  ```toml
- center_point = [0.0, 0.5]
+ center_point = [0, 0.5]
  density = 30.0
 
  [[line_segment]]
- start = [-2.0, 0.0]
- end = [0.5, -1.0]
+ start = [-2, 0]
+ end = [0.5, -1]
 
  [[line_segment]]
- start = [0.5, -1.0]
- end = [3.5, 0.0]
+ start = [0.5, -1]
+ end = [3.5, 0]
 
  [[line_segment]]
- start = [3.5, 0.0]
+ start = [3, 0]
  end = [2, 2]
 
  [[line_segment]]
- start = [2.0, 2]
- end = [-2.0, 2]
+ start = [2, 2]
+ end = [-2, 2]
  [[line_segment]]
- start = [-2.0, 2]
- end = [-2.0, 0.0]
+ start = [-2, 2]
+ end = [-2, 0]
  ```
- * `center_point` is a static reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
- * `density` represents how many LED's per unit we can expect for the line segments below. If one or more LED strip has a different density for whatever reason, you can override this default for each `[[line_segment]]`.
+ * `center_point` is a static reference point that's used to make some calculations faster. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
+ * `density` represents how many LEDs per unit we can expect for the line segments below. If one or more LED strip has a different density for whatever reason, you can override this default for each `[[line_segment]]`.
  * Add as many `[[line_segment]]` tags as you need to represent your scene.
 ### Drawing
-Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things SLED lets you do:
+Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
 **Set all vertices to white:**
 ```rust
 sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 ```
 ![Set all Vertices](resources/vertices.png)
-> Note that this is a custom terminal UI visualization that is not packaged as part of the sled crate. It is ultimately up to you to decide how to visualize your LEDs, Sled just handles the computation.
+> Note that this is a custom terminal UI visualization that is not packaged as part of the sled library. It is ultimately up to you to decide how to visualize your LEDs; Sled just handles the computation.
 
 **Set all LEDs 2 units away from the `center_point` to red:**
 ```rust
-sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0))?;
+sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
+// or from any other point using sled.set_at_dist_from(distance, pos, color)
 ```
+
 ![Set at Distance](resources/at_distance.png)
 
 **Set each LED using a function of its direction from point `(2, 1)`:**
 ```rust
- sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
-     let red = (dir.x + 1.0) * 0.5;
-     let green = (dir.y + 1.0) * 0.5;
-     Rgb::new(red, green, 0.5)
- });
+sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
+    let red = (dir.x + 1.0) * 0.5;
+    let green = (dir.y + 1.0) * 0.5;
+    Rgb::new(red, green, 0.5)
+});
 ```
 ![Map by Direction](resources/dir_map.png)
 
@@ -91,9 +97,9 @@ sled.modulate_segment(3, |led| led.color * 0.25)?;
 **Set all LEDs within the overlapping areas of two different circles to blue:**
 ```rust
 let circle_1: Filter = sled.within_dist_from(
-        2.0,
-        Vec2::new(1.0, 0.5)
-    );
+    2.0,
+    Vec2::new(1.0, 0.5)
+);
     
 let circle_2: Filter = sled.within_dist_from(
 	2.5,
@@ -107,19 +113,34 @@ sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 For more examples, see the documentation comments on the Sled struct.
 
 ## Output
-
 Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of RGB values. There are a few methods available to pack the information you need.
 
 ```rust
-// collect an ordered vector of Rgbs, 32-bits/channel
-let colors_f32: Vec<Rgb> = sled.colors();
-// collect an ordered vector of Rgbs, 8-bits/channel (overhead for conversion)
-let colors_u8: Vec<Rgb<_, u8>> = sled.colors();
+let colors_f32 = sled.colors();
+// An Iterator of Rgbs, 32-bits/channel
 
-let positions: Vec<Vec2> = sled.positions();
+for color in colors_f32 {
+    let red: f32 = color.red;
+    // -snip- //
+}
+```
 
-let colors_and_positions: Vec<(Rgb, Vec2)> =
-    sled.colors_and_positions();
+A few other handy output methods:
+```rust
+let leds = sled.leds();
+// An Iterator of Led structs (holds color, position, distance/angle relative from center, etc)
+
+let colors_u8 = sled.colors_coerced::<u8>();
+// An Iterator of Rgbs, 8-bits/channel
+
+let positions = sled.positions();
+// An Iterator of Vec2s, representing the position of each LED
+
+let colors_f32_and_positions = sled.colors_and_positions();
+// An Iterator of (Rgb, Vec2) tuple pairs representing each LEDs color and position.
+
+let colors_f32_and_positions = sled.colors_and_positions_coerced::<u8>();
+// An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each LEDs color and position.
 ```
 
 # Advanced Features
@@ -133,25 +154,26 @@ let mut driver = Driver::new();
 
 driver.set_startup_commands(|_sled, buffers, _filters| {
     let colors = buffers.create_buffer::<Rgb>("colors");
-    colors.push(Rgb::new(1.0, 0.0, 0.0));
-    colors.push(Rgb::new(0.0, 1.0, 0.0));
-    colors.push(Rgb::new(0.0, 0.0, 1.0));
+    colors.extend([
+        Rgb::new(1.0, 0.0, 0.0),
+        Rgb::new(0.0, 1.0, 0.0),
+        Rgb::new(0.0, 0.0, 1.0),
+    ]);
     Ok(())
 });
 
 driver.set_draw_commands(|sled, buffers, _filters, time_info| {
-    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-
     let elapsed = time_info.elapsed.as_secs_f32();
     let colors = buffers.get_buffer::<Rgb>("colors")?;
     let num_colors = colors.len();
+    // clear our canvas each frame
+    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
 
     for i in 0..num_colors {
         let alpha = i as f32 / num_colors as f32;
-        let angle = elapsed + (TAU * alpha);
+        let angle = elapsed + (2 * PI * alpha);
         sled.set_at_angle(angle, colors[i])?;
     }
-
     Ok(())
 });
 ```
@@ -162,14 +184,12 @@ driver.mount(sled); // sled gets moved into driver here.
 
 loop {
     driver.step();
+    let colors = driver.colors();
+    // and so on...
 }
 ```
 ![Basic Time-Driven Effect Using Buffers](resources/driver1.gif)
 
-If you need to retrieve ownership of your sled later, you can do:
-```rust
-let sled = driver.dismount();
-```
 
 `.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
 
@@ -177,7 +197,12 @@ let sled = driver.dismount();
 
 `set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled, mutable control over BufferContainer and Filters and immutable access to TimeInfo.
 
-If you don't Drivers for your project, you can bring down your binary and shed a dependency or two by disabling the `drivers` compiler feature.
+If you need to retrieve ownership of your sled later, you can do:
+```rust
+let sled = driver.dismount();
+```
+
+> If you don't need Drivers for your project, you can shed a dependency or two by disabling the `drivers` compiler feature.
 
 ### Buffers
 A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
@@ -195,7 +220,7 @@ fn startup(sled: &mut Sled, buffers: &mut BufferContainer, _filters: &mut Filter
 driver.set_startup_commands(startup);
 ```
 
-To maniplate buffers from outside driver, just do:
+To access buffers from outside driver, just do:
 ```rust
 let buffers: &BufferContainer = driver.buffers();
 // or
@@ -227,7 +252,7 @@ If you need to mutate buffer values:
 let buffer_mut = buffers.get_buffer_mut::<bool>("wall_toggles")?;
 
 // Modify just one item
-buffers.set_buffer_item("wall_toggles", 1, false);
+buffers.set_buffer_item("wall_toggles", 1, false)?;
 
 // Mutable reference to just one item
 let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
@@ -235,13 +260,24 @@ let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
 ```
 
 ### Filters
-For exceptionally performance-sensitive applications, Filters can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
+For exceptionally performance-sensitive applications, Filters can be used to predefine important LED regions. They act as sets, containing only the indicies of the LEDs captured in the set. When we want to perform an operation on that set, we pass the Filter back to the Sled like this:
 
-Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
+```rust
+let all_due_north: Filter = sled.at_dir(Vec2::new(0.0, 1.0));
+sled.for_each_in_filter(&all_due_north, |led| {
+    led.color = Rgb::new(1.0, 1.0, 1.0);
+});
+```
+> Note that other methods exist like `.set_filter(filter, color)`, `.modulate_filter(filter, color_rule)`, and `.map_filter(filter, map)`
+
+The `Filters` struct provided by Driver is basically a hashmap of `&str` keys to Sled Filter structs. Using this, we can pre-compute important sets and then store them to the driver for later usage.
+
+
+A slightly better example would be to image that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 
 ```rust
 let startup_commands = |sled, buffers, filters| {
-    let area_filter: Filter = sled.get_within_dist_from(5.0, Vec2::new(-0.25, 1.5));
+    let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
 
     filters.set("area_of_effect", area);
     Ok(())
@@ -279,19 +315,19 @@ Here are a few other methods that you might also consider:
 ```rust
 // loops until false is returned
 scheduler.loop_while_true(|| {
-    // -snip-
+    // -snip- //
     return true;
 });
 
 // loops until an error of any type is returned
 scheduler.loop_until_err(|| {
-    // -snip-
+    // -snip- //
     Ok(())
 });
 
 // best for where you don't wanna pass everything through a closure
 loop {
-    // -snip-
+    // -snip- //
     scheduler.sleep_until_next_frame();
 }
 ```
