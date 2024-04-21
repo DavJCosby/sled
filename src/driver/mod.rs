@@ -52,6 +52,10 @@ impl Driver {
         }
     }
 
+    pub fn sled(&self) -> Option<&Sled> {
+        self.sled.as_ref()
+    }
+
     pub fn elapsed(&self) -> Duration {
         self.startup.elapsed()
     }
