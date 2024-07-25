@@ -125,7 +125,7 @@ where
 {
     Canvas::default()
         .block(Block::default().borders(Borders::ALL).title(title))
-        .marker(Marker::HalfBlock)
+        .marker(symbols::Marker::HalfBlock)
         .background_color(Color::Black)
         .x_bounds(x_bounds)
         .y_bounds(y_bounds)
