@@ -7,7 +7,7 @@ use resources::tui::SledTerminalDisplay;
 use sled::{color::Rgb, scheduler::Scheduler, Sled};
 
 fn main() {
-    let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    let sled = Sled::new("./examples/resources/config.yap").unwrap();
     let mut display = SledTerminalDisplay::start("Warpspeed", sled.domain());
     let mut driver = warpspeed::build_driver();
     driver.mount(sled);

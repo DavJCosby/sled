@@ -96,7 +96,7 @@ impl SledTerminalDisplay {
         });
 
         self.terminal.draw(|frame| {
-            frame.render_widget(canvas, frame.size());
+            frame.render_widget(canvas, frame.area());
         })?;
 
         Ok(())

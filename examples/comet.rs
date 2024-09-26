@@ -7,7 +7,7 @@ use resources::tui::SledTerminalDisplay;
 use sled::{scheduler::Scheduler, Sled};
 
 fn main() {
-    let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    let sled = Sled::new("./examples/resources/config.yap").unwrap();
     let mut display = SledTerminalDisplay::start("Comet", sled.domain());
     let mut driver = comet::build_driver();
     driver.mount(sled);

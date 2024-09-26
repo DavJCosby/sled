@@ -77,6 +77,7 @@ impl Sled {
             center_point: config.center_point,
             leds,
             num_leds,
+            density: config.density,
             line_segments: config.line_segments,
             index_of_closest,
             index_of_furthest,
@@ -95,7 +96,7 @@ impl Sled {
     ///
     ///  ```rust
     ///# use sled::{Sled};
-    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
     /// for led in sled.leds() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
@@ -112,7 +113,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
     /// let colors = sled.colors();
     ///
     /// for color in colors {
@@ -131,7 +132,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
     /// let colors = sled.colors_coerced::<u8>();
     ///
     /// for color in colors {
@@ -167,7 +168,7 @@ impl Sled {
     ///
     /// ```rust
     /// # use sled::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
     /// let col_and_pos = sled.colors_and_positions_coerced::<u8>();
     ///
     /// for (color, position) in col_and_pos {
@@ -228,7 +229,7 @@ impl Sled {
         config
             .line_segments
             .iter()
-            .map(|line| line.num_leds())
+            .map(|line| line.num_leds(config.density))
             .collect()
     }
 
@@ -287,7 +288,7 @@ impl Sled {
                 vertex_indices.push(last_index);
             }
 
-            let num_leds = line.num_leds();
+            let num_leds = line.num_leds(config.density);
             vertex_indices.push(last_index + num_leds - 1);
 
             last_index += num_leds;
@@ -320,7 +321,7 @@ impl Sled {
     pub(crate) fn alpha_to_index(&self, segment_alpha: f32, segment_index: usize) -> usize {
         let segment = &self.line_segments[segment_index];
         let startpoint_index = self.line_segment_endpoint_indices[segment_index].0;
-        let leds_in_segment = segment.num_leds() as f32;
+        let leds_in_segment = segment.num_leds(self.density) as f32;
 
         (startpoint_index + (segment_alpha * leds_in_segment).floor() as usize) % self.num_leds
     }
