@@ -19,7 +19,7 @@
 //! To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 //! ```rust, ignore
 //! use sled::Sled;
-//! let mut sled = Sled::new("/path/to/config.toml")?;
+//! let mut sled = Sled::new("/path/to/config.yap")?;
 //! ```
 //!
 //! A configuration file explains the layout of your LED strips in 2D space. This is used to pre-calculate some important information, speeding up complex draw calls.
@@ -58,7 +58,7 @@
 //! **Set all vertices to white:**
 //! ```rust
 //! # use sled::{Sled, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 //! ```
 //! ![Set all Vertices](https://github.com/DavJCosby/sled/blob/master/resources/vertices.png?raw=true)
@@ -68,7 +68,7 @@
 //! ```rust
 //! # use sled::{Sled, color::Rgb};
 //! # fn main() -> Result<(), sled::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
 //! # Ok(())
 //! # }
@@ -78,7 +78,7 @@
 //! **Set each LED using a function of its direction from point `(2, 1)`:**
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //!  sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!      let red = (dir.x + 1.0) * 0.5;
 //!      let green = (dir.y + 1.0) * 0.5;
@@ -91,7 +91,7 @@
 //! ```rust
 //! # use sled::{Sled};
 //! # fn main() -> Result<(), sled::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.modulate_segment(3, |led| led.color * 0.25)?;
 //! # Ok(())
 //! # }
@@ -101,7 +101,7 @@
 //! **Set all LEDs within the overlapping areas of two different circles to blue:**
 //! ```rust
 //! # use sled::{Sled, Filter, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! let circle_1: Filter = sled.within_dist_from(
 //!     2.0,
 //!     Vec2::new(1.0, 0.5)
@@ -124,7 +124,7 @@
 //!
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
 //! 
@@ -138,7 +138,7 @@
 //! 
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
 //! let colors_u8 = sled.colors_coerced::<u8>();
 //! // An Iterator of Vec2s, representing the position of each leds
@@ -190,7 +190,7 @@
 //! ```rust, no_run
 //! # use sled::{Sled, driver::Driver};
 //! # fn main() -> Result<(), sled::SledError> {
-//! let sled = Sled::new("path/to/config.toml")?;
+//! let sled = Sled::new("path/to/config.yap")?;
 //! # let mut driver = Driver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
 //! 
@@ -208,7 +208,7 @@
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
 //! # use sled::{Sled, driver::Driver};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! # let mut driver = Driver::new();
 //! # driver.mount(sled);
 //! let sled = driver.dismount();
@@ -326,7 +326,7 @@
 //! Most getter methods on Sled will return a Filter, but if you need more precise control you can do something like this:
 //! ```rust
 //! # use sled::{Sled};
-//! # let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
 //!

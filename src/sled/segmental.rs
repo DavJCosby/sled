@@ -22,7 +22,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_segment(1, |led| led.color * 2.0)?;
     ///# Ok(())
     ///# }
@@ -74,7 +74,7 @@ impl Sled {
     /// ```rust
     ///# use sled::{Sled, SledError, Filter, color::Rgb};
     ///# fn main() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// let first_three_walls: Filter = sled.segments(0..3).unwrap();
     /// sled.set_filter(&first_three_walls, Rgb::new(1.0, 1.0, 1.0));
     ///# Ok(())
@@ -99,7 +99,7 @@ impl Sled {
     /// ```rust
     ///# use sled::{Sled, SledError, color::Rgb};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_segments(2..4, |led| led.color * Rgb::new(1.0, 0.0, 0.0))?;
     ///# Ok(())
     ///# }
@@ -154,7 +154,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use sled::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./examples/resources/config.toml").unwrap();
+    ///# let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
     /// sled.for_each_in_segment(2, |led, alpha| {
     ///     led.color = Rgb::new(alpha, alpha, alpha);
     /// });
@@ -207,7 +207,7 @@ impl Sled {
     /// ```rust
     ///# use sled::{Sled, SledError, color::Rgb};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// // make the given vertex 25% brighter
     /// sled.modulate_vertex(3, |led| led.color * 1.25)?;
     ///# Ok(())
@@ -262,7 +262,7 @@ impl Sled {
     /// ```rust
     ///# use sled::{Sled, SledError};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// // make each vertex 25% brighter
     /// sled.modulate_vertices(|led| led.color * 1.25);
     ///# Ok(())

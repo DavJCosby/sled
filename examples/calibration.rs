@@ -6,7 +6,7 @@ use glam::Vec2;
 use sled::{color::Rgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
-    let mut sled = Sled::new("./examples/resources/config.toml")?;
+    let mut sled = Sled::new("./examples/resources/config.yap")?;
 
     let mut display = SledTerminalDisplay::start("Calibration", sled.domain());
 

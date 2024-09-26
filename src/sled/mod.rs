@@ -13,6 +13,7 @@ pub struct Sled {
     center_point: Vec2,
     leds: Vec<Led>,
     num_leds: usize,
+    density: f32,
     line_segments: Vec<LineSegment>,
     // utility lookup tables
     line_segment_endpoint_indices: Vec<(usize, usize)>,

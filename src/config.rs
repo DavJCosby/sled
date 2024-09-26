@@ -1,34 +1,145 @@
 use crate::error::SledError;
 use glam::Vec2;
-use serde::{Deserialize, Deserializer, Serialize};
 use smallvec::SmallVec;
-use std::fs;
+use std::{fs, str::Lines};
 
-use std::sync::OnceLock;
-
-static DEFAULT_DENSITY: OnceLock<f32> = OnceLock::new();
-
-#[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Config {
     pub center_point: Vec2,
-    #[serde(rename = "density")]
-    #[serde(deserialize_with = "Config::set_default_density")]
-    pub default_density: f32,
-    #[serde(rename = "line_segment")]
+    pub density: f32,
     pub line_segments: Vec<LineSegment>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+fn extract_center_and_density_from_lines(lines: &mut Lines) -> (Option<Vec2>, Option<f32>) {
+    let mut center: Option<Vec2> = None;
+    let mut density: Option<f32> = None;
+    let mut segment_marker_found = false;
+    loop {
+        if let Some(top_line) = lines.next() {
+            let trimmed = top_line.trim();
+            if trimmed.starts_with("--segments--") {
+                segment_marker_found = true;
+                break;
+            } else if trimmed.starts_with("center:") {
+                center = Some(get_center_from_line(top_line));
+            } else if trimmed.starts_with("density:") {
+                density = Some(get_density_from_line(top_line));
+            }
+        } else {
+            break;
+        }
+    }
+
+    if !segment_marker_found {
+        panic!("Error parsing config file: no segment marker of form `--segments--` found.")
+    }
+
+    return (center, density);
+}
+
+fn get_center_from_line(line: &str) -> Vec2 {
+    let colon_pos = line.find(':').unwrap();
+    parse_string_to_vec2(&line[(colon_pos + 1)..line.len()].trim())
+}
+
+fn get_density_from_line(line: &str) -> f32 {
+    let colon_pos = line.find(':').unwrap();
+    line[(colon_pos + 1)..line.len()].trim().parse().unwrap()
+}
+
+fn parse_string_to_vec2(s: &str) -> Vec2 {
+    if s.starts_with('(') & s.ends_with(')') {
+        let sub: &str = &s[1..(s.len() - 1)];
+        let nums: Vec<f32> = sub
+            .split(',')
+            .map(|s| {
+                s.trim().parse().expect(&format!(
+                    "Error parsing config file: malformed Vec2: `{}`",
+                    s
+                ))
+            })
+            .collect();
+        if !nums.len() == 2 {
+            panic!("Error parsing config file: malformed Vec2: {}", s);
+        }
+        return Vec2::new(nums[0], nums[1]);
+    } else {
+        panic!("Error parsing config file: malformed Vec2: `{}`", s);
+    }
+}
+
+fn lines_to_string(lines: &mut Lines) -> String {
+    let mut composite = String::from("");
+
+    loop {
+        if let Some(top_line) = lines.next() {
+            composite += top_line.trim();
+        } else {
+            break;
+        }
+    }
+
+    composite
+}
+
+fn extract_segments_from_string(s: &String) -> Vec<LineSegment> {
+    let connected: Vec<&str> = s.split("|").collect();
+    let mut segments: Vec<LineSegment> = vec![];
+    for sequence in connected {
+        let vertex_strings: Vec<&str> = sequence.split("-->").map(|s| s.trim()).collect();
+        let mut last_vertex: Option<Vec2> = None;
+        for vertex_string in vertex_strings {
+            let vertex = parse_string_to_vec2(vertex_string);
+            if let Some(lv) = last_vertex {
+                segments.push(LineSegment {
+                    start: lv,
+                    end: vertex,
+                });
+            }
+            last_vertex = Some(vertex);
+        }
+    }
+
+    return segments;
+}
+
+impl Config {
+    pub fn from_toml_file(path: &str) -> Result<Self, SledError> {
+        let as_string = fs::read_to_string(path).map_err(SledError::from_error)?;
+        let mut lines = as_string.lines();
+
+        let (center, density) = extract_center_and_density_from_lines(&mut lines);
+
+        if center.is_none() {
+            return Err(SledError::new(
+                "Error parsing config file: no center point descriptor found.".to_string(),
+            ));
+        }
+        if density.is_none() {
+            return Err(SledError::new(
+                "Error parsing config file: no density descriptor found.".to_string(),
+            ));
+        }
+
+        let back_to_str = lines_to_string(&mut lines);
+        let line_segments = extract_segments_from_string(&back_to_str);
+
+        Ok(Config {
+            density: density.unwrap(),
+            center_point: center.unwrap(),
+            line_segments,
+        })
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct LineSegment {
     pub start: Vec2,
     pub end: Vec2,
-    #[serde(default = "Config::default_density")]
-    pub density: f32,
 }
 
 impl LineSegment {
-    pub fn num_leds(&self) -> usize {
-        (self.length() * self.density).round() as usize
+    pub fn num_leds(&self, density: f32) -> usize {
+        (self.length() * density).round() as usize
     }
 
     pub fn length(&self) -> f32 {
@@ -95,26 +206,5 @@ impl LineSegment {
         let t = (dot / len_sq).clamp(0.0, 1.0);
 
         (self.start + atob * t, t)
-    }
-}
-
-impl Config {
-    pub fn from_toml_file(path: &str) -> Result<Self, SledError> {
-        let file_contents = fs::read_to_string(path).map_err(SledError::from_error)?;
-        let config = toml::from_str(&file_contents).map_err(SledError::from_error)?;
-        Ok(config)
-    }
-
-    fn set_default_density<'de, D>(des: D) -> Result<f32, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let deserialized = f32::deserialize(des).unwrap_or(0.0);
-        let density = DEFAULT_DENSITY.get_or_init(|| deserialized);
-        Ok(*density)
-    }
-
-    fn default_density() -> f32 {
-        *DEFAULT_DENSITY.get().unwrap_or(&0.0)
     }
 }
