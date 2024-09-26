@@ -24,34 +24,29 @@
 //!
 //! A configuration file explains the layout of your LED strips in 2D space. This is used to pre-calculate some important information, speeding up complex draw calls.
 //!
-//!  Example .toml file:
-//!  ```toml, no_run
-//!  center_point = [0.0, 0.5]
-//!  density = 30.0
-//!
-//! [[line_segment]]
-//! start = [-2.0, 0.0]
-//! end = [0.5, -1.0]
-//!
-//! [[line_segment]]
-//! start = [0.5, -1.0]
-//! end = [3.5, 0.0]
-//!
-//! [[line_segment]]
-//! start = [3.5, 0.0]
-//! end = [2, 2]
-//!
-//!  [[line_segment]]
-//!  start = [2.0, 2]
-//!  end = [-2.0, 2]
-//! 
-//!  [[line_segment]]
-//!  start = [-2.0, 2]
-//!  end = [-2.0, 0.0]
+//!  Example file:
+//!  ```yaml, no_run
+//!  center: (0.0, 0.5)
+//!  density: 30.0
+//!  --segments--
+//!  (-2, 0) --> (0.5, -1) --> (3.5, 0) -->
+//!  (2, 2) --> (-2, 2) --> (-2, 0)
 //!  ```
-//!  * `center_point` is a static reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
-//!  * `density` represents how many LED's per unit we can expect for the line segments below. If one or more LED strip has a different density for whatever reason, you can override this default for each `[[line_segment]]`.
-//!  * Add as many `[[line_segment]]` tags as you need to represent your scene.
+//!  * `center` is a 2D reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
+//!  * `density` represents how many LEDs per unit we can expect for the line segments below.
+//!  * `(x, y) --> (x, y)` Indicates a line segment spanning between those two connected vertices. If you wish to introduce a break between vertices, you must replace one of the `-->` separators with a `|`. Like this:
+//!     ```yaml, no_run
+//!     --segments--
+//!     (-2, 0) --> (0.5, -1) --> (3.5, 0) |
+//!     (2, 2) --> (-2, 2) --> (-2, 0)
+//!     ```
+//!     Whitespace and linebreaks are generally irrelevant in formatting segments, meaning the above is functionally equivalent to:
+//!     ```yaml, no_run
+//!     --segments--
+//!         (-2, 0) --> (0.5, -1)
+//!     --> (3.5, 0) | (2, 2)
+//!     --> (-2, 2) --> (-2, 0)
+//!     ```
 //! ### Drawing
 //! Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things SLED lets you do:
 //!
