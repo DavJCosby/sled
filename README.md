@@ -69,7 +69,8 @@ sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 **Set all LEDs 2 units away from the `center_point` to red:**
 ```rust
 sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
-// or from any other point using sled.set_at_dist_from(distance, pos, color)
+// or relative to any other point using:
+// sled.set_at_dist_from(distance, pos, color)
 ```
 
 ![Set at Distance](resources/at_distance.png)
@@ -147,6 +148,7 @@ Drivers are useful for encapsulating everything you need to drive a lighting eff
 
 ```rust
 let mut driver = Driver::new();
+use driver_macros::*;
 
 driver.set_startup_commands(|_sled, buffers, _filters| {
     let colors = buffers.create_buffer::<Rgb>("colors");
@@ -167,21 +169,21 @@ driver.set_draw_commands(|sled, buffers, _filters, time_info| {
 
     for i in 0..num_colors {
         let alpha = i as f32 / num_colors as f32;
-        let angle = elapsed + (2 * PI * alpha);
-        sled.set_at_angle(angle, colors[i])?;
+        let angle = elapsed + (2.0 * PI * alpha);
+        sled.set_at_angle(angle, colors[i]);
     }
     Ok(())
 });
 ```
 To start using the Driver, give it ownership over a Sled using `.mount()` and use `.step()` to manually refresh it.
 ```rust
-let sled = Sled::new("path/to/config.toml")?;
+let sled = Sled::new("path/to/config.yap")?;
 driver.mount(sled); // sled gets moved into driver here.
 
 loop {
     driver.step();
     let colors = driver.colors();
-    // and so on...
+    // display those colors however you want
 }
 ```
 ![Basic Time-Driven Effect Using Buffers](resources/driver1.gif)
@@ -200,13 +202,61 @@ let sled = driver.dismount();
 
 > If you don't need Drivers for your project, you can shed a dependency or two by disabling the `drivers` compiler feature.
 
+For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
+
+### Driver Macros
+Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
+* `#[startup_commands]`
+* `#[compute_commands]`
+* `#[draw_commands]`
+
+Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
+```rust
+use driver_macros::*;
+use sled::{BufferContainer, SledResult, TimeInfo};
+
+#[startup_commands]
+fn startup(buffers: &mut BufferContainer) -> SledResult {
+    let colors = buffers.create_buffer::<Rgb>("colors");
+    colors.extend([
+        Rgb::new(1.0, 0.0, 0.0),
+        Rgb::new(0.0, 1.0, 0.0),
+        Rgb::new(0.0, 0.0, 1.0),
+    ]);
+    Ok(())
+}
+
+#[draw_commands]
+fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+    let elapsed = time_info.elapsed.as_secs_f32();
+    let colors = buffers.get_buffer::<Rgb>("colors")?;
+    let num_colors = colors.len();
+    // clear our canvas each frame
+    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+
+    for i in 0..num_colors {
+        let alpha = i as f32 / num_colors as f32;
+        let angle = elapsed + (2 * PI * alpha);
+        sled.set_at_angle(angle, colors[i])?;
+    }
+    Ok(())
+}
+
+//--snip--//
+
+let mut driver = Driver::new();
+driver.set_startup_commands(startup);
+driver.set_draw_commands(draw));
+```
+
 ### Buffers
 A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 
 It's best practice to create buffers with startup commands, and then modify them either through compute commands or from outside the driver depending on your needs.
 
 ```rust
-fn startup(sled: &mut Sled, buffers: &mut BufferContainer, _filters: &mut Filters) -> Result<(), SledError> {
+#[startup_commands]
+fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
     let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
     let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
     let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
@@ -256,7 +306,7 @@ let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
 ```
 
 ### Filters
-For exceptionally performance-sensitive applications, Filters can be used to predefine important LED regions. They act as sets, containing only the indicies of the LEDs captured in the set. When we want to perform an operation on that set, we pass the Filter back to the Sled like this:
+For exceptionally performance-sensitive scenarios, Filters can be used to predefine important LED regions. They act as sets, containing only the indicies of the LEDs captured in the set. When we want to perform an operation on that set, we pass the Filter back to the Sled like this:
 
 ```rust
 let all_due_north: Filter = sled.at_dir(Vec2::new(0.0, 1.0));
@@ -266,10 +316,10 @@ sled.for_each_in_filter(&all_due_north, |led| {
 ```
 > Note that other methods exist like `.set_filter(filter, color)`, `.modulate_filter(filter, color_rule)`, and `.map_filter(filter, map)`
 
-The `Filters` struct provided by Driver is basically a hashmap of `&str` keys to Sled Filter structs. Using this, we can pre-compute important sets and then store them to the driver for later usage.
+The `Filters` struct provided by Driver is basically a hashmap of `&str` keys to Sled `Filter` structs. Using this, we can pre-compute important sets and then store them to the driver for later usage.
 
 
-A slightly better example would be to image that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
+A slightly better example would be to imagine that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 
 ```rust
 let startup_commands = |sled, buffers, filters| {
@@ -321,7 +371,7 @@ scheduler.loop_until_err(|| {
     Ok(())
 });
 
-// best for where you don't wanna pass everything through a closure
+// best for times when you don't want to pass everything through a closure
 loop {
     // -snip- //
     scheduler.sleep_until_next_frame();

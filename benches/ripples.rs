@@ -5,7 +5,7 @@ use sled::Sled;
 use std::time::Duration;
 
 fn ripples(c: &mut Criterion) {
-    let sled = Sled::new("./benches/resources/config.toml").unwrap();
+    let sled = Sled::new("./benches/resources/config.yap").unwrap();
     let mut driver = ripples::build_driver();
     driver.mount(sled);
 

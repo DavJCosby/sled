@@ -1,6 +1,8 @@
+use driver_macros::*;
 use rand::Rng;
-use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
-use sled::{color::Rgb, Sled, SledError, Vec2};
+use sled::driver::{BufferContainer, Driver, TimeInfo};
+use sled::SledResult;
+use sled::{color::Rgb, Sled, Vec2};
 use std::ops::Range;
 
 const MAX_RIPPLES: usize = 12;
@@ -18,11 +20,8 @@ pub fn build_driver() -> Driver {
     return driver;
 }
 
-fn startup(
-    sled: &mut Sled,
-    buffers: &mut BufferContainer,
-    _filters: &mut Filters,
-) -> Result<(), SledError> {
+#[startup_commands]
+fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
     let sled_bounds = sled.domain();
 
     let radii = buffers.create_buffer("radii");
@@ -52,12 +51,8 @@ fn startup(
     Ok(())
 }
 
-fn compute(
-    sled: &Sled,
-    buffers: &mut BufferContainer,
-    _filters: &mut Filters,
-    time_info: &TimeInfo,
-) -> Result<(), SledError> {
+#[compute_commands]
+fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
     let delta = time_info.delta.as_secs_f32();
     let bounds = sled.domain();
     for i in 0..MAX_RIPPLES {
@@ -90,12 +85,8 @@ fn rand_init_radius() -> f32 {
     rng.gen_range(-32.0..0.0)
 }
 
-fn draw(
-    sled: &mut Sled,
-    buffers: &BufferContainer,
-    _filters: &Filters,
-    _time_info: &TimeInfo,
-) -> Result<(), SledError> {
+#[draw_commands]
+fn draw(sled: &mut Sled, buffers: &BufferContainer) -> SledResult {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
     let colors = buffers.get_buffer("colors")?;
     let positions = buffers.get_buffer("positions")?;

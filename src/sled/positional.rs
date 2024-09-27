@@ -17,7 +17,6 @@ impl Sled {
     ///
     /// O(SEGMENTS)
     ///
-
     pub fn index_of_closest_to(&self, pos: Vec2) -> usize {
         // get the closest point on each segment and bundle relevant info,
         // then find the closest of those points
@@ -58,7 +57,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
     ///# Ok(())
     ///# }
@@ -74,7 +73,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
     ///     led.color + Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -148,7 +147,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest(|led| led.color / led.distance());
     ///# Ok(())
     ///# }
@@ -164,7 +163,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {
     ///     led.color - Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -239,7 +238,7 @@ impl Sled {
             led.color = color_rule(led);
         }
 
-        return anything_found;
+        anything_found
     }
 
     pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> bool {
@@ -254,7 +253,7 @@ impl Sled {
             self.leds[index].color = color;
         }
 
-        return anything_found;
+        anything_found
     }
 
     /* within distance methods */
