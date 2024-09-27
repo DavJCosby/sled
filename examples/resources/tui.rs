@@ -133,7 +133,7 @@ where
 
 #[allow(dead_code)]
 fn main() -> io::Result<()> {
-    let sled = Sled::new("./examples/resources/config.toml").unwrap();
+    let sled = Sled::new("./examples/resources/config.yap").unwrap();
 
     let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
     display.set_leds(sled.colors_and_positions_coerced());

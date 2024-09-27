@@ -57,7 +57,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
     ///# Ok(())
     ///# }
@@ -73,7 +73,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
     ///     led.color + Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -147,7 +147,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest(|led| led.color / led.distance());
     ///# Ok(())
     ///# }
@@ -163,7 +163,7 @@ impl Sled {
     ///```rust
     ///# use sled::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.toml")?;
+    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {
     ///     led.color - Rgb::new(0.2, 0.2, 0.2)
     /// });
