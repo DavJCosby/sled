@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 mod sled {
     struct Sled;
     struct BufferContainer;
@@ -85,9 +86,7 @@ fn types_are_equal(t1: &Type, t2: &Type) -> bool {
         (Type::Path(TypePath { path: p1, .. }), Type::Path(TypePath { path: p2, .. })) => {
             paths_are_equal(p1, p2)
         }
-        _ => {
-            false
-        }
+        _ => false,
     }
 }
 
