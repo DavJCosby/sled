@@ -41,11 +41,9 @@ impl Sled {
     /// start = [-2.0, 2]
     /// end = [-2.0, 0.0]
     /// ```
-    /// * `center_point` is a static reference point you can use to speed up draw calls.
-    /// At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
+    /// * `center_point` is a static reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
     ///
-    /// * `density` represents how many LED's per unit we can expect for the line segments below. If one or more
-    /// LED has a different density for whatever reason, you can override this default for each line_segment.
+    /// * `density` represents how many LED's per unit we can expect for the line segments below. If one or more LED has a different density for whatever reason, you can override this default for each line_segment.
     ///
     /// * Add as many `[[line_segment]]` tags as you need to represent your scene.
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {

@@ -1,6 +1,8 @@
+use driver_macros::*;
 use rand::Rng;
-use sled::driver::{BufferContainer, Driver, Filters, TimeInfo};
-use sled::{color::Rgb, Sled, SledError, Vec2};
+use sled::driver::{BufferContainer, Driver, TimeInfo};
+use sled::SledResult;
+use sled::{color::Rgb, Sled, Vec2};
 
 const NUM_STARS: usize = 5000;
 const VELOCITY: f32 = 6.0;
@@ -17,11 +19,8 @@ pub fn build_driver() -> Driver {
     return driver;
 }
 
-fn startup(
-    sled: &mut Sled,
-    buffers: &mut BufferContainer,
-    _filters: &mut Filters,
-) -> Result<(), SledError> {
+#[startup_commands]
+fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
     let stars = buffers.create_buffer::<Vec2>("stars");
     let center = sled.center_point();
     let mut rng = rand::thread_rng();
@@ -58,12 +57,8 @@ fn startup(
     Ok(())
 }
 
-fn compute(
-    sled: &Sled,
-    buffers: &mut BufferContainer,
-    _filters: &mut Filters,
-    time_info: &TimeInfo,
-) -> Result<(), SledError> {
+#[compute_commands]
+fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
     let mut rng = rand::thread_rng();
     let delta = time_info.delta.as_secs_f32();
     let stars = buffers.get_buffer_mut::<Vec2>("stars")?;
@@ -93,12 +88,8 @@ fn compute(
     Ok(())
 }
 
-fn draw(
-    sled: &mut Sled,
-    buffers: &BufferContainer,
-    _filters: &Filters,
-    time_info: &TimeInfo,
-) -> Result<(), SledError> {
+#[draw_commands]
+fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
     let stars = buffers.get_buffer::<Vec2>("stars")?;
     let center = sled.center_point();
     let delta = time_info.delta.as_secs_f32();

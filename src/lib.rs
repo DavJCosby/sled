@@ -386,6 +386,7 @@ pub use driver::TimeInfo;
 pub mod scheduler;
 
 pub use error::SledError;
+pub type SledResult = Result<(), SledError>;
 /// Using [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
 pub use led::Led;

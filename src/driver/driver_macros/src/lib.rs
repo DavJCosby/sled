@@ -11,7 +11,7 @@ use quote::quote;
 use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, PatType, Type, TypePath};
 
 #[proc_macro_attribute]
-pub fn startup(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn startup_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![
         parse_quote!(&mut sled::Sled),
         parse_quote!(&mut sled::BufferContainer),
@@ -22,7 +22,7 @@ pub fn startup(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn draw(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn draw_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![
         parse_quote!(&mut sled::Sled),
         parse_quote!(&sled::BufferContainer),
@@ -34,7 +34,7 @@ pub fn draw(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn compute(_attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn compute_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![
         parse_quote!(&sled::Sled),
         parse_quote!(&mut sled::BufferContainer),
@@ -49,6 +49,7 @@ fn auto_fill_params(item: TokenStream, params_template: Vec<Type>) -> TokenStrea
     let input = parse_macro_input!(item as ItemFn);
     let mut original_params = input.sig.inputs.clone();
 
+    let mut param_index = 0;
     for ty in params_template {
         let exists = original_params.iter().any(|arg| match arg {
             FnArg::Typed(PatType { ty: param_type, .. }) => types_are_equal(&*param_type, &ty),
@@ -56,23 +57,25 @@ fn auto_fill_params(item: TokenStream, params_template: Vec<Type>) -> TokenStrea
         });
 
         if !exists {
-            let new_arg: FnArg = syn::parse_quote! {
+            let new_param: FnArg = syn::parse_quote! {
                 _: #ty
             };
-            original_params.push(new_arg);
+            original_params.insert(param_index, new_param);
         }
+        param_index += 1;
     }
 
-    let param_tokens = original_params.iter().map(|arg| {
-        quote! { #arg }
+    let param_tokens = original_params.iter().map(|param| {
+        quote! { #param }
     });
 
     // Rebuild the function with the new parameters and body
     let fn_name = &input.sig.ident;
     let fn_body = &input.block;
+    let fn_return = &input.sig.output;
 
     let expanded = quote! {
-        pub fn #fn_name(#(#param_tokens),*) #fn_body
+        pub fn #fn_name(#(#param_tokens),*) #fn_return #fn_body
     };
 
     TokenStream::from(expanded)

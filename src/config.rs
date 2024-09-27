@@ -13,19 +13,16 @@ fn extract_center_and_density_from_lines(lines: &mut Lines) -> (Option<Vec2>, Op
     let mut center: Option<Vec2> = None;
     let mut density: Option<f32> = None;
     let mut segment_marker_found = false;
-    loop {
-        if let Some(top_line) = lines.next() {
-            let trimmed = top_line.trim();
-            if trimmed.starts_with("--segments--") {
-                segment_marker_found = true;
-                break;
-            } else if trimmed.starts_with("center:") {
-                center = Some(get_center_from_line(top_line));
-            } else if trimmed.starts_with("density:") {
-                density = Some(get_density_from_line(top_line));
-            }
-        } else {
+
+    for line in lines.by_ref() {
+        let trimmed = line.trim();
+        if trimmed.starts_with("--segments--") {
+            segment_marker_found = true;
             break;
+        } else if trimmed.starts_with("center:") {
+            center = Some(get_center_from_line(line));
+        } else if trimmed.starts_with("density:") {
+            density = Some(get_density_from_line(line));
         }
     }
 
@@ -33,12 +30,12 @@ fn extract_center_and_density_from_lines(lines: &mut Lines) -> (Option<Vec2>, Op
         panic!("Error parsing config file: no segment marker of form `--segments--` found.")
     }
 
-    return (center, density);
+    (center, density)
 }
 
 fn get_center_from_line(line: &str) -> Vec2 {
     let colon_pos = line.find(':').unwrap();
-    parse_string_to_vec2(&line[(colon_pos + 1)..line.len()].trim())
+    parse_string_to_vec2(line[(colon_pos + 1)..line.len()].trim())
 }
 
 fn get_density_from_line(line: &str) -> f32 {
@@ -52,16 +49,15 @@ fn parse_string_to_vec2(s: &str) -> Vec2 {
         let nums: Vec<f32> = sub
             .split(',')
             .map(|s| {
-                s.trim().parse().expect(&format!(
-                    "Error parsing config file: malformed Vec2: `{}`",
-                    s
-                ))
+                s.trim().parse().unwrap_or_else(|_| {
+                    panic!("Error parsing config file: malformed Vec2: `{}`", s)
+                })
             })
             .collect();
         if !nums.len() == 2 {
             panic!("Error parsing config file: malformed Vec2: {}", s);
         }
-        return Vec2::new(nums[0], nums[1]);
+        Vec2::new(nums[0], nums[1])
     } else {
         panic!("Error parsing config file: malformed Vec2: `{}`", s);
     }
@@ -70,18 +66,14 @@ fn parse_string_to_vec2(s: &str) -> Vec2 {
 fn lines_to_string(lines: &mut Lines) -> String {
     let mut composite = String::from("");
 
-    loop {
-        if let Some(top_line) = lines.next() {
-            composite += top_line.trim();
-        } else {
-            break;
-        }
+    for line in lines.by_ref() {
+        composite += line.trim();
     }
 
     composite
 }
 
-fn extract_segments_from_string(s: &String) -> Vec<LineSegment> {
+fn extract_segments_from_string(s: &str) -> Vec<LineSegment> {
     let connected: Vec<&str> = s.split("|").collect();
     let mut segments: Vec<LineSegment> = vec![];
     for sequence in connected {
@@ -99,7 +91,7 @@ fn extract_segments_from_string(s: &String) -> Vec<LineSegment> {
         }
     }
 
-    return segments;
+    segments
 }
 
 impl Config {

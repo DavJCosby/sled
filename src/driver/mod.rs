@@ -2,6 +2,7 @@ use crate::{
     color::{Rgb, Srgb},
     Sled, SledError, Vec2,
 };
+
 use std::time::{Duration, Instant};
 
 mod filters;
@@ -114,8 +115,7 @@ impl Driver {
     }
 
     pub fn dismount(&mut self) -> Sled {
-        let sled = self.sled.take().unwrap();
-        sled
+        self.sled.take().unwrap()
     }
 
     pub fn colors(&self) -> impl Iterator<Item = Rgb> + '_ {

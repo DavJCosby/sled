@@ -17,7 +17,6 @@ impl Sled {
     ///
     /// O(SEGMENTS)
     ///
-
     pub fn index_of_closest_to(&self, pos: Vec2) -> usize {
         // get the closest point on each segment and bundle relevant info,
         // then find the closest of those points
@@ -239,7 +238,7 @@ impl Sled {
             led.color = color_rule(led);
         }
 
-        return anything_found;
+        anything_found
     }
 
     pub fn set_at_dist(&mut self, dist: f32, color: Rgb) -> bool {
@@ -254,7 +253,7 @@ impl Sled {
             self.leds[index].color = color;
         }
 
-        return anything_found;
+        anything_found
     }
 
     /* within distance methods */

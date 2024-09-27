@@ -1,8 +1,6 @@
 mod resources;
-
-use resources::tui::SledTerminalDisplay;
-
 use glam::Vec2;
+use resources::tui::SledTerminalDisplay;
 use sled::{color::Rgb, Sled, SledError};
 
 fn main() -> Result<(), SledError> {
