@@ -92,6 +92,5 @@ fn types_are_equal(t1: &Type, t2: &Type) -> bool {
 
 /// Helper function to compare two paths, including module paths (e.g., `some_module::Point`)
 fn paths_are_equal(p1: &syn::Path, p2: &syn::Path) -> bool {
-    format!("{}", p1.segments.iter().last().unwrap().ident)
-        == format!("{}", p2.segments.iter().last().unwrap().ident)
+    p1.segments.iter().last().unwrap().ident == p2.segments.iter().last().unwrap().ident
 }
