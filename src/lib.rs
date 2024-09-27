@@ -377,6 +377,10 @@ mod sled;
 
 #[cfg(feature = "drivers")]
 pub mod driver;
+pub use driver_macros;
+pub use driver::BufferContainer;
+pub use driver::Filters;
+pub use driver::TimeInfo;
 
 #[cfg(feature = "scheduler")]
 pub mod scheduler;

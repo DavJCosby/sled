@@ -6,7 +6,7 @@ rust-version = "1.70"
 
 [features]
 default = ["drivers", "scheduler"]
-drivers = ["compact_str"]
+drivers = ["compact_str", "driver_macros"]
 scheduler = ["spin_sleep"]
 named_colors = []
 
@@ -18,13 +18,19 @@ palette = { version = "0.7", default-features = false, features = [
 ] }
 smallvec = "1.13"
 compact_str = { version = "0.8", optional = true }
+driver_macros = { path = "./src/driver/driver_macros", optional = true }
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]
-criterion = {version = "0.5.1", default-features = false, features = ["cargo_bench_support"]}
+criterion = { version = "0.5.1", default-features = false, features = [
+    "cargo_bench_support",
+] }
 ratatui = "0.28"
-crossterm = {version = "0.28"}
-rand = {version = "0.8.5", default-features = false, features = ["std", "std_rng"]}
+crossterm = { version = "0.28" }
+rand = { version = "0.8.5", default-features = false, features = [
+    "std",
+    "std_rng",
+] }
 
 [profile.bench]
 lto = true
