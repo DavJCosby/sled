@@ -192,7 +192,7 @@
 //! loop {
 //!     driver.step();
 //!     let colors = driver.colors();
-//!     // and so on...
+//!     // display those colors however you want
 //! }
 //!
 //! # Ok(())
@@ -217,15 +217,66 @@
 //!
 //! If you don't Drivers for your project, you can bring down your binary and shed a dependency or two by disabling the `drivers` compiler feature.
 //!
+//! For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
+//! 
+//! ### Driver Macros
+//! 
+//! Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
+//! * `#[startup_commands]`
+//! * `#[compute_commands]`
+//! * `#[draw_commands]`
+//! 
+//! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
+//! ```rust
+//! # use sled::{Sled, driver::Driver, color::Rgb};
+//! # use sled::{BufferContainer, SledResult, TimeInfo};
+//! use driver_macros::*;
+//! 
+//! #[startup_commands]
+//! fn startup(buffers: &mut BufferContainer) -> SledResult {
+//!     let colors = buffers.create_buffer::<Rgb>("colors");
+//!     colors.extend([
+//!        Rgb::new(1.0, 0.0, 0.0),
+//!        Rgb::new(0.0, 1.0, 0.0),
+//!        Rgb::new(0.0, 0.0, 1.0),
+//!    ]);
+//!    Ok(())
+//! }
+//! 
+//! #[draw_commands]
+//! fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+//!    let elapsed = time_info.elapsed.as_secs_f32();
+//!    let colors = buffers.get_buffer::<Rgb>("colors")?;
+//!    let num_colors = colors.len();
+//!    // clear our canvas each frame
+//!    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
+//!
+//!    for i in 0..num_colors {
+//!        let alpha = i as f32 / num_colors as f32;
+//!        let angle = elapsed + (std::f32::consts::TAU * alpha);
+//!        sled.set_at_angle(angle, colors[i]);
+//!    }
+//!    Ok(())
+//! }
+//! 
+//! //--snip--/
+//! 
+//! let mut driver = Driver::new();
+//! driver.set_startup_commands(startup);
+//! driver.set_draw_commands(draw);
+//! ```
+//! 
 //! ### Buffers
 //! A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
 //! It's best practice to create buffers with startup commands, and then modify them either through compute commands or from outside the driver depending on your needs.
 //!
 //! ```rust
-//! # use sled::{Sled, driver::{BufferContainer, Filters, Driver}, SledError, color::Rgb};
+//! # use sled::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
+//! # use driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
-//! fn startup(sled: &mut Sled, buffers: &mut BufferContainer, _filters: &mut Filters) -> Result<(), SledError> {
+//! #[startup_commands]
+//! fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
 //!     let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
 //!     let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
 //!     let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
@@ -295,7 +346,7 @@
 //! ```
 //!
 //! ### Filters
-//! For exceptionally performance-sensitive applications, Filters can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
+//! For exceptionally performance-sensitive scenarios, Filters can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
 //!
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
