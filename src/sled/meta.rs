@@ -12,40 +12,33 @@ use crate::{
 
 /// # Construction, output, and basic sled info
 impl Sled {
-    /// Constructs a new Sled struct given the path to a config toml file.
+    /// Constructs a new Sled struct given the path to a config file.
     /// This is an expensive operation as many values are pre-calculated
     /// on construction (i.e, distances/angles from each LED to the center).
     ///
-    /// Example .toml file:
-    /// ```toml
-    /// center_point = [0.0, 0.5]
-    /// density = 30.0
-    ///
-    /// [[line_segment]]
-    /// start = [-2.0, 0.0]
-    /// end = [0.5, -1.0]
-    ///
-    /// [[line_segment]]
-    /// start = [0.5, -1.0]
-    /// end = [3.5, 0.0]
-    ///
-    /// [[line_segment]]
-    /// start = [3.5, 0.0]
-    /// end = [2, 2]
-    ///
-    /// [[line_segment]]
-    /// start = [2.0, 2]
-    /// end = [-2.0, 2]
-    ///
-    /// [[line_segment]]
-    /// start = [-2.0, 2]
-    /// end = [-2.0, 0.0]
+    /// Example file:
+    ///  ```yaml, no_run
+    ///  center: (0.0, 0.5)
+    ///  density: 30.0
+    ///  --segments--
+    ///  (-2, 0) --> (0.5, -1) --> (3.5, 0) -->
+    ///  (2, 2) -->
     /// ```
-    /// * `center_point` is a static reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
-    ///
-    /// * `density` represents how many LED's per unit we can expect for the line segments below. If one or more LED has a different density for whatever reason, you can override this default for each line_segment.
-    ///
-    /// * Add as many `[[line_segment]]` tags as you need to represent your scene.
+    /// * `center` is a 2D reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
+    ///  * `density` represents how many LEDs per unit we can expect for the line segments below.
+    ///  * `(x, y) --> (x, y)` Indicates a line segment spanning between those two connected vertices. If you wish to introduce a break between vertices, you must replace one of the `-->` separators with a `|`. Like this:
+    ///     ```yaml, no_run
+    ///    --segments--
+    ///     (-2, 0) --> (0.5, -1) --> (3.5, 0) |
+    ///     (2, 2) --> (-2, 2) --> (-2, 0)
+    ///     ```
+    ///     Whitespace and linebreaks are generally irrelevant in formatting segments, meaning the above is functionally equivalent to:
+    ///     ```yaml, no_run
+    ///     --segments--
+    ///         (-2, 0) --> (0.5, -1)
+    ///     --> (3.5, 0) | (2, 2)
+    ///     --> (-2, 2) --> (-2, 0)
+    ///     ```
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         let leds_per_segment = Sled::leds_per_segment(&config);
@@ -160,7 +153,7 @@ impl Sled {
     }
 
     /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
-    /// Supports color coercion just like [Sled::colors_coerced()](colors_coerced())
+    /// Supports color coercion just like [Sled::colors_coerced()]
     ///
     /// O(LEDS)
     ///

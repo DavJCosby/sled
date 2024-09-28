@@ -1,4 +1,4 @@
-/// Exposes [palette](https://crates.io/crates/palette.0 * D)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
+/// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward so as to be easier to import/qualify in Sled projects.
 pub use palette::rgb::Rgb;
 pub use palette::*;
 

@@ -15,14 +15,14 @@ use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, PatType, Type, TypePath
 /// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
 ///
 /// For example:
-/// ```rust, no-run
+/// ```rust, no_run
 /// #[startup_commands]
 /// fn startup(buffers: &mut BufferContainer) -> SledResult {
 ///     //--snip--//
 /// }
 /// ```
 /// Gets turned into:
-/// ```rust, no-run
+/// ```rust, no_run
 /// fn startup(
 ///     _: &mut Sled,
 ///     buffers: &mut BufferContainer,
@@ -47,14 +47,14 @@ pub fn startup_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
 ///
 /// For example:
-/// ```rust, no-run
+/// ```rust, no_run
 /// #[draw_commands]
 /// fn draw(sled: &mut Sled, time: &TimeInfo) -> SledResult {
 ///     //--snip--//
 /// }
 /// ```
 /// Gets turned into:
-/// ```rust, no-run
+/// ```rust, no_run
 /// fn draw(
 ///     sled: &mut Sled,
 ///     _: &BufferContainer,
@@ -82,14 +82,14 @@ pub fn draw_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
 /// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
 ///
 /// For example:
-/// ```rust, no-run
+/// ```rust, no_run
 /// #[draw_commands]
 /// fn compute(filters: &mut Filters, time: &TimeInfo) -> SledResult {
 ///     //--snip--//
 /// }
 /// ```
 /// Gets turned into:
-/// ```rust, no-run
+/// ```rust, no_run
 /// fn compute(
 ///     _: &Sled,
 ///     _: &mut BufferContainer,
@@ -159,7 +159,6 @@ fn types_are_equal(t1: &Type, t2: &Type) -> bool {
     }
 }
 
-/// Helper function to compare two paths, including module paths (e.g., `some_module::Point`)
 fn paths_are_equal(p1: &syn::Path, p2: &syn::Path) -> bool {
     p1.segments.iter().last().unwrap().ident == p2.segments.iter().last().unwrap().ident
 }

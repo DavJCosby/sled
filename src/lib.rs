@@ -1,7 +1,10 @@
-//! # Spatial LED (SLED)
-//! SLED is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, SLED is still in its early stages of development which means there is plenty of room for improvement in both categories.
+//! # Spatial LED (Sled)
+//! <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
+ //! </div>
 //!
-//! What SLED **does** do:
+//! Sled is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, Sled is still in its early stages of development which means there is plenty of room for improvement in both categories.
+//!
+//! What Sled **does** do:
 //! - It exposes an API that lets you:
 //!     - Modify virtual LED colors depending on each LED's position, distance, direction, line segment, etc;
 //!     - Output that color data in a simple, contiguous data structure for your own usage;
@@ -10,45 +13,32 @@
 //!     - `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime.
 //!     - `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
 //!
-//! What SLED **does not** do:
+//! What Sled **does not** do:
 //! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out my personal [raspberry pi implementation](https://github.com/DavJCosby/rasp-pi-setup) to get an idea of what that might look like.
 //! - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 //! ## The Basics
 //! In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 //! ### Setup
-//! To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
+//! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor:
 //! ```rust, ignore
 //! use sled::Sled;
 //! let mut sled = Sled::new("/path/to/config.yap")?;
 //! ```
 //!
-//! A configuration file explains the layout of your LED strips in 2D space. This is used to pre-calculate some important information, speeding up complex draw calls.
+//! A configuration file explains the layout of your LED strips in 2D space. This is used to pre-calculate some important information that's used to speed up complex draw calls.
 //!
-//!  Example file:
-//!  ```yaml, no_run
-//!  center: (0.0, 0.5)
-//!  density: 30.0
-//!  --segments--
-//!  (-2, 0) --> (0.5, -1) --> (3.5, 0) -->
-//!  (2, 2) --> (-2, 2) --> (-2, 0)
-//!  ```
-//!  * `center` is a 2D reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
-//!  * `density` represents how many LEDs per unit we can expect for the line segments below.
-//!  * `(x, y) --> (x, y)` Indicates a line segment spanning between those two connected vertices. If you wish to introduce a break between vertices, you must replace one of the `-->` separators with a `|`. Like this:
-//!     ```yaml, no_run
-//!     --segments--
-//!     (-2, 0) --> (0.5, -1) --> (3.5, 0) |
-//!     (2, 2) --> (-2, 2) --> (-2, 0)
-//!     ```
-//!     Whitespace and linebreaks are generally irrelevant in formatting segments, meaning the above is functionally equivalent to:
-//!     ```yaml, no_run
-//!     --segments--
-//!         (-2, 0) --> (0.5, -1)
-//!     --> (3.5, 0) | (2, 2)
-//!     --> (-2, 2) --> (-2, 0)
-//!     ```
+//! Example file:
+//! ```yaml, no_run
+//! center: (0.0, 0.5)
+//! density: 30.0
+//! --segments--
+//! (-2, 0) --> (0.5, -1) --> (3.5, 0) -->
+//! (2, 2) --> (-2, 2) --> (-2, 0)
+//! ```
+//! See [Sled::new()] for more information on this config format.
+//! 
 //! ### Drawing
-//! Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things SLED lets you do:
+//! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 //!
 //! **Set all vertices to white:**
 //! ```rust
@@ -111,11 +101,11 @@
 //! sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 //! ```
 //! ![Set Overlapping Areas](https://github.com/DavJCosby/sled/blob/master/resources/filter_and.png?raw=true)
-//! For more examples, see the documentation comments on the Sled struct.
+//! For more examples, see the documentation comments on the [Sled] struct.
 //!
 //! ## Output
 //!
-//! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of RGB values. There are a few methods available to pack the information you need.
+//! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of [RGB](color::Rgb) values. There are a few methods available to pack the information you need.
 //!
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
@@ -145,10 +135,10 @@
 //! ```
 //!
 //! # Advanced Features
-//! For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
+//! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
 //!
 //! ## Drivers
-//! Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
+//! [Drivers](driver::Driver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
 //!
 //! ```rust
 //! # use sled::{Sled, color::Rgb};
@@ -181,7 +171,7 @@
 //!     Ok(())
 //! });
 //! ```
-//! To start using the Driver, give it ownership over a Sled using `.mount()` and use `.step()` to manually refresh it.
+//! To start using the Driver, give it ownership over a Sled using [.mount()](driver::Driver::mount) and use [.step()](driver::Driver::step) to manually refresh it.
 //! ```rust, no_run
 //! # use sled::{Sled, driver::Driver};
 //! # fn main() -> Result<(), sled::SledError> {
@@ -209,19 +199,18 @@
 //! let sled = driver.dismount();
 //! ```
 //!
-//! `.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
+//! * [set_startup_commands()](driver::Driver::set_startup_commands) - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over [Sled], [BufferContainer], and [Filters].
 //!
-//! `set_draw_commands()` - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over Sled, and immutable access to BufferContainer, Filters, and TimeInfo.
+//! * [set_draw_commands()](driver::Driver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `BufferContainer`, `Filters`, and `TimeInfo`.
 //!
-//! `set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled, mutable control over BufferContainer and Filters and immutable access to TimeInfo.
+//! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
 //!
-//! If you don't Drivers for your project, you can bring down your binary and shed a dependency or two by disabling the `drivers` compiler feature.
+//! If you don't want to Drivers for your project, you can disable the `drivers` compiler feature to shed a couple dependencies.
 //!
 //! For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
 //!
 //! ### Driver Macros
-//!
-//! Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
+//! Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
 //! * `#[startup_commands]`
 //! * `#[compute_commands]`
 //! * `#[draw_commands]`
@@ -267,9 +256,9 @@
 //! ```
 //!
 //! ### Buffers
-//! A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
+//! A driver exposes a data structure called [BufferContainer]. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
-//! It's best practice to create buffers with startup commands, and then modify them either through compute commands or from outside the driver depending on your needs.
+//! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
 //!
 //! ```rust
 //! # use sled::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
@@ -346,7 +335,7 @@
 //! ```
 //!
 //! ### Filters
-//! For exceptionally performance-sensitive scenarios, Filters can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
+//! For exceptionally performance-sensitive scenarios, [Filters] can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
 //!
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
@@ -369,7 +358,7 @@
 //!     Ok(())
 //! });
 //! ```
-//! Most getter methods on Sled will return a Filter, but if you need more precise control you can do something like this:
+//! Most getter methods on Sled will return a [Filter], but if you need more precise control you can do something like this:
 //! ```rust
 //! # use sled::{Sled};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
@@ -379,7 +368,7 @@
 //! I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
 //!
 //! ## Scheduler
-//! The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
+//! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
 //!
 //! ```rust, no_run
 //! # use sled::{scheduler::Scheduler, driver::Driver};
