@@ -3,7 +3,7 @@ use rand::Rng;
 use std::f32::consts::{PI, TAU};
 use std::time::Duration;
 
-use driver_macros::*;
+use sled::driver_macros::*;
 use glam::Vec2;
 use sled::driver::{Driver, TimeInfo};
 use sled::BufferContainer;

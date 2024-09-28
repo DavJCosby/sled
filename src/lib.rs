@@ -219,7 +219,7 @@
 //! ```rust
 //! # use sled::{Sled, driver::Driver, color::Rgb};
 //! # use sled::{BufferContainer, SledResult, TimeInfo};
-//! use driver_macros::*;
+//! use sled::driver_macros::*;
 //!
 //! #[startup_commands]
 //! fn startup(buffers: &mut BufferContainer) -> SledResult {
@@ -262,7 +262,7 @@
 //!
 //! ```rust
 //! # use sled::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
-//! # use driver_macros::*;
+//! # use sled::driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
 //! #[startup_commands]
 //! fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
@@ -424,7 +424,7 @@ pub mod driver;
 #[cfg(feature = "drivers")]
 pub use driver::{BufferContainer, Filters, TimeInfo};
 #[cfg(feature = "drivers")]
-pub use driver_macros;
+pub use sled_driver_macros as driver_macros;
 
 #[cfg(feature = "scheduler")]
 /// Useful tool for scheduling redraws at a fixed rate.

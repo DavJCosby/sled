@@ -148,7 +148,7 @@ Drivers are useful for encapsulating everything you need to drive a lighting eff
 
 ```rust
 let mut driver = Driver::new();
-use driver_macros::*;
+use sled::driver_macros::*;
 
 driver.set_startup_commands(|_sled, buffers, _filters| {
     let colors = buffers.create_buffer::<Rgb>("colors");
@@ -212,7 +212,7 @@ Some macros have been provided to make authoring drivers a more ergonomic experi
 
 Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 ```rust
-use driver_macros::*;
+use sled::driver_macros::*;
 use sled::{BufferContainer, SledResult, TimeInfo};
 
 #[startup_commands]

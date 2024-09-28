@@ -1,4 +1,4 @@
-use driver_macros::*;
+use sled::driver_macros::*;
 use rand::Rng;
 use sled::driver::{BufferContainer, Driver, TimeInfo};
 use sled::SledResult;

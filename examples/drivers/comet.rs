@@ -1,4 +1,4 @@
-use driver_macros::*;
+use sled::driver_macros::*;
 use sled::driver::{Driver, TimeInfo};
 use sled::SledResult;
 use sled::{color::Rgb, Sled};
