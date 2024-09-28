@@ -119,8 +119,8 @@ impl Sled {
     ///     /*- snip -*/
     /// }
     /// ```
-    pub fn colors(&self) -> impl Iterator<Item = Rgb> + '_ {
-        self.leds.iter().map(|led| led.color)
+    pub fn colors(&self) -> impl Iterator<Item = &Rgb> + '_ {
+        self.leds.iter().map(|led| &led.color)
     }
 
     /// Returns an Iterator over the RGB colors for each [LED](Led) in the system.
