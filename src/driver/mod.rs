@@ -1,6 +1,6 @@
 use crate::{
     color::{Rgb, Srgb},
-    Sled, SledError, Vec2,
+    Led, Sled, SledError, Vec2,
 };
 
 use std::time::{Duration, Instant};
@@ -118,7 +118,15 @@ impl Driver {
         self.sled.take().unwrap()
     }
 
-    pub fn colors(&self) -> impl Iterator<Item = Rgb> + '_ {
+    pub fn leds(&self) -> impl Iterator<Item = &Led> {
+        if let Some(sled) = &self.sled {
+            sled.leds()
+        } else {
+            panic!("Driver has no Sled assigned!")
+        }
+    }
+
+    pub fn colors(&self) -> impl Iterator<Item = &Rgb> + '_ {
         if let Some(sled) = &self.sled {
             sled.colors()
         } else {
