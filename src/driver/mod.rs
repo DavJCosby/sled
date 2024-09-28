@@ -51,6 +51,7 @@ impl Driver {
         }
     }
 
+    /// Returns `Some(&Sled)` if the Driver has been mounted, `None` if it hasn't.
     pub fn sled(&self) -> Option<&Sled> {
         self.sled.as_ref()
     }
