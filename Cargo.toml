@@ -22,7 +22,7 @@ palette = { version = "0.7", default-features = false, features = [
 ] }
 smallvec = "1.13"
 compact_str = { version = "0.8", optional = true }
-driver_macros = { path = "./src/driver/driver_macros", optional = true }
+driver_macros = { path = "./src/driver/driver_macros", optional = true , version = "0.1.0"}
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]
