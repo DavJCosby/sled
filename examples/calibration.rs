@@ -2,7 +2,6 @@ mod resources;
 use glam::Vec2;
 use resources::tui::SledTerminalDisplay;
 use sled::{color::Rgb, Sled, SledError};
-
 fn main() -> Result<(), SledError> {
     let mut sled = Sled::new("./examples/resources/config.yap")?;
 
