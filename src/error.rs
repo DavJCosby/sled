@@ -1,6 +1,7 @@
 use std::{error::Error, fmt};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+/// Simple error type used by fallible Sled operations.
 pub struct SledError {
     pub message: String,
 }

@@ -10,6 +10,27 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, parse_quote, FnArg, ItemFn, PatType, Type, TypePath};
 
+/// Autofills parameters missing for a startup command in a driver at compile time.
+/// 
+/// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
+///
+/// For example:
+/// ```rust, no-run
+/// #[startup_commands]
+/// fn startup(buffers: &mut BufferContainer) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
+/// Gets turned into:
+/// ```rust, no-run
+/// fn startup(
+///     _: &mut Sled,
+///     buffers: &mut BufferContainer,
+///     _: &mut Filters
+/// ) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn startup_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![
@@ -21,6 +42,28 @@ pub fn startup_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     auto_fill_params(item, params_template)
 }
 
+/// Autofills parameters missing for a draw command in a driver at compile time.
+/// 
+/// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
+///
+/// For example:
+/// ```rust, no-run
+/// #[draw_commands]
+/// fn draw(sled: &mut Sled, time: &TimeInfo) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
+/// Gets turned into:
+/// ```rust, no-run
+/// fn draw(
+///     sled: &mut Sled,
+///     _: &BufferContainer,
+///     _: &Filters,
+///     time: &TimeInfo
+/// ) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn draw_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![
@@ -33,6 +76,29 @@ pub fn draw_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     auto_fill_params(item, params_template)
 }
 
+
+/// Autofills parameters missing for a compute command in a driver at compile time.
+/// 
+/// This saves you from having to write lengthy method signatures and bringing structs into scope that you won't use.
+///
+/// For example:
+/// ```rust, no-run
+/// #[draw_commands]
+/// fn compute(filters: &mut Filters, time: &TimeInfo) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
+/// Gets turned into:
+/// ```rust, no-run
+/// fn compute(
+///     _: &Sled,
+///     _: &mut BufferContainer,
+///     filters: &mut Filters,
+///     time: &TimeInfo
+/// ) -> SledResult {
+///     //--snip--//
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn compute_commands(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let params_template = vec![

@@ -122,15 +122,15 @@
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
-//! 
+//!
 //! for color in colors_f32 {
 //!     let red: f32 = color.red;
 //!     // -snip- //
 //! }
 //! ```
-//! 
+//!
 //! A few other handy output methods:
-//! 
+//!
 //! ```rust
 //! # use sled::{Sled, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
@@ -188,7 +188,7 @@
 //! let sled = Sled::new("path/to/config.yap")?;
 //! # let mut driver = Driver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
-//! 
+//!
 //! loop {
 //!     driver.step();
 //!     let colors = driver.colors();
@@ -218,20 +218,20 @@
 //! If you don't Drivers for your project, you can bring down your binary and shed a dependency or two by disabling the `drivers` compiler feature.
 //!
 //! For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
-//! 
+//!
 //! ### Driver Macros
-//! 
+//!
 //! Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
 //! * `#[startup_commands]`
 //! * `#[compute_commands]`
 //! * `#[draw_commands]`
-//! 
+//!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
 //! # use sled::{Sled, driver::Driver, color::Rgb};
 //! # use sled::{BufferContainer, SledResult, TimeInfo};
 //! use driver_macros::*;
-//! 
+//!
 //! #[startup_commands]
 //! fn startup(buffers: &mut BufferContainer) -> SledResult {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
@@ -242,7 +242,7 @@
 //!    ]);
 //!    Ok(())
 //! }
-//! 
+//!
 //! #[draw_commands]
 //! fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
 //!    let elapsed = time_info.elapsed.as_secs_f32();
@@ -258,14 +258,14 @@
 //!    }
 //!    Ok(())
 //! }
-//! 
+//!
 //! //--snip--/
-//! 
+//!
 //! let mut driver = Driver::new();
 //! driver.set_startup_commands(startup);
 //! driver.set_draw_commands(draw);
 //! ```
-//! 
+//!
 //! ### Buffers
 //! A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
@@ -420,6 +420,7 @@
 //! If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
 //!
 
+/// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
 pub mod color;
 mod config;
 mod error;
@@ -427,16 +428,23 @@ mod led;
 mod sled;
 
 #[cfg(feature = "drivers")]
+/// Useful tools for building more complicated, time-based visual effects.
+///
+/// Drivers are an optional feature that can be disabled by turning off the `drivers` feature flag.
 pub mod driver;
+#[cfg(feature = "drivers")]
+pub use driver::{BufferContainer, Filters, TimeInfo};
+#[cfg(feature = "drivers")]
 pub use driver_macros;
-pub use driver::BufferContainer;
-pub use driver::Filters;
-pub use driver::TimeInfo;
 
 #[cfg(feature = "scheduler")]
+/// Useful tool for scheduling redraws at a fixed rate.
+///
+/// Scheduler is an optional feature that can be disabled by turning off the `scheduler` feature flag.
 pub mod scheduler;
 
 pub use error::SledError;
+/// Equivalent to `Result<(), SledError>`
 pub type SledResult = Result<(), SledError>;
 /// Using [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;

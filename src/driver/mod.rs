@@ -11,11 +11,6 @@ mod buffers;
 pub use buffers::BufferContainer;
 pub use filters::Filters;
 
-pub enum RefreshTiming {
-    None,
-    Fixed(f32),
-}
-
 #[derive(Clone, Debug)]
 pub struct TimeInfo {
     pub elapsed: Duration,
