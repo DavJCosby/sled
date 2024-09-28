@@ -1,6 +1,6 @@
 [package]
 name = "sled"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2021"
 rust-version = "1.70"
 
@@ -22,12 +22,12 @@ driver_macros = { path = "./src/driver/driver_macros", optional = true }
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]
-criterion = { version = "0.5.1", default-features = false, features = [
+criterion = { version = "0.5", default-features = false, features = [
     "cargo_bench_support",
 ] }
-ratatui = "0.28"
+ratatui = {version = "0.28", features = ["crossterm"]}
 crossterm = { version = "0.28" }
-rand = { version = "0.8.5", default-features = false, features = [
+rand = { version = "0.8", default-features = false, features = [
     "std",
     "std_rng",
 ] }
