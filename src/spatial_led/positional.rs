@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     color::Rgb,
     led::Led,
-    sled::{Filter, Sled},
+    spatial_led::{Filter, Sled},
 };
 
 use glam::Vec2;
@@ -55,7 +55,7 @@ impl Sled {
     /// O(1)
     ///  
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
@@ -71,7 +71,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
@@ -145,7 +145,7 @@ impl Sled {
     ///
     /// O(1)
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest(|led| led.color / led.distance());
@@ -161,7 +161,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {

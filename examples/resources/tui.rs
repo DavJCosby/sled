@@ -12,7 +12,7 @@ use ratatui::{
     },
 };
 
-use sled::{color::Srgb, Sled, Vec2};
+use spatial_led::{color::Srgb, Sled, Vec2};
 
 use std::{
     io::{self, stdout, Error, ErrorKind, Stdout},

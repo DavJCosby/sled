@@ -21,7 +21,7 @@
 //! ### Setup
 //! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor:
 //! ```rust, ignore
-//! use sled::Sled;
+//! use spatial_led::Sled;
 //! let mut sled = Sled::new("/path/to/config.yap")?;
 //! ```
 //!
@@ -42,7 +42,7 @@
 //!
 //! **Set all vertices to white:**
 //! ```rust
-//! # use sled::{Sled, color::Rgb};
+//! # use spatial_led::{Sled, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 //! ```
@@ -51,8 +51,8 @@
 //!
 //! **Set all LEDs 2 units away from the `center_point` to red:**
 //! ```rust
-//! # use sled::{Sled, color::Rgb};
-//! # fn main() -> Result<(), sled::SledError> {
+//! # use spatial_led::{Sled, color::Rgb};
+//! # fn main() -> Result<(), spatial_led::SledError> {
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
 //! # Ok(())
@@ -62,7 +62,7 @@
 //!
 //! **Set each LED using a function of its direction from point `(2, 1)`:**
 //! ```rust
-//! # use sled::{Sled, Vec2, color::Rgb};
+//! # use spatial_led::{Sled, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //!  sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!      let red = (dir.x + 1.0) * 0.5;
@@ -74,8 +74,8 @@
 //!
 //! **Dim one of the walls by 75%:**
 //! ```rust
-//! # use sled::{Sled};
-//! # fn main() -> Result<(), sled::SledError> {
+//! # use spatial_led::{Sled};
+//! # fn main() -> Result<(), spatial_led::SledError> {
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! sled.modulate_segment(3, |led| led.color * 0.25)?;
 //! # Ok(())
@@ -85,7 +85,7 @@
 //!
 //! **Set all LEDs within the overlapping areas of two different circles to blue:**
 //! ```rust
-//! # use sled::{Sled, Filter, Vec2, color::Rgb};
+//! # use spatial_led::{Sled, Filter, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! let circle_1: Filter = sled.within_dist_from(
 //!     2.0,
@@ -108,7 +108,7 @@
 //! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of [RGB](color::Rgb) values. There are a few methods available to pack the information you need.
 //!
 //! ```rust
-//! # use sled::{Sled, Vec2, color::Rgb};
+//! # use spatial_led::{Sled, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
@@ -122,7 +122,7 @@
 //! A few other handy output methods:
 //!
 //! ```rust
-//! # use sled::{Sled, Vec2, color::Rgb};
+//! # use spatial_led::{Sled, Vec2, color::Rgb};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
 //! let colors_u8 = sled.colors_coerced::<u8>();
@@ -141,8 +141,8 @@
 //! [Drivers](driver::Driver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
 //!
 //! ```rust
-//! # use sled::{Sled, color::Rgb};
-//! use sled::driver::Driver;
+//! # use spatial_led::{Sled, color::Rgb};
+//! use spatial_led::driver::Driver;
 //! let mut driver = Driver::new();
 //!
 //! driver.set_startup_commands(|_sled, buffers, _filters| {
@@ -173,8 +173,8 @@
 //! ```
 //! To start using the Driver, give it ownership over a Sled using [.mount()](driver::Driver::mount) and use [.step()](driver::Driver::step) to manually refresh it.
 //! ```rust, no_run
-//! # use sled::{Sled, driver::Driver};
-//! # fn main() -> Result<(), sled::SledError> {
+//! # use spatial_led::{Sled, driver::Driver};
+//! # fn main() -> Result<(), spatial_led::SledError> {
 //! let sled = Sled::new("path/to/config.yap")?;
 //! # let mut driver = Driver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
@@ -192,7 +192,7 @@
 //!
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
-//! # use sled::{Sled, driver::Driver};
+//! # use spatial_led::{Sled, driver::Driver};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! # let mut driver = Driver::new();
 //! # driver.mount(sled);
@@ -217,9 +217,9 @@
 //!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
-//! # use sled::{Sled, driver::Driver, color::Rgb};
-//! # use sled::{BufferContainer, SledResult, TimeInfo};
-//! use sled::driver_macros::*;
+//! # use spatial_led::{Sled, driver::Driver, color::Rgb};
+//! # use spatial_led::{BufferContainer, SledResult, TimeInfo};
+//! use spatial_led::driver_macros::*;
 //!
 //! #[startup_commands]
 //! fn startup(buffers: &mut BufferContainer) -> SledResult {
@@ -261,8 +261,8 @@
 //! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
 //!
 //! ```rust
-//! # use sled::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
-//! # use sled::driver_macros::*;
+//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
+//! # use spatial_led::driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
 //! #[startup_commands]
 //! fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
@@ -279,7 +279,7 @@
 //!
 //! To maniplate buffers from outside driver, just do:
 //! ```rust
-//! # use sled::{driver::{BufferContainer, Driver}};
+//! # use spatial_led::{driver::{BufferContainer, Driver}};
 //! # let mut driver = Driver::new();
 //! let buffers: &BufferContainer = driver.buffers();
 //! // or
@@ -289,7 +289,7 @@
 //! Using a BufferContainer is relatively straightforward.
 //! ```rust
 //! # type MY_CUSTOM_TYPE = f32;
-//! # use sled::{color::Rgb, Sled, driver::Driver, driver::BufferContainer};
+//! # use spatial_led::{color::Rgb, Sled, driver::Driver, driver::BufferContainer};
 //! # let mut driver = Driver::new();
 //! driver.set_draw_commands(|sled: &mut Sled, buffers: &BufferContainer, _, _| {
 //!     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
@@ -311,8 +311,8 @@
 //! If you need to mutate buffer values:
 //! ```rust
 //!  // Mutable reference to the whole buffer
-//! # use sled::{driver::BufferContainer, color::Rgb, SledError};
-//! # fn main() -> Result<(), sled::SledError> {
+//! # use spatial_led::{driver::BufferContainer, color::Rgb, SledError};
+//! # fn main() -> Result<(), spatial_led::SledError> {
 //! # let mut buffers = BufferContainer::new();
 //! # let mut b = buffers.create_buffer::<bool>("wall_toggles");
 //! # b.push(false);
@@ -340,7 +340,7 @@
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
 //! ```rust
-//! # use sled::{Sled, Led, Filter, Vec2, color::Rgb, driver::Driver};
+//! # use spatial_led::{Sled, Led, Filter, Vec2, color::Rgb, driver::Driver};
 //! # let mut driver = Driver::new();
 //! driver.set_startup_commands(|sled, buffers, filters| {
 //!     let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
@@ -360,7 +360,7 @@
 //! ```
 //! Most getter methods on Sled will return a [Filter], but if you need more precise control you can do something like this:
 //! ```rust
-//! # use sled::{Sled};
+//! # use spatial_led::{Sled};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
@@ -371,7 +371,7 @@
 //! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
 //!
 //! ```rust, no_run
-//! # use sled::{scheduler::Scheduler, driver::Driver};
+//! # use spatial_led::{scheduler::Scheduler, driver::Driver};
 //! # let mut driver = Driver::new();
 //! let mut scheduler = Scheduler::new(120.0);
 //!
@@ -384,7 +384,7 @@
 //! Here are a few other methods that you might also consider:
 //!
 //! ```rust, no_run
-//! # use sled::{scheduler::Scheduler, driver::Driver};
+//! # use spatial_led::{scheduler::Scheduler, driver::Driver};
 //! # let mut driver = Driver::new();
 //! # let mut scheduler = Scheduler::new(120.0);
 //! // loops until false is returned
@@ -414,7 +414,7 @@ pub mod color;
 mod config;
 mod error;
 mod led;
-mod sled;
+mod spatial_led;
 
 #[cfg(feature = "drivers")]
 /// Useful tools for building more complicated, time-based visual effects.
@@ -438,5 +438,5 @@ pub type SledResult = Result<(), SledError>;
 /// Using [glam](https://crates.io/crates/glam)'s implementation.
 pub use glam::Vec2;
 pub use led::Led;
-pub use sled::Filter;
-pub use sled::Sled;
+pub use spatial_led::Filter;
+pub use spatial_led::Sled;

@@ -1,8 +1,8 @@
-use sled::driver_macros::*;
+use spatial_led::driver_macros::*;
 use rand::Rng;
-use sled::driver::{BufferContainer, Driver, TimeInfo};
-use sled::SledResult;
-use sled::{color::Rgb, Sled, Vec2};
+use spatial_led::driver::{BufferContainer, Driver, TimeInfo};
+use spatial_led::SledResult;
+use spatial_led::{color::Rgb, Sled, Vec2};
 
 const NUM_STARS: usize = 5000;
 const VELOCITY: f32 = 6.0;

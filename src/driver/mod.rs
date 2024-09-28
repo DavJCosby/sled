@@ -63,8 +63,8 @@ impl Driver {
 
     /// Define commands to be called as soon as a Sled is [mounted](Driver::mount) to the driver. This is a good place to initialize important buffer values.
     /// ```rust
-    /// # use sled::{Vec2, BufferContainer, SledResult, driver::Driver};
-    /// use sled::driver_macros::*;
+    /// # use spatial_led::{Vec2, BufferContainer, SledResult, driver::Driver};
+    /// use spatial_led::driver_macros::*;
     ///
     /// #[startup_commands]
     /// fn startup(buffers: &mut BufferContainer) -> SledResult {
@@ -93,8 +93,8 @@ impl Driver {
 
     /// Define commands to be called each time [Driver::step()] is called, right before we run [draw commands](Driver::set_draw_commands).
     /// ```rust
-    /// # use sled::{Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
-    /// use sled::driver_macros::*;
+    /// # use spatial_led::{Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
     /// #[compute_commands]
@@ -124,8 +124,8 @@ impl Driver {
 
     /// Define commands to be called each time [Driver::step()] is called, right after we run [compute commands](Driver::set_compute_commands).
     /// ```rust
-    /// # use sled::{Sled, Vec2, color::Rgb, BufferContainer, TimeInfo, SledResult, driver::Driver};
-    /// use sled::driver_macros::*;
+    /// # use spatial_led::{Sled, Vec2, color::Rgb, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// use spatial_led::driver_macros::*;
     ///
     /// #[draw_commands]
     /// fn draw(sled: &mut Sled, buffers: &BufferContainer) -> SledResult {

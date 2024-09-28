@@ -1,7 +1,7 @@
 mod resources;
 use resources::drivers::ripples;
 
-use sled::Sled;
+use spatial_led::Sled;
 use std::time::Duration;
 
 fn ripples(c: &mut Criterion) {

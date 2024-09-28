@@ -1,7 +1,7 @@
 mod resources;
 use resources::drivers::comet;
 
-use sled::Sled;
+use spatial_led::Sled;
 use std::time::Duration;
 
 fn trail(c: &mut Criterion) {

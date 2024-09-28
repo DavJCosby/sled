@@ -54,7 +54,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_at_dir(Vec2::new(0.0, 1.0), |led| led.color * 2.0);
@@ -73,7 +73,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// let dir = Vec2::new(-1.0, 0.0);
@@ -179,7 +179,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     /// use std::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
@@ -202,7 +202,7 @@ impl Sled {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use sled::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
     /// use std::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;

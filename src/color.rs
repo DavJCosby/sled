@@ -14,7 +14,7 @@ pub mod consts {
     //! CSS3) and they can be used as if they were pixel values:
     //!
     //! ```rust, ignore
-    //! use sled::color::consts;
+    //! use spatial_led::color::consts;
     //! // -snip-
     //! sled.set_all(consts::BLACK);
     //! ```

@@ -1,5 +1,5 @@
 [package]
-name = "sled"
+name = "spatial_led"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
@@ -23,7 +23,7 @@ palette = { version = "0.7", default-features = false, features = [
 ] }
 smallvec = "1.13"
 compact_str = { version = "0.8", optional = true }
-sled_driver_macros = { version = "0.1.0", optional = true }
+sled_driver_macros = { version = "0.1.2", optional = true }
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]

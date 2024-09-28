@@ -25,9 +25,9 @@ impl BufferContainer {
     /// Keys may be no longer than 24 bytes (or 12 bytes of 32-bit architectures) as we internally store them as [CompactString](https://docs.rs/compact_str/latest/compact_str/)s under the hood to minimize overhead.
     ///
     /// ```rust
-    /// # use sled::{Sled, color::Rgb, SledError};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, color::Rgb, SledError};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let color_buffer = buffers.create_buffer::<Rgb>("colors");
     /// color_buffer.extend([
@@ -67,9 +67,9 @@ impl BufferContainer {
     /// Otherwise, returns a [SledError].
     ///
     /// ```rust
-    /// # use sled::{Sled, SledError};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, SledError};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let num_buffer = buffers.create_buffer::<usize>("numbers");
     /// num_buffer.extend([1, 5, 7]);
@@ -102,9 +102,9 @@ impl BufferContainer {
     /// Otherwise, returns a [SledError].
     ///
     /// ```rust
-    /// # use sled::{Sled, SledError};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, SledError};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let flag_buffer = buffers.create_buffer::<bool>("flags");
     /// flag_buffer.extend([true, false, false, true, false]);
@@ -143,9 +143,9 @@ impl BufferContainer {
     /// Otherwise, returns a [SledError].
     ///
     /// ```rust
-    /// # use sled::{Sled, SledError, Vec2};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, SledError, Vec2};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let pos_buffer = buffers.create_buffer::<Vec2>("positions");
     /// pos_buffer.extend([
@@ -175,9 +175,9 @@ impl BufferContainer {
     /// Otherwise, returns a [SledError].
     ///
     /// ```rust
-    /// # use sled::{Sled, SledError, Vec2};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, SledError, Vec2};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let pos_buffer = buffers.create_buffer::<Vec2>("positions");
     /// pos_buffer.extend([
@@ -212,9 +212,9 @@ impl BufferContainer {
     /// Otherwise, returns a [SledError].
     ///
     /// ```rust
-    /// # use sled::{Sled, SledError, Vec2};
-    /// # use sled::BufferContainer;
-    /// # fn main() -> Result<(), sled::SledError> {
+    /// # use spatial_led::{Sled, SledError, Vec2};
+    /// # use spatial_led::BufferContainer;
+    /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();
     /// let float_buffer = buffers.create_buffer::<f32>("floats");
     /// float_buffer.extend([1.1, 2.2, 3.5, 4.4]);

@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     color::Rgb,
     led::Led,
-    sled::{Filter, Sled},
+    spatial_led::{Filter, Sled},
 };
 
 use glam::Vec2;

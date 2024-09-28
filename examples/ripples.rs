@@ -4,7 +4,7 @@ use drivers::ripples;
 mod resources;
 use resources::tui::SledTerminalDisplay;
 
-use sled::{scheduler::Scheduler, Sled};
+use spatial_led::{scheduler::Scheduler, Sled};
 
 fn main() {
     let sled = Sled::new("./examples/resources/config.yap").unwrap();
