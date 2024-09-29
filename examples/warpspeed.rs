@@ -4,7 +4,7 @@ use drivers::warpspeed;
 mod resources;
 use resources::tui::SledTerminalDisplay;
 
-use sled::{color::Rgb, scheduler::Scheduler, Sled};
+use spatial_led::{color::Rgb, scheduler::Scheduler, Sled};
 
 fn main() {
     let sled = Sled::new("./examples/resources/config.yap").unwrap();

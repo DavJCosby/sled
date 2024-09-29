@@ -3,11 +3,11 @@ use rand::Rng;
 use std::f32::consts::{PI, TAU};
 use std::time::Duration;
 
-use driver_macros::*;
 use glam::Vec2;
-use sled::driver::{Driver, TimeInfo};
-use sled::BufferContainer;
-use sled::{color::Rgb, Sled, SledResult};
+use spatial_led::driver::{Driver, TimeInfo};
+use spatial_led::driver_macros::*;
+use spatial_led::BufferContainer;
+use spatial_led::{color::Rgb, Sled, SledResult};
 
 const SCAN_DURATION: f32 = 4.0;
 
@@ -86,7 +86,7 @@ fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> Sle
     let scan_direction = v_buffer[3];
 
     // println!("{}", scan_center);
-    let c: Rgb = sled::color::oklch::Oklch::new(0.99, 0.3, theta).adapt_into();
+    let c: Rgb = spatial_led::color::oklch::Oklch::new(0.99, 0.3, theta).adapt_into();
 
     sled.set_at_dir_from(scan_direction.perp(), scan_center, c);
     sled.set_at_dir_from(-scan_direction.perp(), scan_center, c);

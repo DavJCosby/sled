@@ -1,6 +1,6 @@
 use std::collections::{hash_set, HashSet};
 
-use crate::{color::Rgb, led::Led, sled::Sled};
+use crate::{color::Rgb, led::Led, spatial_led::Sled};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Filter {

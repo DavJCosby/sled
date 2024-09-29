@@ -1,12 +1,17 @@
 [package]
-name = "sled"
-version = "0.2.0"
+name = "spatial_led"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
+description = "Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects."
+license = "MIT OR Apache-2.0"
+keywords = ["sled", "led", "api", "math", "visualization"]
+repository = "https://github.com/davjcosby/sled/"
+exclude = ["*.gif"]
 
 [features]
 default = ["drivers", "scheduler"]
-drivers = ["compact_str", "driver_macros"]
+drivers = ["compact_str", "sled_driver_macros"]
 scheduler = ["spin_sleep"]
 named_colors = []
 
@@ -18,16 +23,16 @@ palette = { version = "0.7", default-features = false, features = [
 ] }
 smallvec = "1.13"
 compact_str = { version = "0.8", optional = true }
-driver_macros = { path = "./src/driver/driver_macros", optional = true }
+sled_driver_macros = { version = "0.1.2", optional = true }
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]
-criterion = { version = "0.5.1", default-features = false, features = [
+criterion = { version = "0.5", default-features = false, features = [
     "cargo_bench_support",
 ] }
-ratatui = "0.28"
+ratatui = { version = "0.28", features = ["crossterm"] }
 crossterm = { version = "0.28" }
-rand = { version = "0.8.5", default-features = false, features = [
+rand = { version = "0.8", default-features = false, features = [
     "std",
     "std_rng",
 ] }
