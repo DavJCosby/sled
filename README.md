@@ -1,3 +1,6 @@
+[![Crates.io](https://img.shields.io/crates/v/spatial_led.svg)](https://crates.io/crates/spatial_led)
+[![Downloads](https://img.shields.io/crates/d/spatial_led.svg)](https://crates.io/crates/spatial_led)
+[![Docs](https://docs.rs/spatial_led/badge.svg)](https://docs.rs/spatial_led/latest/spatial_led/)
 [![Build and Run Tests](https://github.com/DavJCosby/sled/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/DavJCosby/sled/actions/workflows/rust.yml)
 
 # Spatial LED (Sled)
