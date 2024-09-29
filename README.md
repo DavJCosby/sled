@@ -1,5 +1,5 @@
 [![Crates.io](https://img.shields.io/crates/v/spatial_led.svg)](https://crates.io/crates/spatial_led)
-[![Downloads](https://img.shields.io/crates/d/spatial_led.svg)](https://crates.io/crates/spatial_led)
+[![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/DavJCosby/sled#License)
 [![Docs](https://docs.rs/spatial_led/badge.svg)](https://docs.rs/spatial_led/latest/spatial_led/)
 [![Build and Run Tests](https://github.com/DavJCosby/sled/actions/workflows/rust.yml/badge.svg?branch=master)](https://github.com/DavJCosby/sled/actions/workflows/rust.yml)
 
@@ -382,3 +382,11 @@ loop {
 ```
 
 If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
+
+
+# License
+Licensed under either of
+* Apache License, Version 2.0 (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+* MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
+  
+at your option.
