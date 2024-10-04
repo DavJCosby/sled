@@ -23,7 +23,7 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 
 > This project is still somewhat early in development so please report any bugs you discover! Pull requests are more than welcome!
 ## The Basics
-In absence of an official guide, this will serve as a basic introduction. From here, you can use the documentation comments to learn what else Sled offers.
+In absence of an official guide, this will serve as a basic introduction. From here, you can consult the [docs](https://docs.rs/spatial_led/latest/spatial_led/) to learn what else Sled can do.
 ### Setup
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
@@ -44,21 +44,7 @@ density: 30.0
 (-2, 0) --> (0.5, -1) --> (3.5, 0) -->
 (2, 2) --> (-2, 2) --> (-2, 0)
  ```
- * `center` is a 2D reference point you can use to speed up draw calls. At initialization, directions, distances, etc relative to this point are pre-calculated for each Led.
- * `density` represents how many LEDs per unit we can expect for the line segments below.
- * `(x, y) --> (x, y)` Indicates a line segment spanning between those two connected vertices. If you wish to introduce a break between vertices, you must replace one of the `-->` separators with a `|`. Like this:
-    ```
-    --segments--
-    (-2, 0) --> (0.5, -1) --> (3.5, 0) |
-    (2, 2) --> (-2, 2) --> (-2, 0)
-    ```
-    Whitespace and linebreaks are generally irrelevant in formatting segments, meaning the above is functionally equivalent to:
-    ```
-    --segments--
-        (-2, 0) --> (0.5, -1)
-    --> (3.5, 0) | (2, 2)
-    --> (-2, 2) --> (-2, 0)
-    ```
+ > For more information on how to write config files in this format, check out the [docs](https://docs.rs/spatial_led/latest/spatial_led/struct.Sled.html#method.new).
 ### Drawing
 Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
