@@ -7,6 +7,7 @@ description = "Sled is an ergonomic rust library that maps out the shape of your
 license = "MIT OR Apache-2.0"
 keywords = ["sled", "led", "api", "math", "visualization"]
 repository = "https://github.com/davjcosby/sled/"
+documentation = "https://docs.rs/spatial_led"
 exclude = ["*.gif"]
 
 [features]
