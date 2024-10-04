@@ -16,6 +16,7 @@ impl Default for Scheduler {
 }
 
 impl Scheduler {
+    /// Constructs a new Scheduler struct that can schedule tasks at the given frequency `target_hz`.
     pub fn new(target_hz: f32) -> Self {
         let target_delta = Duration::from_secs_f32(target_hz.recip());
         Scheduler {
@@ -25,8 +26,22 @@ impl Scheduler {
         }
     }
 
+    /// Allows you to change the frequency at which the scheduler tries to run tasks.
+    /// 
+    /// Note: Deprecated in favor of [Scheduler::set_hz()]
+    /// ```
+    #[deprecated]
     pub fn change_hz(&mut self, new_target_hz: f32) {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
+    }
+
+    /// Allows you to change the frequency at which the scheduler tries to run tasks.
+    pub fn set_hz(&mut self, new_target_hz: f32) {
+        self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
+    }
+
+    pub fn hz(&self) -> f32 {
+        return self.target_delta.as_secs_f32().recip()
     }
 
     pub fn loop_forever(&mut self, mut task: impl FnMut()) -> ! {
