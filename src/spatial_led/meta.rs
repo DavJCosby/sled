@@ -41,6 +41,16 @@ impl Sled {
     ///     ```
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
+        Sled::new_from_config(config)
+    }
+
+    /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a String.
+    pub fn new_from_string(string: String) -> Result<Self, SledError> {
+        let config = Config::from_string(string)?;
+        Sled::new_from_config(config)
+    }
+
+    fn new_from_config(config: Config) -> Result<Self, SledError> {
         let leds_per_segment = Sled::leds_per_segment(&config);
         let leds = Sled::build_led_list(
             &leds_per_segment,
