@@ -40,6 +40,7 @@ impl Scheduler {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
     }
 
+    /// Returns the frequency the Scheduler is currently set to.
     pub fn hz(&self) -> f32 {
         return self.target_delta.as_secs_f32().recip()
     }
