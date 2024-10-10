@@ -6,7 +6,7 @@ use spatial_led::{color::Rgb, Sled, Vec2};
 
 const NUM_STARS: usize = 5000;
 const VELOCITY: f32 = 6.0;
-const DIRECTION: Vec2 = Vec2::new(-0.7071, -0.7071);
+const DIRECTION: Vec2 = Vec2::new(0.7071, -0.7071);
 
 #[allow(dead_code)]
 pub fn build_driver() -> Driver {

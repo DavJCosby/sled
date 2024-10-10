@@ -3,7 +3,7 @@ use glam::Vec2;
 use resources::tui::SledTerminalDisplay;
 use spatial_led::{color::Rgb, Sled, SledError};
 fn main() -> Result<(), SledError> {
-    let mut sled = Sled::new("./examples/resources/config.yap")?;
+    let mut sled = Sled::new("./examples/resources/complex_room.yap")?;
 
     let mut display = SledTerminalDisplay::start("Calibration", sled.domain());
 

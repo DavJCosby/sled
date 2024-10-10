@@ -7,7 +7,7 @@ use resources::tui::SledTerminalDisplay;
 use spatial_led::{scheduler::Scheduler, Sled};
 
 fn main() {
-    let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    let sled = Sled::new("./examples/resources/complex_room.yap").unwrap();
     let mut display = SledTerminalDisplay::start("Ripples", sled.domain());
     let mut driver = ripples::build_driver();
     driver.mount(sled);
