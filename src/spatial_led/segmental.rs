@@ -61,7 +61,7 @@ impl Sled {
         }
 
         let (start, end) = self.line_segment_endpoint_indices[segment_index];
-        self.set_range(start..end, color).unwrap();
+        self.set_range(start..end, color)?;
         Ok(())
     }
 
