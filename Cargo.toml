@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 keywords = ["sled", "led", "api", "math", "visualization"]
 repository = "https://github.com/davjcosby/sled/"
 documentation = "https://docs.rs/spatial_led"
-exclude = ["*.gif"]
+exclude = ["*.gif", "*.cast"]
 
 [features]
 default = ["drivers", "scheduler"]
