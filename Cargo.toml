@@ -1,6 +1,6 @@
 [package]
 name = "spatial_led"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 rust-version = "1.70"
 description = "Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects."
