@@ -18,6 +18,10 @@ Simulates stars zooming past you, almost like you're traveling in a space ship a
 
 [![asciicast](https://asciinema.org/a/683128.svg)](https://asciinema.org/a/683128)
 
+# Scan
+Simulates a straight line sweeping through the room at random angles, whose color gradually progresses through the rainbow over time.
+[![asciicast](https://asciinema.org/a/683169.svg)](https://asciinema.org/a/683169)
+
 # Comet
 Mostly just used as a benchmark as it requires a *ton* of `set_at_angle()` calls. Looks vaguely like comet orbiting the room.
 
