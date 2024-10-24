@@ -14,7 +14,7 @@ Simulates growing rings of color at random points in your room.
 [![asciicast](https://asciinema.org/a/683147.svg)](https://asciinema.org/a/683147)
 
 # Warpspeed
-Simulates stars zooming past you, almost like you're traveling in a space ship at light speed. At directions are relative to the center point declared in your config file.
+Simulates stars zooming past you, almost like you're traveling in a space ship at light speed. All directions are relative to the center point declared in your config file.
 
 [![asciicast](https://asciinema.org/a/683128.svg)](https://asciinema.org/a/683128)
 
