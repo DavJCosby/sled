@@ -29,7 +29,6 @@ impl Scheduler {
     /// Allows you to change the frequency at which the scheduler tries to run tasks.
     ///
     /// Note: Deprecated in favor of [Scheduler::set_hz()]
-    /// ```
     #[deprecated]
     pub fn change_hz(&mut self, new_target_hz: f32) {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
