@@ -117,9 +117,9 @@ fn draw_led(ctx: &mut Context, led: &(Srgb, Vec2)) {
         y: pos.y as f64,
         radius: 0.0,
         color: Color::Rgb(
-            (col.red / 255.0) as u8,
-            (col.green / 255.0) as u8,
-            (col.blue / 255.0) as u8,
+            (col.red * 255.0) as u8,
+            (col.green * 255.0) as u8,
+            (col.blue * 255.0) as u8,
         ),
     });
 }
