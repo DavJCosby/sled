@@ -1,11 +1,11 @@
 use std::collections::HashSet;
 
-use crate::{color::Rgb, led::Led, Filter, Sled};
+use crate::{color::ColorType, led::Led, Filter, Sled};
 use glam::Vec2;
 use smallvec::SmallVec;
 
 /// # directional read and write methods
-impl Sled {
+impl<Color: ColorType> Sled<Color> {
     fn raycast_for_indices(&self, start: Vec2, dir: Vec2) -> SmallVec<[usize; 4]> {
         let dist = 100_000.0;
         let end = start + dir * dist;
@@ -61,7 +61,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_dir<F: Fn(&Led) -> Rgb>(&mut self, dir: Vec2, color_rule: F) -> bool {
+    pub fn modulate_at_dir<F: Fn(&Led<Color>) -> Color>(&mut self, dir: Vec2, color_rule: F) -> bool {
         self.modulate_at_dir_from(dir, self.center_point, color_rule)
     }
 
@@ -84,7 +84,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_dir_from<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_at_dir_from<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         dir: Vec2,
         pos: Vec2,
@@ -110,7 +110,7 @@ impl Sled {
     /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_dir(&mut self, dir: Vec2, color: Rgb) -> bool {
+    pub fn set_at_dir(&mut self, dir: Vec2, color: Color) -> bool {
         self.set_at_dir_from(dir, self.center_point, color)
     }
 
@@ -120,7 +120,7 @@ impl Sled {
     /// Returns false if there is no LED in that direction, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Rgb) -> bool {
+    pub fn set_at_dir_from(&mut self, dir: Vec2, pos: Vec2, color: Color) -> bool {
         let intersecting_indices = self.raycast_for_indices(pos, dir);
 
         if intersecting_indices.is_empty() {
@@ -187,7 +187,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_angle<F: Fn(&Led) -> Rgb>(&mut self, angle: f32, color_rule: F) -> bool {
+    pub fn modulate_at_angle<F: Fn(&Led<Color>) -> Color>(&mut self, angle: f32, color_rule: F) -> bool {
         self.modulate_at_angle_from(angle, self.center_point, color_rule)
     }
 
@@ -212,7 +212,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_angle_from<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_at_angle_from<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         angle: f32,
         pos: Vec2,
@@ -230,7 +230,7 @@ impl Sled {
     /// Returns false if there is no LED at that angle, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_angle(&mut self, angle: f32, color: Rgb) -> bool {
+    pub fn set_at_angle(&mut self, angle: f32, color: Color) -> bool {
         self.set_at_angle_from(angle, self.center_point, color)
     }
 
@@ -242,7 +242,7 @@ impl Sled {
     /// Returns false if there is no LED at that angle, true otherwise.
     ///
     /// O(SEGMENTS)
-    pub fn set_at_angle_from(&mut self, angle: f32, pos: Vec2, color: Rgb) -> bool {
+    pub fn set_at_angle_from(&mut self, angle: f32, pos: Vec2, color: Color) -> bool {
         let dir = Vec2::from_angle(angle);
         self.set_at_dir_from(dir, pos, color)
     }

@@ -1,5 +1,5 @@
 use crate::{
-    color::Rgb,
+    color::ColorType,
     error::SledError,
     led::Led,
     spatial_led::{Filter, Sled},
@@ -7,7 +7,7 @@ use crate::{
 use std::{collections::HashSet, ops::Range};
 
 /// # Segment-based read and write methods.
-impl Sled {
+impl<Color: ColorType> Sled<Color> {
     /// Returns the set of all [LEDs](Led) assigned to the line segment with index `segment_index`.
     ///
     /// O(LEDS_IN_SEGMENT)
@@ -27,7 +27,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_segment<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_segment<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         segment_index: usize,
         color_rule: F,
@@ -51,7 +51,7 @@ impl Sled {
     /// Sets the color of each [LED](Led) assigned to the line segment with index `segment_index`. Returns an [error](SledError) if there is no line segment with the given index.
     /// O(LEDS_IN_SEGMENT)
     ///
-    pub fn set_segment(&mut self, segment_index: usize, color: Rgb) -> Result<(), SledError> {
+    pub fn set_segment(&mut self, segment_index: usize, color: Color) -> Result<(), SledError> {
         if segment_index >= self.line_segment_endpoint_indices.len() {
             return SledError::new(format!(
                 "No line segment of index {} exists.",
@@ -66,7 +66,7 @@ impl Sled {
     }
 
     /// Returns the set of all [LEDs](Led) assigned to the line segments whose indices are within the given range.
-    /// 
+    ///
     /// If the range exceeds the number of segments in the system, returns None.
     ///
     /// O(LEDS_IN_SEGMENTS)
@@ -104,7 +104,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_segments<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_segments<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         range: Range<usize>,
         color_rule: F,
@@ -128,7 +128,7 @@ impl Sled {
     /// Sets the color of each [LED](Led) assigned to the line segments whose indices are within the given range.
     /// Returns an [error](SledError) if the range exceeds the number of line segments in the system.
     /// O(LEDS_IN_SEGMENTS)
-    pub fn set_segments(&mut self, range: Range<usize>, color: Rgb) -> Result<(), SledError> {
+    pub fn set_segments(&mut self, range: Range<usize>, color: Color) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {
             return SledError::new(
                 "Segment index range extends beyond the number of segments in the system."
@@ -149,7 +149,7 @@ impl Sled {
     /// Also passes an "alpha" value into the closure, representing how far along the line segment you are. 0 = first LED in segement, 1 = last.
     ///
     /// Returns an [error](SledError) if the no segment of given index exists.
-    /// 
+    ///
     /// O(LEDS_IN_SEGMENT)
     ///
     /// ```rust
@@ -160,7 +160,7 @@ impl Sled {
     /// });
     /// ```
     /// ![segment alpha example](https://raw.githubusercontent.com/DavJCosby/sled/master/resources/segment_alpha.png)
-    pub fn for_each_in_segment<F: FnMut(&mut Led, f32)>(
+    pub fn for_each_in_segment<F: FnMut(&mut Led<Color>, f32)>(
         &mut self,
         segment_index: usize,
         mut func: F,
@@ -184,13 +184,13 @@ impl Sled {
 }
 
 /// # Vertex-based read and write methods.
-impl Sled {
+impl<Color: ColorType> Sled<Color> {
     /// Returns the [LED](Led) that represents the vertex the given index, if it exists.
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
     /// O(1)
     ///
-    pub fn vertex(&self, vertex_index: usize) -> Option<&Led> {
+    pub fn vertex(&self, vertex_index: usize) -> Option<&Led<Color>> {
         if vertex_index >= self.vertex_indices.len() {
             return None;
         }
@@ -201,7 +201,7 @@ impl Sled {
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
     /// Returns an [error](SledError) if no vertex of given index exists.
-    /// 
+    ///
     /// O(1)
     ///
     /// ```rust
@@ -213,7 +213,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_vertex<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_vertex<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         vertex_index: usize,
         color_rule: F,
@@ -232,10 +232,10 @@ impl Sled {
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
     /// Returns an [error](SledError) if no vertex of given index exists.
-    /// 
+    ///
     /// O(1)
     ///
-    pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
+    pub fn set_vertex(&mut self, vertex_index: usize, color: Color) -> Result<(), SledError> {
         if vertex_index >= self.vertex_indices.len() {
             return SledError::new(format!(
                 "Vertex with index {} does not exist.",
@@ -268,7 +268,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_vertices<F: Fn(&Led) -> Rgb>(&mut self, color_rule: F) {
+    pub fn modulate_vertices<F: Fn(&Led<Color>) -> Color>(&mut self, color_rule: F) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
             led.color = color_rule(led);
@@ -278,7 +278,7 @@ impl Sled {
     /// Sets the color of each [LED](Led) that represents a vertex in the system.
     ///
     /// O(VERTICES)
-    pub fn set_vertices(&mut self, color: Rgb) {
+    pub fn set_vertices(&mut self, color: Color) {
         for i in &self.vertex_indices {
             let led = &mut self.leds[*i];
             led.color = color;
@@ -288,7 +288,7 @@ impl Sled {
     /// For each method that grants mutable access to each [LED](Led) that represents a vertex in the system.
     ///
     /// O(VERTICES)
-    pub fn for_each_vertex<F: FnMut(&mut Led)>(&mut self, mut f: F) {
+    pub fn for_each_vertex<F: FnMut(&mut Led<Color>)>(&mut self, mut f: F) {
         for i in &self.vertex_indices {
             f(&mut self.leds[*i])
         }

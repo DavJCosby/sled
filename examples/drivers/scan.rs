@@ -1,4 +1,5 @@
 use palette::chromatic_adaptation::AdaptInto;
+use palette::rgb::Rgb;
 use rand::Rng;
 use std::f32::consts::{PI, TAU};
 use std::time::Duration;
@@ -7,12 +8,12 @@ use glam::Vec2;
 use spatial_led::driver::{Driver, TimeInfo};
 use spatial_led::driver_macros::*;
 use spatial_led::BufferContainer;
-use spatial_led::{color::Rgb, Sled, SledResult};
+use spatial_led::{Sled, SledResult};
 
 const SCAN_DURATION: f32 = 4.0;
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
+pub fn build_driver() -> Driver<Rgb> {
     let mut driver = Driver::new();
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);
@@ -21,7 +22,7 @@ pub fn build_driver() -> Driver {
     driver
 }
 
-fn rand_endpoints(sled: &Sled) -> (Vec2, Vec2) {
+fn rand_endpoints(sled: &Sled<Rgb>) -> (Vec2, Vec2) {
     let domain = sled.domain();
     let r = (domain.end - domain.start).length() * 0.6;
     let c = sled.center_point();
@@ -35,7 +36,7 @@ fn rand_endpoints(sled: &Sled) -> (Vec2, Vec2) {
     (start, end)
 }
 
-fn start_new_scan(sled: &Sled, buffers: &mut BufferContainer, now: Duration) {
+fn start_new_scan(sled: &Sled<Rgb>, buffers: &mut BufferContainer, now: Duration) {
     let t_buffer = buffers.create_buffer::<Duration>("times");
 
     t_buffer.push(now);
@@ -50,13 +51,13 @@ fn start_new_scan(sled: &Sled, buffers: &mut BufferContainer, now: Duration) {
 }
 
 #[startup_commands]
-fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
+fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
     start_new_scan(sled, buffers, Duration::from_secs(0));
     Ok(())
 }
 
 #[compute_commands]
-fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn compute(sled: &Sled<Rgb>, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
     let t_buffer = buffers.get_buffer::<Duration>("times")?;
     let now = time_info.elapsed;
     let end_t = t_buffer[1];
@@ -76,7 +77,7 @@ fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> 
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
     // gradual fade to black
     let theta = ((time_info.elapsed.as_secs_f32() / 12.5).cos() + 1.0) * 180.0;
     sled.map(|led| led.color * (1.0 - time_info.delta.as_secs_f32() * 2.0));
@@ -86,7 +87,7 @@ fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> Sle
     let scan_direction = v_buffer[3];
 
     // println!("{}", scan_center);
-    let c: Rgb = spatial_led::color::oklch::Oklch::new(0.99, 0.3, theta).adapt_into();
+    let c: Rgb = palette::oklch::Oklch::new(0.99, 0.3, theta).adapt_into();
 
     sled.set_at_dir_from(scan_direction.perp(), scan_center, c);
     sled.set_at_dir_from(-scan_direction.perp(), scan_center, c);

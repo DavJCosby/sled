@@ -1,7 +1,8 @@
-use spatial_led::driver_macros::*;
 use spatial_led::driver::{Driver, TimeInfo};
-use spatial_led::SledResult;
-use spatial_led::{color::Rgb, Sled};
+use spatial_led::driver_macros::*;
+use spatial_led::{Sled, SledResult};
+
+use palette::rgb::Rgb;
 
 use std::f32::consts::TAU;
 const INV_TAU: f32 = 1.0 / TAU;
@@ -17,14 +18,14 @@ const BLUE: Rgb = Rgb::new(0.4, 0.51, 0.93);
 const TRAIL_RADIUS: f32 = 1.2;
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
+pub fn build_driver() -> Driver<Rgb> {
     let mut driver = Driver::new();
     driver.set_draw_commands(draw);
     driver
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, time_info: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, time_info: &TimeInfo) -> SledResult {
     let elapsed = time_info.elapsed.as_secs_f32();
 
     let inner_time_scale = elapsed / GREEN_RADIUS;

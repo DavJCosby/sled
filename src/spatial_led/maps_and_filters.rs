@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    color::Rgb,
+    color::ColorType,
     led::Led,
     spatial_led::{Filter, Sled},
 };
@@ -9,43 +9,43 @@ use crate::{
 use glam::Vec2;
 
 /// Maps
-impl Sled {
-    pub fn map(&mut self, led_to_color_map: impl Fn(&Led) -> Rgb) {
+impl<Color: ColorType> Sled<Color> {
+    pub fn map(&mut self, led_to_color_map: impl Fn(&Led<Color>) -> Color) {
         self.leds
             .iter_mut()
             .for_each(|led| led.color = led_to_color_map(led));
     }
 
-    pub fn map_by_index(&mut self, index_to_color_map: impl Fn(usize) -> Rgb) {
+    pub fn map_by_index(&mut self, index_to_color_map: impl Fn(usize) -> Color) {
         self.map(|led| index_to_color_map(led.index() as usize));
     }
 
-    pub fn map_by_segment(&mut self, segment_index_to_color_map: impl Fn(usize) -> Rgb) {
+    pub fn map_by_segment(&mut self, segment_index_to_color_map: impl Fn(usize) -> Color) {
         self.map(|led| segment_index_to_color_map(led.segment() as usize));
     }
 
-    pub fn map_by_pos(&mut self, pos_to_color_map: impl Fn(Vec2) -> Rgb) {
+    pub fn map_by_pos(&mut self, pos_to_color_map: impl Fn(Vec2) -> Color) {
         self.map(|led| pos_to_color_map(led.position()));
     }
 
-    pub fn map_by_dir(&mut self, dir_to_color_map: impl Fn(Vec2) -> Rgb) {
+    pub fn map_by_dir(&mut self, dir_to_color_map: impl Fn(Vec2) -> Color) {
         self.map(|led| dir_to_color_map(led.direction()));
     }
 
-    pub fn map_by_dir_from(&mut self, point: Vec2, dir_to_color_map: impl Fn(Vec2) -> Rgb) {
+    pub fn map_by_dir_from(&mut self, point: Vec2, dir_to_color_map: impl Fn(Vec2) -> Color) {
         self.leds.iter_mut().for_each(|led| {
             let dir = (point - led.position()).normalize_or_zero();
             led.color = dir_to_color_map(dir)
         });
     }
 
-    pub fn map_by_angle(&mut self, angle_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_angle(&mut self, angle_to_color_map: impl Fn(f32) -> Color) {
         self.leds.iter_mut().for_each(|led| {
             led.color = angle_to_color_map(led.angle());
         });
     }
 
-    pub fn map_by_angle_from(&mut self, point: Vec2, angle_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_angle_from(&mut self, point: Vec2, angle_to_color_map: impl Fn(f32) -> Color) {
         self.leds.iter_mut().for_each(|led| {
             let delta = point - led.position();
             let angle = delta.x.atan2(delta.y);
@@ -53,13 +53,13 @@ impl Sled {
         });
     }
 
-    pub fn map_by_dist(&mut self, dist_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_dist(&mut self, dist_to_color_map: impl Fn(f32) -> Color) {
         self.leds
             .iter_mut()
             .for_each(|led| led.color = dist_to_color_map(led.distance()));
     }
 
-    pub fn map_by_dist_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Rgb) {
+    pub fn map_by_dist_from(&mut self, pos: Vec2, dist_to_color_map: impl Fn(f32) -> Color) {
         self.leds.iter_mut().for_each(|led| {
             let dist = pos.distance(led.position());
             led.color = dist_to_color_map(dist);
@@ -68,8 +68,8 @@ impl Sled {
 }
 
 /// Filters
-impl Sled {
-    pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Filter {
+impl<Color: ColorType> Sled<Color> {
+    pub fn filter(&self, filter: impl Fn(&Led<Color>) -> bool) -> Filter {
         let filtered: HashSet<u16> = self
             .leds
             .iter()

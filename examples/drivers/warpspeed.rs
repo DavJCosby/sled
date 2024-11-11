@@ -2,14 +2,15 @@ use spatial_led::driver_macros::*;
 use rand::Rng;
 use spatial_led::driver::{BufferContainer, Driver, TimeInfo};
 use spatial_led::SledResult;
-use spatial_led::{color::Rgb, Sled, Vec2};
+use spatial_led::{Sled, Vec2};
+use palette::rgb::Rgb;
 
 const NUM_STARS: usize = 5000;
 const VELOCITY: f32 = 6.0;
 const DIRECTION: Vec2 = Vec2::new(0.7071, -0.7071);
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
+pub fn build_driver() -> Driver<Rgb> {
     let mut driver = Driver::new();
 
     driver.set_startup_commands(startup);
@@ -20,7 +21,7 @@ pub fn build_driver() -> Driver {
 }
 
 #[startup_commands]
-fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
+fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
     let stars = buffers.create_buffer::<Vec2>("stars");
     let center = sled.center_point();
     let mut rng = rand::thread_rng();
@@ -58,7 +59,7 @@ fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
 }
 
 #[compute_commands]
-fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn compute(sled: &Sled<Rgb>, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
     let mut rng = rand::thread_rng();
     let delta = time_info.delta.as_secs_f32();
     let stars = buffers.get_buffer_mut::<Vec2>("stars")?;
@@ -89,7 +90,7 @@ fn compute(sled: &Sled, buffers: &mut BufferContainer, time_info: &TimeInfo) -> 
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
     let stars = buffers.get_buffer::<Vec2>("stars")?;
     let center = sled.center_point();
     let delta = time_info.delta.as_secs_f32();

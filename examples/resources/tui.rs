@@ -12,7 +12,8 @@ use ratatui::{
     },
 };
 
-use spatial_led::{color::Srgb, Sled, Vec2};
+use palette::rgb::Srgb;
+use spatial_led::{Sled, Vec2};
 
 use std::{
     io::{self, stdout, Error, ErrorKind, Stdout},
@@ -21,7 +22,7 @@ use std::{
 
 pub struct SledTerminalDisplay {
     title: String,
-    leds: Vec<(Srgb<u8>, Vec2)>,
+    leds: Vec<(Srgb, Vec2)>,
     on_quit: Box<dyn FnMut()>,
     quit: bool,
     x_bounds: [f64; 2],
@@ -59,7 +60,7 @@ impl SledTerminalDisplay {
         self.title = title;
     }
 
-    pub fn set_leds(&mut self, leds: impl Iterator<Item = (Srgb<u8>, Vec2)>) {
+    pub fn set_leds(&mut self, leds: impl Iterator<Item = (Srgb, Vec2)>) {
         // not ideal, look for a workaround later
         self.leds = leds.collect()
     }
@@ -109,13 +110,17 @@ impl Drop for SledTerminalDisplay {
     }
 }
 
-fn draw_led(ctx: &mut Context, led: &(Srgb<u8>, Vec2)) {
+fn draw_led(ctx: &mut Context, led: &(Srgb, Vec2)) {
     let (col, pos) = led;
     ctx.draw(&Circle {
         x: pos.x as f64,
         y: pos.y as f64,
         radius: 0.0,
-        color: Color::Rgb(col.red, col.green, col.blue),
+        color: Color::Rgb(
+            (col.red / 255.0) as u8,
+            (col.green / 255.0) as u8,
+            (col.blue / 255.0) as u8,
+        ),
     });
 }
 
@@ -136,7 +141,7 @@ fn main() -> io::Result<()> {
     let sled = Sled::new("./examples/resources/config.yap").unwrap();
 
     let mut display = SledTerminalDisplay::start("Sled Visualizer", sled.domain());
-    display.set_leds(sled.colors_and_positions_coerced());
+    display.set_leds(sled.colors_and_positions());
     display.refresh()?;
 
     Ok(())

@@ -1,14 +1,14 @@
 use std::collections::{hash_set, HashSet};
 
-use crate::{color::Rgb, led::Led, spatial_led::Sled};
+use crate::{color::ColorType, led::Led, spatial_led::Sled};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Filter {
     led_indices: HashSet<u16>,
 }
 
-impl From<&[Led]> for Filter {
-    fn from(value: &[Led]) -> Self {
+impl<Color: ColorType> From<&[Led<Color>]> for Filter {
+    fn from(value: &[Led<Color>]) -> Self {
         let mut hs = HashSet::new();
         for led in value {
             hs.insert(led.index());
@@ -97,28 +97,28 @@ impl Extend<u16> for Filter {
     }
 }
 
-impl Sled {
-    pub fn set_filter(&mut self, filter: &Filter, color: Rgb) {
+impl<Color: ColorType> Sled<Color> {
+    pub fn set_filter(&mut self, filter: &Filter, color: Color) {
         for i in filter {
             self.leds[i as usize].color = color;
         }
     }
 
-    pub fn modulate_filter<F: Fn(&Led) -> Rgb>(&mut self, filter: &Filter, color_rule: F) {
+    pub fn modulate_filter<F: Fn(&Led<Color>) -> Color>(&mut self, filter: &Filter, color_rule: F) {
         for i in filter {
             let led = &mut self.leds[i as usize];
             led.color = color_rule(led)
         }
     }
 
-    pub fn map_filter<F: Fn(&Led) -> Rgb>(&mut self, filter: &Filter, map: F) {
+    pub fn map_filter<F: Fn(&Led<Color>) -> Color>(&mut self, filter: &Filter, map: F) {
         for i in filter {
             let led = &mut self.leds[i as usize];
             led.color = map(led)
         }
     }
 
-    pub fn for_each_in_filter<F: FnMut(&mut Led)>(&mut self, filter: &Filter, mut func: F) {
+    pub fn for_each_in_filter<F: FnMut(&mut Led<Color>)>(&mut self, filter: &Filter, mut func: F) {
         for i in filter {
             let led = &mut self.leds[i as usize];
             func(led);
