@@ -4,7 +4,7 @@ use std::f32::consts::{PI, TAU};
 use std::time::Duration;
 
 use glam::Vec2;
-use spatial_led::driver::{Driver, TimeInfo};
+use spatial_led::driver::{StdDriver, TimeInfo};
 use spatial_led::driver_macros::*;
 use spatial_led::BufferContainer;
 use spatial_led::{color::Rgb, Sled, SledResult};
@@ -12,8 +12,8 @@ use spatial_led::{color::Rgb, Sled, SledResult};
 const SCAN_DURATION: f32 = 4.0;
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
-    let mut driver = Driver::new();
+pub fn build_driver() -> StdDriver {
+    let mut driver = StdDriver::new();
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);
     driver.set_draw_commands(draw);

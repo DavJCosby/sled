@@ -1,6 +1,6 @@
-use spatial_led::driver_macros::*;
 use rand::Rng;
-use spatial_led::driver::{BufferContainer, Driver, TimeInfo};
+use spatial_led::driver::{BufferContainer, StdDriver, TimeInfo};
+use spatial_led::driver_macros::*;
 use spatial_led::SledResult;
 use spatial_led::{color::Rgb, Sled, Vec2};
 
@@ -9,8 +9,8 @@ const VELOCITY: f32 = 6.0;
 const DIRECTION: Vec2 = Vec2::new(0.7071, -0.7071);
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
-    let mut driver = Driver::new();
+pub fn build_driver() -> StdDriver {
+    let mut driver = StdDriver::new();
 
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);

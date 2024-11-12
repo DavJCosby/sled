@@ -1,5 +1,5 @@
+use spatial_led::driver::{StdDriver, TimeInfo};
 use spatial_led::driver_macros::*;
-use spatial_led::driver::{Driver, TimeInfo};
 use spatial_led::SledResult;
 use spatial_led::{color::Rgb, Sled};
 
@@ -17,8 +17,8 @@ const BLUE: Rgb = Rgb::new(0.4, 0.51, 0.93);
 const TRAIL_RADIUS: f32 = 1.2;
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
-    let mut driver = Driver::new();
+pub fn build_driver() -> StdDriver {
+    let mut driver = StdDriver::new();
     driver.set_draw_commands(draw);
     driver
 }

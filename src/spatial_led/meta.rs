@@ -1,4 +1,10 @@
-use std::ops::Range;
+use core::ops::Range;
+
+use alloc::vec;
+use alloc::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 use crate::{
     color,
@@ -39,13 +45,14 @@ impl Sled {
     ///     --> (3.5, 0) | (2, 2)
     ///     --> (-2, 2) --> (-2, 0)
     ///     ```
+    #[cfg(feature = "std")]
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         Sled::new_from_config(config)
     }
 
     /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a String.
-    pub fn new_from_string(string: String) -> Result<Self, SledError> {
+    pub fn new_from_string(string: &str) -> Result<Self, SledError> {
         let config = Config::from_string(string)?;
         Sled::new_from_config(config)
     }

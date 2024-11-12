@@ -11,20 +11,24 @@ documentation = "https://docs.rs/spatial_led"
 exclude = ["*.gif", "*.cast"]
 
 [features]
-default = ["drivers", "scheduler"]
+default = ["drivers", "scheduler", "std"]
 drivers = ["compact_str", "sled_driver_macros"]
-scheduler = ["spin_sleep"]
+scheduler = []
 named_colors = []
+std = ["glam/std"]
+async = []
+spin_sleep = ["std", "dep:spin_sleep"]
 
 [dependencies]
-glam = { version = "0.29" }
+glam = { version = "0.29", default-features = false, features = ["libm"] }
 palette = { version = "0.7", default-features = false, features = [
-    "std",
+    "libm",
     "approx",
 ] }
 smallvec = "1.13"
-compact_str = { version = "0.8", optional = true }
+compact_str = { version = "0.8", default-features = false, optional = true }
 sled_driver_macros = { version = "0.1.2", optional = true }
+num-traits = { version = "0.2", default-features = false }
 spin_sleep = { version = "1.2", optional = true }
 
 [dev-dependencies]

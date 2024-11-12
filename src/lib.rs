@@ -1,6 +1,8 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 //! # Spatial LED (Sled)
 //! <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
- //! </div>
+//! </div>
 //!
 //! Sled is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, Sled is still in its early stages of development which means there is plenty of room for improvement in both categories.
 //!
@@ -36,7 +38,7 @@
 //! (2, 2) --> (-2, 2) --> (-2, 0)
 //! ```
 //! See [Sled::new()] for more information on this config format.
-//! 
+//!
 //! ### Drawing
 //! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 //!
@@ -138,12 +140,12 @@
 //! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
 //!
 //! ## Drivers
-//! [Drivers](driver::Driver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
+//! [Drivers](driver::StdDriver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
 //!
 //! ```rust
 //! # use spatial_led::{Sled, color::Rgb};
-//! use spatial_led::driver::Driver;
-//! let mut driver = Driver::new();
+//! use spatial_led::driver::StdDriver;
+//! let mut driver = StdDriver::new();
 //!
 //! driver.set_startup_commands(|_sled, buffers, _filters| {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
@@ -171,12 +173,12 @@
 //!     Ok(())
 //! });
 //! ```
-//! To start using the Driver, give it ownership over a Sled using [.mount()](driver::Driver::mount) and use [.step()](driver::Driver::step) to manually refresh it.
+//! To start using the Driver, give it ownership over a Sled using [.mount()](driver::StdDriver::mount) and use [.step()](driver::StdDriver::step) to manually refresh it.
 //! ```rust, no_run
-//! # use spatial_led::{Sled, driver::Driver};
+//! # use spatial_led::{Sled, driver::StdDriver};
 //! # fn main() -> Result<(), spatial_led::SledError> {
 //! let sled = Sled::new("path/to/config.yap")?;
-//! # let mut driver = Driver::new();
+//! # let mut driver = StdDriver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
 //!
 //! loop {
@@ -192,18 +194,20 @@
 //!
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
-//! # use spatial_led::{Sled, driver::Driver};
+//! # use spatial_led::{Sled, driver::StdDriver};
 //! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
-//! # let mut driver = Driver::new();
+//! # let mut driver = StdDriver::new();
 //! # driver.mount(sled);
 //! let sled = driver.dismount();
 //! ```
 //!
-//! * [set_startup_commands()](driver::Driver::set_startup_commands) - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over [Sled], [BufferContainer], and [Filters].
+//! * [set_startup_commands()](driver::StdDriver::set_startup_commands) - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over [Sled], [BufferContainer], and [Filters].
 //!
-//! * [set_draw_commands()](driver::Driver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `BufferContainer`, `Filters`, and `TimeInfo`.
+//! * [set_draw_commands()](driver::StdDriver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `BufferContainer`, `Filters`, and `TimeInfo`.
 //!
-//! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
+//! * [set_compute_commands()](driver::StdDriver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
+//!
+//! Drivers need a representation of a time instant, which is provided as a generic `INSTANT` that must implement the trait `time::Instant`. For `std` targets, `std::time::Instant` can be used, and a type alias `StdDriver = Driver<std::time::Instant>` is defined. For `no_std` targets, the client should define their own representation (e.g. using `embassy_time::Instant`).
 //!
 //! If you don't want to Drivers for your project, you can disable the `drivers` compiler feature to shed a couple dependencies.
 //!
@@ -217,7 +221,7 @@
 //!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
-//! # use spatial_led::{Sled, driver::Driver, color::Rgb};
+//! # use spatial_led::{Sled, driver::StdDriver, color::Rgb};
 //! # use spatial_led::{BufferContainer, SledResult, TimeInfo};
 //! use spatial_led::driver_macros::*;
 //!
@@ -250,7 +254,7 @@
 //!
 //! //--snip--/
 //!
-//! let mut driver = Driver::new();
+//! let mut driver = StdDriver::new();
 //! driver.set_startup_commands(startup);
 //! driver.set_draw_commands(draw);
 //! ```
@@ -258,10 +262,10 @@
 //! ### Buffers
 //! A driver exposes a data structure called [BufferContainer]. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
-//! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
+//! It's best practice to create buffers with [startup commands](driver::StdDriver::set_startup_commands), and then modify them either through [compute commands](driver::StdDriver::set_compute_commands) or from [outside the driver](driver::StdDriver::buffers_mut) depending on your needs.
 //!
 //! ```rust
-//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
+//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, StdDriver}, SledResult, color::Rgb};
 //! # use spatial_led::driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
 //! #[startup_commands]
@@ -272,15 +276,15 @@
 //!     Ok(())
 //! }
 //!
-//! # let mut driver = Driver::new();
+//! # let mut driver = StdDriver::new();
 //!
 //! driver.set_startup_commands(startup);
 //! ```
 //!
 //! To maniplate buffers from outside driver, just do:
 //! ```rust
-//! # use spatial_led::{driver::{BufferContainer, Driver}};
-//! # let mut driver = Driver::new();
+//! # use spatial_led::{driver::{BufferContainer, StdDriver}};
+//! # let mut driver = StdDriver::new();
 //! let buffers: &BufferContainer = driver.buffers();
 //! // or
 //! let buffers: &mut BufferContainer = driver.buffers_mut();
@@ -289,8 +293,8 @@
 //! Using a BufferContainer is relatively straightforward.
 //! ```rust
 //! # type MY_CUSTOM_TYPE = f32;
-//! # use spatial_led::{color::Rgb, Sled, driver::Driver, driver::BufferContainer};
-//! # let mut driver = Driver::new();
+//! # use spatial_led::{color::Rgb, Sled, driver::StdDriver, driver::BufferContainer};
+//! # let mut driver = StdDriver::new();
 //! driver.set_draw_commands(|sled: &mut Sled, buffers: &BufferContainer, _, _| {
 //!     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
 //!     let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
@@ -340,8 +344,8 @@
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
 //! ```rust
-//! # use spatial_led::{Sled, Led, Filter, Vec2, color::Rgb, driver::Driver};
-//! # let mut driver = Driver::new();
+//! # use spatial_led::{Sled, Led, Filter, Vec2, color::Rgb, driver::StdDriver};
+//! # let mut driver = StdDriver::new();
 //! driver.set_startup_commands(|sled, buffers, filters| {
 //!     let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
 //!
@@ -368,12 +372,12 @@
 //! I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
 //!
 //! ## Scheduler
-//! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
+//! The [Scheduler](scheduler::StdScheduler) struct makes it super easy to schedule redraws at a fixed rate.
 //!
 //! ```rust, no_run
-//! # use spatial_led::{scheduler::Scheduler, driver::Driver};
-//! # let mut driver = Driver::new();
-//! let mut scheduler = Scheduler::new(120.0);
+//! # use spatial_led::{scheduler::StdScheduler, driver::StdDriver};
+//! # let mut driver = StdDriver::new();
+//! let mut scheduler = StdScheduler::new(120.0);
 //!
 //! scheduler.loop_forever(|| {
 //!     driver.step();
@@ -384,9 +388,9 @@
 //! Here are a few other methods that you might also consider:
 //!
 //! ```rust, no_run
-//! # use spatial_led::{scheduler::Scheduler, driver::Driver};
-//! # let mut driver = Driver::new();
-//! # let mut scheduler = Scheduler::new(120.0);
+//! # use spatial_led::{scheduler::StdScheduler, driver::StdDriver};
+//! # let mut driver = StdDriver::new();
+//! # let mut scheduler = StdScheduler::new(120.0);
 //! // loops until false is returned
 //! scheduler.loop_while_true(|| {
 //!     // -snip-
@@ -406,8 +410,14 @@
 //! }
 //! ```
 //!
+//! Schedulers need a representation of a time instant, like drivers, and also a representation of a sleep function, which is provided as a generic `SLEEPER` that must implement the trait `time::Sleeper`. For `std` targets, `std::thread::sleep()` can be used, and a type alias `StdScheduler = Scheduler<std::time::Instant, StdSleeper>` is defined. For `no_std` targets, the client should define their own representation.
+//!
+//! For async environments, AsyncScheduler can be used instead. No predefined implementation is provided, the client should define their own, e.g. using `embassy_time::Timer::after().await`.
+//!
 //! If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
 //!
+
+extern crate alloc;
 
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
 pub mod color;
@@ -440,3 +450,5 @@ pub use glam::Vec2;
 pub use led::Led;
 pub use spatial_led::Filter;
 pub use spatial_led::Sled;
+
+pub mod time;

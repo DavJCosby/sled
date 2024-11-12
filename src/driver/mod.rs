@@ -1,9 +1,16 @@
+use core::time::Duration;
+
+use alloc::boxed::Box;
+
 use crate::{
     color::{Rgb, Srgb},
+    time::Instant,
     Led, Sled, SledError, Vec2,
 };
 
-use std::time::{Duration, Instant};
+/// A driver representing instants with `std::time::Instant`
+#[cfg(feature = "std")]
+pub type StdDriver = Driver<std::time::Instant>;
 
 mod filters;
 // mod sliders;
@@ -26,26 +33,32 @@ type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo)
 /// Drivers are useful for encapsulating everything you need to drive a complicated lighting effect all in one place.
 ///
 /// Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. See their doc comments for more information.
-pub struct Driver {
+pub struct Driver<INSTANT>
+where
+    INSTANT: Instant,
+{
     sled: Option<Sled>,
     startup_commands: StartupCommands,
     compute_commands: ComputeCommands,
     draw_commands: DrawCommands,
-    startup: Instant,
-    last_update: Instant,
+    startup: INSTANT,
+    last_update: INSTANT,
     buffers: BufferContainer,
     filters: Filters,
 }
 
-impl Driver {
+impl<INSTANT> Driver<INSTANT>
+where
+    INSTANT: Instant,
+{
     pub fn new() -> Self {
         Driver {
             sled: None,
             startup_commands: Box::new(|_, _, _| Ok(())),
             compute_commands: Box::new(|_, _, _, _| Ok(())),
             draw_commands: Box::new(|_, _, _, _| Ok(())),
-            startup: Instant::now(),
-            last_update: Instant::now(),
+            startup: INSTANT::now(),
+            last_update: INSTANT::now(),
             buffers: BufferContainer::new(),
             filters: Filters::new(),
         }
@@ -63,7 +76,7 @@ impl Driver {
 
     /// Define commands to be called as soon as a Sled is [mounted](Driver::mount) to the driver. This is a good place to initialize important buffer values.
     /// ```rust
-    /// # use spatial_led::{Vec2, BufferContainer, SledResult, driver::Driver};
+    /// # use spatial_led::{Vec2, BufferContainer, SledResult, driver::StdDriver};
     /// use spatial_led::driver_macros::*;
     ///
     /// #[startup_commands]
@@ -78,7 +91,7 @@ impl Driver {
     /// }
     ///
     /// pub fn main() {
-    ///     let mut driver = Driver::new();
+    ///     let mut driver = StdDriver::new();
     ///     driver.set_startup_commands(startup);
     /// }
     /// ```
@@ -93,7 +106,7 @@ impl Driver {
 
     /// Define commands to be called each time [Driver::step()] is called, right before we run [draw commands](Driver::set_draw_commands).
     /// ```rust
-    /// # use spatial_led::{Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// # use spatial_led::{Vec2, BufferContainer, TimeInfo, SledResult, driver::StdDriver};
     /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
@@ -108,7 +121,7 @@ impl Driver {
     /// }
     ///
     /// pub fn main() {
-    ///     let mut driver = Driver::new();
+    ///     let mut driver = StdDriver::new();
     ///     driver.set_compute_commands(compute);
     /// }
     ///
@@ -124,14 +137,14 @@ impl Driver {
 
     /// Define commands to be called each time [Driver::step()] is called, right after we run [compute commands](Driver::set_compute_commands).
     /// ```rust
-    /// # use spatial_led::{Sled, Vec2, color::Rgb, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// # use spatial_led::{Sled, Vec2, color::Rgb, BufferContainer, TimeInfo, SledResult, driver::StdDriver};
     /// use spatial_led::driver_macros::*;
     ///
     /// #[draw_commands]
     /// fn draw(sled: &mut Sled, buffers: &BufferContainer) -> SledResult {
     ///     // gradually fade all LEDs to black
     ///     sled.map(|led| led.color * 0.95);
-    /// 
+    ///
     ///     // For each position in our buffer, draw  white in the direction to it.
     ///     let streak_positions = buffers.get_buffer::<Vec2>("positions")?;
     ///     let center = sled.center_point();
@@ -143,7 +156,7 @@ impl Driver {
     /// }
     ///
     /// pub fn main() {
-    ///     let mut driver = Driver::new();
+    ///     let mut driver = StdDriver::new();
     ///     driver.set_draw_commands(draw);
     /// }
     ///
@@ -160,7 +173,7 @@ impl Driver {
     /// Takes ownership of the given Sled and runs the Driver's [startup commands](Driver::set_startup_commands).
     pub fn mount(&mut self, mut sled: Sled) {
         (self.startup_commands)(&mut sled, &mut self.buffers, &mut self.filters).unwrap();
-        self.startup = Instant::now();
+        self.startup = INSTANT::now();
         self.last_update = self.startup;
         self.sled = Some(sled);
     }
@@ -173,7 +186,7 @@ impl Driver {
                 delta: self.last_update.elapsed(),
             };
 
-            self.last_update = Instant::now();
+            self.last_update = INSTANT::now();
             (self.compute_commands)(sled, &mut self.buffers, &mut self.filters, &time_info)
                 .unwrap();
             (self.draw_commands)(sled, &self.buffers, &self.filters, &time_info).unwrap();
@@ -252,7 +265,10 @@ impl Driver {
     }
 }
 
-impl Default for Driver {
+impl<INSTANT> Default for Driver<INSTANT>
+where
+    INSTANT: Instant,
+{
     fn default() -> Self {
         Self::new()
     }

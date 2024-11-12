@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use alloc::collections::BTreeSet;
 
 use crate::{color::Rgb, led::Led, Filter, Sled};
 use glam::Vec2;
@@ -42,7 +42,7 @@ impl Sled {
         intersecting_indices
             .iter()
             .map(|i| *i as u16)
-            .collect::<HashSet<u16>>()
+            .collect::<BTreeSet<u16>>()
             .into()
     }
 
@@ -180,7 +180,7 @@ impl Sled {
     ///
     ///```rust
     ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
-    /// use std::f32::consts::PI;
+    /// use core::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// sled.modulate_at_angle(PI / 4.0, |led| led.color * 2.0);
@@ -203,7 +203,7 @@ impl Sled {
     ///
     ///```rust
     ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
-    /// use std::f32::consts::PI;
+    /// use core::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
     ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
     /// let angle = PI * 1.25;
