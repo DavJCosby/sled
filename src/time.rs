@@ -22,10 +22,8 @@ pub trait Sleeper {
 /// A trait to abstract an asynchronous sleep function
 pub trait AsyncSleeper {
     /// Sleep for the specified duration
-    fn sleep(
-        &self,
-        duration: core::time::Duration,
-    ) -> impl core::future::Future<Output = ()> + Send;
+    #[allow(async_fn_in_trait)]
+    async fn sleep(&self, duration: core::time::Duration);
 }
 
 #[cfg(feature = "std")]
