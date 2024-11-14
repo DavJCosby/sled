@@ -1,5 +1,5 @@
-use spatial_led::driver_macros::*;
 use spatial_led::driver::{Driver, TimeInfo};
+use spatial_led::driver_macros::*;
 use spatial_led::SledResult;
 use spatial_led::{color::Rgb, Sled};
 

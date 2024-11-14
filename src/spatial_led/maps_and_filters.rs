@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use alloc::collections::BTreeSet;
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 use crate::{
     color::Rgb,
@@ -70,7 +73,7 @@ impl Sled {
 /// Filters
 impl Sled {
     pub fn filter(&self, filter: impl Fn(&Led) -> bool) -> Filter {
-        let filtered: HashSet<u16> = self
+        let filtered: BTreeSet<u16> = self
             .leds
             .iter()
             .filter_map(|led| if filter(led) { Some(led.index()) } else { None })

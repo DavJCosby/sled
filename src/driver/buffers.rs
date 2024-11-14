@@ -1,22 +1,26 @@
-use std::{
+use core::{
     any::{type_name, Any},
     fmt::Debug,
 };
 
+use alloc::boxed::Box;
+use alloc::collections::BTreeMap;
+use alloc::format;
+use alloc::vec::Vec;
+
 use compact_str::{CompactString, ToCompactString};
-use std::collections::HashMap;
 
 use crate::SledError;
 
 #[derive(Debug)]
 pub struct BufferContainer {
-    buffers: HashMap<CompactString, Box<dyn Buffer>>,
+    buffers: BTreeMap<CompactString, Box<dyn Buffer>>,
 }
 
 impl BufferContainer {
     pub fn new() -> Self {
         BufferContainer {
-            buffers: HashMap::new(),
+            buffers: BTreeMap::new(),
         }
     }
 
@@ -235,18 +239,18 @@ impl BufferContainer {
         Ok(())
     }
 
-    pub fn iter(&self) -> std::collections::hash_map::Iter<CompactString, Box<dyn Buffer>> {
+    pub fn iter(&self) -> alloc::collections::btree_map::Iter<CompactString, Box<dyn Buffer>> {
         self.buffers.iter()
     }
 
     pub fn iter_mut(
         &mut self,
-    ) -> std::collections::hash_map::IterMut<CompactString, Box<dyn Buffer>> {
+    ) -> alloc::collections::btree_map::IterMut<CompactString, Box<dyn Buffer>> {
         self.buffers.iter_mut()
     }
 }
 
-pub trait Buffer: std::fmt::Debug {
+pub trait Buffer: core::fmt::Debug {
     fn as_any(&self) -> &dyn Any;
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
@@ -264,16 +268,16 @@ impl<T: BufferableData + Debug> Buffer for Vec<T> {
     }
 }
 
-impl std::iter::IntoIterator for BufferContainer {
+impl core::iter::IntoIterator for BufferContainer {
     type Item = (CompactString, Box<dyn Buffer>);
-    type IntoIter = std::collections::hash_map::IntoIter<CompactString, Box<dyn Buffer>>;
+    type IntoIter = alloc::collections::btree_map::IntoIter<CompactString, Box<dyn Buffer>>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.buffers.into_iter()
     }
 }
 
-impl std::iter::FromIterator<(CompactString, Box<dyn Buffer>)> for BufferContainer {
+impl core::iter::FromIterator<(CompactString, Box<dyn Buffer>)> for BufferContainer {
     fn from_iter<T: IntoIterator<Item = (CompactString, Box<dyn Buffer>)>>(iter: T) -> Self {
         let mut bc = BufferContainer::new();
 
@@ -285,7 +289,7 @@ impl std::iter::FromIterator<(CompactString, Box<dyn Buffer>)> for BufferContain
     }
 }
 
-impl std::iter::Extend<(CompactString, Box<dyn Buffer>)> for BufferContainer {
+impl core::iter::Extend<(CompactString, Box<dyn Buffer>)> for BufferContainer {
     fn extend<T: IntoIterator<Item = (CompactString, Box<dyn Buffer>)>>(&mut self, iter: T) {
         for (key, value) in iter {
             self.buffers.insert(key, value);

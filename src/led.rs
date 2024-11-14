@@ -1,6 +1,9 @@
 use crate::color::Rgb;
 use glam::Vec2;
 
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
+
 #[derive(Copy, Clone)]
 
 /// An LED in our Sled configuration, representing both the color of the LED as well as it's spatial information.
@@ -85,25 +88,25 @@ impl PartialEq for Led {
 impl Eq for Led {}
 
 impl PartialOrd for Led {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for Led {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.index.cmp(&other.index())
     }
 }
 
-impl std::hash::Hash for Led {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+impl core::hash::Hash for Led {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.index.hash(state);
     }
 }
 
-impl std::fmt::Debug for Led {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for Led {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let dir = self.direction();
         f.debug_struct("Led")
             .field("color", &self.color.into_components())
@@ -117,8 +120,8 @@ impl std::fmt::Debug for Led {
     }
 }
 
-impl std::fmt::Display for Led {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Display for Led {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(
             f,
             "{}: ({}, {}, {})",

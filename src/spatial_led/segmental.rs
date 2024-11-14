@@ -1,10 +1,15 @@
+use core::ops::Range;
+
+use alloc::collections::BTreeSet;
+use alloc::format;
+use alloc::string::ToString;
+
 use crate::{
     color::Rgb,
     error::SledError,
     led::Led,
     spatial_led::{Filter, Sled},
 };
-use std::{collections::HashSet, ops::Range};
 
 /// # Segment-based read and write methods.
 impl Sled {
@@ -66,7 +71,7 @@ impl Sled {
     }
 
     /// Returns the set of all [LEDs](Led) assigned to the line segments whose indices are within the given range.
-    /// 
+    ///
     /// If the range exceeds the number of segments in the system, returns None.
     ///
     /// O(LEDS_IN_SEGMENTS)
@@ -149,7 +154,7 @@ impl Sled {
     /// Also passes an "alpha" value into the closure, representing how far along the line segment you are. 0 = first LED in segement, 1 = last.
     ///
     /// Returns an [error](SledError) if the no segment of given index exists.
-    /// 
+    ///
     /// O(LEDS_IN_SEGMENT)
     ///
     /// ```rust
@@ -201,7 +206,7 @@ impl Sled {
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
     /// Returns an [error](SledError) if no vertex of given index exists.
-    /// 
+    ///
     /// O(1)
     ///
     /// ```rust
@@ -232,7 +237,7 @@ impl Sled {
     /// Vertices are distinct from line segement endpoints in that line segments with touching endpoints will share a vertex.
     ///
     /// Returns an [error](SledError) if no vertex of given index exists.
-    /// 
+    ///
     /// O(1)
     ///
     pub fn set_vertex(&mut self, vertex_index: usize, color: Rgb) -> Result<(), SledError> {
@@ -250,7 +255,7 @@ impl Sled {
 
     /// Returns a [Filter] containing all vertices in the system.
     pub fn vertices(&self) -> Filter {
-        let hs: HashSet<u16> = self.vertex_indices.iter().map(|i| *i as u16).collect();
+        let hs: BTreeSet<u16> = self.vertex_indices.iter().map(|i| *i as u16).collect();
         hs.into()
     }
 

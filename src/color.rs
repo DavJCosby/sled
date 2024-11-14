@@ -8,7 +8,7 @@ pub mod consts {
     //!
     //! Adapted from palette's [named](https://docs.rs/palette/0.7.3/palette/named/index.html) module
     //! but expressed as 32-bit rgb instead of 8-bit for better compatability with sled.
-    //! 
+    //!
     //! Colors are taken from the [SVG keyword
     //! colors](https://www.w3.org/TR/SVG11/types.html#ColorKeywords) (same as in
     //! CSS3) and they can be used as if they were pixel values:

@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use alloc::collections::BTreeSet;
 
 use crate::{
     color::Rgb,
@@ -8,6 +8,9 @@ use crate::{
 
 use glam::Vec2;
 use smallvec::{smallvec, SmallVec};
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 /// # position-based read and write methods
 impl Sled {
@@ -209,7 +212,7 @@ impl Sled {
     }
 
     pub fn at_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
-        let mut all_at_distance = HashSet::new();
+        let mut all_at_distance = BTreeSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
@@ -263,7 +266,7 @@ impl Sled {
     }
 
     pub fn within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
-        let mut all_within_distance = HashSet::new();
+        let mut all_within_distance = BTreeSet::new();
 
         let target_sq = dist.powi(2);
 

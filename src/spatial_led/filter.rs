@@ -1,15 +1,15 @@
-use std::collections::{hash_set, HashSet};
+use alloc::collections::{btree_set, BTreeSet};
 
 use crate::{color::Rgb, led::Led, spatial_led::Sled};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Filter {
-    led_indices: HashSet<u16>,
+    led_indices: BTreeSet<u16>,
 }
 
 impl From<&[Led]> for Filter {
     fn from(value: &[Led]) -> Self {
-        let mut hs = HashSet::new();
+        let mut hs = BTreeSet::new();
         for led in value {
             hs.insert(led.index());
         }
@@ -17,8 +17,8 @@ impl From<&[Led]> for Filter {
     }
 }
 
-impl From<HashSet<u16>> for Filter {
-    fn from(value: HashSet<u16>) -> Self {
+impl From<BTreeSet<u16>> for Filter {
+    fn from(value: BTreeSet<u16>) -> Self {
         Filter { led_indices: value }
     }
 }
@@ -61,7 +61,7 @@ impl Filter {
 
 impl IntoIterator for Filter {
     type Item = u16;
-    type IntoIter = hash_set::IntoIter<u16>;
+    type IntoIter = btree_set::IntoIter<u16>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.led_indices.into_iter()
@@ -70,7 +70,7 @@ impl IntoIterator for Filter {
 
 impl IntoIterator for &Filter {
     type Item = u16;
-    type IntoIter = hash_set::IntoIter<u16>;
+    type IntoIter = btree_set::IntoIter<u16>;
 
     fn into_iter(self) -> Self::IntoIter {
         // this doesn't seem right; revisit
@@ -80,7 +80,7 @@ impl IntoIterator for &Filter {
 
 impl FromIterator<u16> for Filter {
     fn from_iter<T: IntoIterator<Item = u16>>(iter: T) -> Self {
-        let mut set = HashSet::<u16>::new();
+        let mut set = BTreeSet::<u16>::new();
         for i in iter {
             set.insert(i);
         }

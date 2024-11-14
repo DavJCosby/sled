@@ -1,6 +1,6 @@
-use spatial_led::driver_macros::*;
 use rand::Rng;
 use spatial_led::driver::{BufferContainer, Driver, TimeInfo};
+use spatial_led::driver_macros::*;
 use spatial_led::SledResult;
 use spatial_led::{color::Rgb, Sled, Vec2};
 use std::ops::Range;

@@ -1,4 +1,7 @@
-use std::ops::Range;
+use core::ops::Range;
+
+use alloc::format;
+use alloc::string::ToString;
 
 use crate::{
     color::Rgb,
@@ -155,7 +158,7 @@ impl Sled {
     }
 
     /// For-each method granting mutable access to each [LED](Led) with an index in `index_range`
-    /// 
+    ///
     /// Returns an [error](SledError) if the range extends beyond the size of the system.
     ///
     /// O(RANGE_SIZE)

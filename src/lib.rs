@@ -1,6 +1,8 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 //! # Spatial LED (Sled)
 //! <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
- //! </div>
+//! </div>
 //!
 //! Sled is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, Sled is still in its early stages of development which means there is plenty of room for improvement in both categories.
 //!
@@ -36,7 +38,7 @@
 //! (2, 2) --> (-2, 2) --> (-2, 0)
 //! ```
 //! See [Sled::new()] for more information on this config format.
-//! 
+//!
 //! ### Drawing
 //! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 //!
@@ -204,6 +206,8 @@
 //! * [set_draw_commands()](driver::Driver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `BufferContainer`, `Filters`, and `TimeInfo`.
 //!
 //! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
+//!
+//! Drivers need a representation of a time instant, which is provided as a generic `INSTANT` that must implement the trait `time::Instant`. For `std` targets, `std::time::Instant` can be used, and a type alias `Driver = CustomDriver<std::time::Instant>` is defined. For `no_std` targets, the client should define their own representation (e.g. using `embassy_time::Instant`).
 //!
 //! If you don't want to Drivers for your project, you can disable the `drivers` compiler feature to shed a couple dependencies.
 //!
@@ -406,8 +410,14 @@
 //! }
 //! ```
 //!
+//! Schedulers need a representation of a time instant, like drivers, and also a representation of a sleep function, which is provided as a generic `SLEEPER` that must implement the trait `time::Sleeper`. For `std` targets, `std::thread::sleep()` can be used, and a type alias `Scheduler = CustomScheduler<std::time::Instant, StdSleeper>` is defined. For `no_std` targets, the client should define their own representation.
+//!
+//! For async environments, AsyncScheduler can be used instead. No predefined implementation is provided, the client should define their own, e.g. using `embassy_time::Timer::after().await`.
+//!
 //! If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
 //!
+
+extern crate alloc;
 
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
 pub mod color;
@@ -440,3 +450,5 @@ pub use glam::Vec2;
 pub use led::Led;
 pub use spatial_led::Filter;
 pub use spatial_led::Sled;
+
+pub mod time;

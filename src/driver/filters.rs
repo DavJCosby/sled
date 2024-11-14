@@ -1,10 +1,13 @@
-use crate::{Filter, SledError};
+use alloc::collections::BTreeMap;
+use alloc::format;
+
 use compact_str::{CompactString, ToCompactString};
-use std::collections::HashMap;
+
+use crate::{Filter, SledError};
 
 #[derive(Clone, Debug)]
 pub struct Filters {
-    map: HashMap<CompactString, Filter>,
+    map: BTreeMap<CompactString, Filter>,
 }
 
 impl Default for Filters {
@@ -16,7 +19,7 @@ impl Default for Filters {
 impl Filters {
     pub fn new() -> Self {
         Filters {
-            map: HashMap::new(),
+            map: BTreeMap::new(),
         }
     }
 
@@ -30,14 +33,14 @@ impl Filters {
             .ok_or_else(|| SledError::new(format!("No filter found with key '{}'", key)))
     }
 
-    pub fn iter(&self) -> std::collections::hash_map::Iter<CompactString, Filter> {
+    pub fn iter(&self) -> alloc::collections::btree_map::Iter<CompactString, Filter> {
         self.map.iter()
     }
 }
 
 impl IntoIterator for Filters {
     type Item = (CompactString, Filter);
-    type IntoIter = std::collections::hash_map::IntoIter<CompactString, Filter>;
+    type IntoIter = alloc::collections::btree_map::IntoIter<CompactString, Filter>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.map.into_iter()
