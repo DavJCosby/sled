@@ -1,11 +1,11 @@
-mod resources;
-use resources::drivers::ripples;
+mod drivers;
+use drivers::ripples;
 
 use spatial_led::Sled;
 use std::time::Duration;
 
 fn ripples(c: &mut Criterion) {
-    let sled = Sled::new("./benches/resources/config.yap").unwrap();
+    let sled = Sled::new("./benches/config.yap").unwrap();
     let mut driver = ripples::build_driver();
     driver.mount(sled);
 

@@ -1,11 +1,11 @@
-mod resources;
-use resources::drivers::comet;
+mod drivers;
+use drivers::comet;
 
 use spatial_led::Sled;
 use std::time::Duration;
 
 fn trail(c: &mut Criterion) {
-    let sled = Sled::new("./benches/resources/config.yap").unwrap();
+    let sled = Sled::new("./benches/config.yap").unwrap();
     let mut driver = comet::build_driver();
     driver.mount(sled);
 

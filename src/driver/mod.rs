@@ -32,7 +32,7 @@ type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo)
 
 /// Drivers are useful for encapsulating everything you need to drive a complicated lighting effect all in one place.
 ///
-/// Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. See their doc comments for more information.
+/// Some [macros](crate::driver_macros) have been provided to make authoring drivers a more ergonomic experience. See their doc comments for more information.
 pub struct CustomDriver<INSTANT>
 where
     INSTANT: Instant,

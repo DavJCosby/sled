@@ -27,7 +27,7 @@ impl Sled {
     /// ```rust
     ///# use spatial_led::{Sled, SledError, color::Rgb};
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::new("./benches/config.yap")?;
     /// sled.modulate(0,
     ///     |led| led.color + Rgb::new(0.5, 0.0, 0.0)
     /// )?;
@@ -78,7 +78,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let mut sled = Sled::new("./benches/config.yap").unwrap();
     /// sled.for_each(|led| {
     ///     if led.index() % 2 == 1 {
     ///         led.color = Rgb::new(1.0, 0.0, 0.0);
@@ -118,7 +118,7 @@ impl Sled {
     /// ```rust
     ///# use spatial_led::{Sled, SledError};
     ///# fn main() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::new("./benches/config.yap")?;
     /// sled.modulate_range(0..50, |led| led.color * 0.5)?;
     ///# Ok(())
     ///# }
@@ -165,7 +165,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let mut sled = Sled::new("./benches/config.yap").unwrap();
     /// sled.for_each_in_range(50..100, |led| {
     ///     if led.index() % 2 == 1 {
     ///         led.color = Rgb::new(1.0, 0.0, 0.0);

@@ -45,7 +45,7 @@
 //! **Set all vertices to white:**
 //! ```rust
 //! # use spatial_led::{Sled, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 //! ```
 //! ![Set all Vertices](https://github.com/DavJCosby/sled/blob/master/resources/vertices.png?raw=true)
@@ -55,7 +55,7 @@
 //! ```rust
 //! # use spatial_led::{Sled, color::Rgb};
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
 //! # Ok(())
 //! # }
@@ -65,7 +65,7 @@
 //! **Set each LED using a function of its direction from point `(2, 1)`:**
 //! ```rust
 //! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //!  sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!      let red = (dir.x + 1.0) * 0.5;
 //!      let green = (dir.y + 1.0) * 0.5;
@@ -78,7 +78,7 @@
 //! ```rust
 //! # use spatial_led::{Sled};
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! sled.modulate_segment(3, |led| led.color * 0.25)?;
 //! # Ok(())
 //! # }
@@ -88,7 +88,7 @@
 //! **Set all LEDs within the overlapping areas of two different circles to blue:**
 //! ```rust
 //! # use spatial_led::{Sled, Filter, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! let circle_1: Filter = sled.within_dist_from(
 //!     2.0,
 //!     Vec2::new(1.0, 0.5)
@@ -111,7 +111,7 @@
 //!
 //! ```rust
 //! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
 //!
@@ -125,7 +125,7 @@
 //!
 //! ```rust
 //! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
 //! let colors_u8 = sled.colors_coerced::<u8>();
 //! // An Iterator of Vec2s, representing the position of each leds
@@ -195,7 +195,7 @@
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
 //! # use spatial_led::{Sled, driver::Driver};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! # let mut driver = Driver::new();
 //! # driver.mount(sled);
 //! let sled = driver.dismount();
@@ -211,7 +211,7 @@
 //!
 //! If you don't want to Drivers for your project, you can disable the `drivers` compiler feature to shed a couple dependencies.
 //!
-//! For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
+//! For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 //!
 //! ### Driver Macros
 //! Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
@@ -365,7 +365,7 @@
 //! Most getter methods on Sled will return a [Filter], but if you need more precise control you can do something like this:
 //! ```rust
 //! # use spatial_led::{Sled};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::new("./benches/config.yap").unwrap();
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
 //!

@@ -104,7 +104,7 @@ impl Sled {
     ///
     ///  ```rust
     ///# use spatial_led::{Sled};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let sled = Sled::new("./benches/config.yap").unwrap();
     /// for led in sled.leds() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
@@ -121,7 +121,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let sled = Sled::new("./benches/config.yap").unwrap();
     /// let colors = sled.colors();
     ///
     /// for color in colors {
@@ -140,7 +140,7 @@ impl Sled {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let sled = Sled::new("./benches/config.yap").unwrap();
     /// let colors = sled.colors_coerced::<u8>();
     ///
     /// for color in colors {
@@ -176,7 +176,7 @@ impl Sled {
     ///
     /// ```rust
     /// # use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# let sled = Sled::new("./benches/config.yap").unwrap();
     /// let col_and_pos = sled.colors_and_positions_coerced::<u8>();
     ///
     /// for (color, position) in col_and_pos {

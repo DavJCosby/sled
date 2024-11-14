@@ -191,7 +191,7 @@ let sled = driver.dismount();
 
 > If you don't need Drivers for your project, you can shed a dependency or two by disabling the `drivers` compiler feature.
 
-For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
+For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 
 ### Driver Macros
 Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
