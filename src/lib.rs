@@ -18,6 +18,9 @@
 //! What Sled **does not** do:
 //! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out my personal [raspberry pi implementation](https://github.com/DavJCosby/rasp-pi-setup) to get an idea of what that might look like.
 //! - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
+//! 
+//! See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
+//! 
 //! ## The Basics
 //! In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 //! ### Setup

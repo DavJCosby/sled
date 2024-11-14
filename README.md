@@ -22,6 +22,9 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 
 > This project is still somewhat early in development so please report any bugs you discover! Pull requests are more than welcome!
+
+See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
+
 ## The Basics
 In absence of an official guide, this will serve as a basic introduction. From here, you can consult the [docs](https://docs.rs/spatial_led/latest/spatial_led/) to learn what else Sled can do.
 ### Setup
