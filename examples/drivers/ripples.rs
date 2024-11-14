@@ -1,5 +1,5 @@
 use rand::Rng;
-use spatial_led::driver::{BufferContainer, StdDriver, TimeInfo};
+use spatial_led::driver::{BufferContainer, Driver, TimeInfo};
 use spatial_led::driver_macros::*;
 use spatial_led::SledResult;
 use spatial_led::{color::Rgb, Sled, Vec2};
@@ -11,8 +11,8 @@ const FEATHERING: f32 = 0.15;
 const INV_F: f32 = 1.0 / FEATHERING;
 
 #[allow(dead_code)]
-pub fn build_driver() -> StdDriver {
-    let mut driver = StdDriver::new();
+pub fn build_driver() -> Driver {
+    let mut driver = Driver::new();
 
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);

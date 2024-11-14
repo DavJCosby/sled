@@ -15,32 +15,32 @@ use crate::time::SpinSleeper;
 /// A scheduler representing instants with `std::time::Instant` and sleeping
 /// with `std::thread::sleep`
 #[cfg(feature = "std")]
-pub type StdScheduler = Scheduler<std::time::Instant, StdSleeper>;
+pub type Scheduler = CustomScheduler<std::time::Instant, StdSleeper>;
 
 /// A scheduler representing instants with `std::time::Instant` and sleeping
 /// with `spin_sleep::sleep`
 #[cfg(feature = "spin_sleep")]
-pub type SpinScheduler = Scheduler<std::time::Instant, SpinSleeper>;
+pub type SpinScheduler = CustomScheduler<std::time::Instant, SpinSleeper>;
 
 #[derive(Debug, Copy, Clone, Hash)]
-pub struct Scheduler<INSTANT, SLEEPER> {
+pub struct CustomScheduler<INSTANT, SLEEPER> {
     target_delta: Duration,
     last_loop_end: INSTANT,
     sleeper: SLEEPER,
 }
 
-impl<INSTANT, SLEEPER> Default for Scheduler<INSTANT, SLEEPER>
+impl<INSTANT, SLEEPER> Default for CustomScheduler<INSTANT, SLEEPER>
 where
     INSTANT: Instant,
     SLEEPER: Sleeper + Default,
 {
     /// assumes a default hz of 60
     fn default() -> Self {
-        Scheduler::new(60.0)
+        CustomScheduler::new(60.0)
     }
 }
 
-impl<INSTANT, SLEEPER> Scheduler<INSTANT, SLEEPER>
+impl<INSTANT, SLEEPER> CustomScheduler<INSTANT, SLEEPER>
 where
     INSTANT: Instant,
     SLEEPER: Sleeper,
@@ -56,7 +56,7 @@ where
     /// Constructs a new Scheduler struct that can schedule tasks at the given frequency `target_hz`, using a specific sleeper.
     pub fn with_sleeper(target_hz: f32, sleeper: SLEEPER) -> Self {
         let target_delta = Duration::from_secs_f32(target_hz.recip());
-        Scheduler {
+        CustomScheduler {
             target_delta,
             last_loop_end: INSTANT::now(),
             sleeper,
@@ -65,7 +65,7 @@ where
 
     /// Allows you to change the frequency at which the scheduler tries to run tasks.
     ///
-    /// Note: Deprecated in favor of [Scheduler::set_hz()]
+    /// Note: Deprecated in favor of [CustomScheduler::set_hz()]
     #[deprecated]
     pub fn change_hz(&mut self, new_target_hz: f32) {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
@@ -83,9 +83,9 @@ where
 
     /// Lets you run a task at a fixed interval, forever.
     /// ```rust, no_run
-    /// # use spatial_led::{scheduler::StdScheduler};
+    /// # use spatial_led::{scheduler::Scheduler};
     /// pub fn main() {
-    ///     let mut scheduler = StdScheduler::new(120.0);
+    ///     let mut scheduler = Scheduler::new(120.0);
     ///     scheduler.loop_forever(|| {
     ///         println!("This will print 120 times per second!");
     ///     });
@@ -100,9 +100,9 @@ where
 
     /// Lets you run a task at a fixed interval. Will break when the function returns false.
     /// ```rust
-    /// # use spatial_led::{scheduler::StdScheduler};
+    /// # use spatial_led::{scheduler::Scheduler};
     /// pub fn main() {
-    ///     let mut scheduler = StdScheduler::new(240.0);
+    ///     let mut scheduler = Scheduler::new(240.0);
     ///     let mut loop_count = 0;
     ///     scheduler.loop_while_true(|| {
     ///         // do something
@@ -122,10 +122,10 @@ where
 
     /// Lets you run a task at a fixed interval. Will break when the function returns a result of Err variant.
     /// ```rust
-    /// # use spatial_led::{scheduler::StdScheduler};
+    /// # use spatial_led::{scheduler::Scheduler};
     /// # use spatial_led::{Sled, SledResult, color::Rgb};
     /// pub fn main() {
-    ///     let mut scheduler = StdScheduler::new(60.0);
+    ///     let mut scheduler = Scheduler::new(60.0);
     ///     let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
     ///     let mut segment_index = 0;
     ///     scheduler.loop_until_err(|| {
@@ -151,9 +151,9 @@ where
     ///
     /// Valuable for when you'd like to avoid having to pass values into a closure, or would like more control over loop flow.
     /// ```rust
-    /// # use spatial_led::{scheduler::StdScheduler};
+    /// # use spatial_led::{scheduler::Scheduler};
     /// pub fn main() {
-    ///     let mut scheduler = StdScheduler::new(60.0);
+    ///     let mut scheduler = Scheduler::new(60.0);
     ///
     ///     // print all numbers 0 to 59 in exactly one second.
     ///     for i in 0..60 {
@@ -175,13 +175,13 @@ where
 }
 
 #[derive(Debug, Copy, Clone, Hash)]
-pub struct AsyncScheduler<INSTANT, SLEEPER> {
+pub struct AsyncCustomScheduler<INSTANT, SLEEPER> {
     target_delta: Duration,
     last_loop_end: INSTANT,
     sleeper: SLEEPER,
 }
 
-impl<INSTANT, SLEEPER> Default for AsyncScheduler<INSTANT, SLEEPER>
+impl<INSTANT, SLEEPER> Default for AsyncCustomScheduler<INSTANT, SLEEPER>
 where
     INSTANT: Instant,
     SLEEPER: AsyncSleeper + Default,
@@ -192,12 +192,12 @@ where
     }
 }
 
-impl<INSTANT, SLEEPER> AsyncScheduler<INSTANT, SLEEPER>
+impl<INSTANT, SLEEPER> AsyncCustomScheduler<INSTANT, SLEEPER>
 where
     INSTANT: Instant,
     SLEEPER: AsyncSleeper,
 {
-    /// Constructs a new AsyncScheduler struct that can schedule tasks at the given frequency `target_hz`.
+    /// Constructs a new AsyncCustomScheduler struct that can schedule tasks at the given frequency `target_hz`.
     pub fn new(target_hz: f32) -> Self
     where
         SLEEPER: Default,
@@ -205,7 +205,7 @@ where
         Self::with_sleeper(target_hz, SLEEPER::default())
     }
 
-    /// Constructs a new AsyncScheduler struct that can schedule tasks at the given frequency `target_hz`.
+    /// Constructs a new AsyncCustomScheduler struct that can schedule tasks at the given frequency `target_hz`.
     pub fn with_sleeper(target_hz: f32, sleeper: SLEEPER) -> Self {
         let target_delta = Duration::from_secs_f32(target_hz.recip());
         Self {
@@ -217,7 +217,7 @@ where
 
     /// Allows you to change the frequency at which the scheduler tries to run tasks.
     ///
-    /// Note: Deprecated in favor of [AsyncScheduler::set_hz()]
+    /// Note: Deprecated in favor of [AsyncCustomScheduler::set_hz()]
     #[deprecated]
     pub fn change_hz(&mut self, new_target_hz: f32) {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
@@ -228,7 +228,7 @@ where
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
     }
 
-    /// Returns the frequency the AsyncScheduler is currently set to.
+    /// Returns the frequency the AsyncCustomScheduler is currently set to.
     pub fn hz(&self) -> f32 {
         self.target_delta.as_secs_f32().recip()
     }

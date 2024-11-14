@@ -4,7 +4,7 @@ use drivers::comet;
 mod resources;
 use resources::tui::SledTerminalDisplay;
 
-use spatial_led::{scheduler::StdScheduler, Sled};
+use spatial_led::{scheduler::Scheduler, Sled};
 
 fn main() {
     let sled = Sled::new("./examples/resources/complex_room.yap").unwrap();
@@ -12,7 +12,7 @@ fn main() {
     let mut driver = comet::build_driver();
     driver.mount(sled);
 
-    let mut scheduler = StdScheduler::new(500.0);
+    let mut scheduler = Scheduler::new(500.0);
     scheduler.loop_until_err(|| {
         driver.step();
         display.set_leds(driver.colors_and_positions_coerced());
