@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 
 use crate::error::SledError;
 use core::str::Lines;
-use glam::Vec2;
+use crate::Vec2;
 use smallvec::SmallVec;
 
 #[cfg(not(feature = "std"))]

@@ -4,9 +4,9 @@ use crate::{
     color::Rgb,
     led::Led,
     spatial_led::{Filter, Sled},
+    Vec2,
 };
 
-use glam::Vec2;
 use smallvec::{smallvec, SmallVec};
 
 #[cfg(not(feature = "std"))]

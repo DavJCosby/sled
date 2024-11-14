@@ -1,5 +1,5 @@
 use crate::color::Rgb;
-use glam::Vec2;
+use crate::Vec2;
 
 #[cfg(not(feature = "std"))]
 use num_traits::float::Float as _;
