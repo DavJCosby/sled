@@ -16,14 +16,14 @@ pub trait Instant: Clone + Copy + SubAssign<Duration> + AddAssign<Duration> {
 /// A trait to abstract a sleep function
 pub trait Sleeper {
     /// Sleep for the specified duration
-    fn sleep(&self, duration: core::time::Duration);
+    fn sleep(&mut self, duration: core::time::Duration);
 }
 
 /// A trait to abstract an asynchronous sleep function
 pub trait AsyncSleeper {
     /// Sleep for the specified duration
     #[allow(async_fn_in_trait)]
-    async fn sleep(&self, duration: core::time::Duration);
+    async fn sleep(&mut self, duration: core::time::Duration);
 }
 
 #[cfg(feature = "std")]
@@ -44,7 +44,7 @@ pub struct StdSleeper;
 
 #[cfg(feature = "std")]
 impl Sleeper for StdSleeper {
-    fn sleep(&self, duration: core::time::Duration) {
+    fn sleep(&mut self, duration: core::time::Duration) {
         std::thread::sleep(duration)
     }
 }
@@ -56,7 +56,7 @@ pub struct SpinSleeper;
 
 #[cfg(feature = "spin_sleep")]
 impl Sleeper for SpinSleeper {
-    fn sleep(&self, duration: core::time::Duration) {
+    fn sleep(&mut self, duration: core::time::Duration) {
         spin_sleep::sleep(duration)
     }
 }
