@@ -15,16 +15,14 @@ default = ["drivers", "scheduler", "std"]
 drivers = ["compact_str", "sled_driver_macros"]
 scheduler = []
 named_colors = []
-std = ["glam/std"]
+std = ["glam/std", "palette/std"]
+libm = ["glam/libm", "palette/libm"]
 async = []
 spin_sleep = ["std", "dep:spin_sleep"]
 
 [dependencies]
-glam = { version = "0.29", default-features = false, features = ["libm"] }
-palette = { version = "0.7", default-features = false, features = [
-    "libm",
-    "approx",
-] }
+glam = { version = "0.29", default-features = false, features = [] }
+palette = { version = "0.7", default-features = false, features = ["approx"] }
 smallvec = "1.13"
 compact_str = { version = "0.8", default-features = false, optional = true }
 sled_driver_macros = { version = "0.1.2", optional = true }
