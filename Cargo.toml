@@ -11,7 +11,7 @@ documentation = "https://docs.rs/spatial_led"
 exclude = ["*.gif", "*.cast"]
 
 [features]
-default = ["drivers", "scheduler", "std"]
+default = ["drivers", "scheduler", "spin_sleep", "std"]
 drivers = ["compact_str", "sled_driver_macros"]
 scheduler = []
 named_colors = []

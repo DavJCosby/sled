@@ -6,21 +6,21 @@ use crate::time::AsyncSleeper;
 use crate::time::Instant;
 use crate::time::Sleeper;
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(feature = "spin_sleep")))]
 use crate::time::StdSleeper;
 
-#[cfg(feature = "spin_sleep")]
+#[cfg(all(feature = "std", feature = "spin_sleep"))]
 use crate::time::SpinSleeper;
 
-/// A scheduler representing instants with `std::time::Instant` and sleeping
-/// with `std::thread::sleep`
-#[cfg(feature = "std")]
+/// A scheduler representing instants with [std::time::Instant] and sleeping
+/// with [std::thread::sleep]
+#[cfg(all(feature = "std", not(feature = "spin_sleep")))]
 pub type Scheduler = CustomScheduler<std::time::Instant, StdSleeper>;
 
-/// A scheduler representing instants with `std::time::Instant` and sleeping
+/// A scheduler representing instants with [std::time::Instant] and sleeping
 /// with `spin_sleep::sleep`
-#[cfg(feature = "spin_sleep")]
-pub type SpinScheduler = CustomScheduler<std::time::Instant, SpinSleeper>;
+#[cfg(all(feature = "std", feature = "spin_sleep"))]
+pub type Scheduler = CustomScheduler<std::time::Instant, SpinSleeper>;
 
 #[derive(Debug, Copy, Clone, Hash)]
 pub struct CustomScheduler<INSTANT, SLEEPER> {
