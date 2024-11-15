@@ -13,7 +13,6 @@ use crate::{
 pub type Driver = CustomDriver<std::time::Instant>;
 
 mod filters;
-// mod sliders;
 mod buffers;
 pub use buffers::BufferContainer;
 pub use filters::Filters;

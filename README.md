@@ -346,7 +346,7 @@ scheduler.loop_forever(|| {
     driver.step();
 });
 ```
-Scheduler utilizes [spin_sleep](https://crates.io/crates/spin_sleep/) to minimize the high CPU usage you typically see when you spin to wait for the next update.
+Scheduler, by default, utilizes [spin_sleep](https://crates.io/crates/spin_sleep/) to minimize the high CPU usage you typically see when you spin to wait for the next update by default.
 
 Here are a few other methods that you might also consider:
 
@@ -369,9 +369,57 @@ loop {
     scheduler.sleep_until_next_frame();
 }
 ```
+You can define your own `CustomScheduler` backed by whatever sleeping method you prefer if you wish. If you'd like to trim away the `spin_sleep` dependency, you can also disable the `spin_sleep` feature flag.
 
-If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
+If you don't need the Scheduler struct in general, you can disable the `scheduler` and `spin_sleep` flags.
 
+# `no_std` Support
+Spatial LED is now usable in `no_std` environments as of 0.1.2 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
+
+To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
+
+Users on the nightly toolchain can also enable the `core-simd` feature flag for some extra performance if you know your target platform supports SIMD instructions.
+
+## Drivers
+The default Driver implementation depends on `std::time::Instant` to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the `crate::time::Instant` trait.
+
+Once you have that, building a `CustomDriver` becomes as easy as:
+```rust
+use spatial_led::driver::CustomDriver;
+
+let mut driver = CustomDriver<MyCustomInstant>::new();
+driver.mount(sled);
+```
+
+## Schedulers
+Similarly, the default Scheduler relies on Instants, as well as methods only available through the standard library to handle sleeping. Thus, to build a Scheduler in `no_std` environments, you'll need to provide custom implementations of the `spatial_led::time::Instant` and `spatial_led::time::Sleeper` traits.
+
+```rust, ignore
+use spatial_led::driver::CustomDriver;
+
+let scheduler = CustomScheduler<MyCustomInstant, MyCustomSleeper>::new(120.0);
+
+ scheduler.loop_forever(|| {
+     println!("tick!");
+ });
+ ```
+
+ As embassy is gaining popularity in the embedded Rust scene, Claudio has also provided an async interface via the `AsyncCustomScheduler` struct.
+
+ ## Feedback and Contributions
+ The author of this crate does not own any hardware that would allow him test `spatial_led` on real `no_std` environments, so bug reports and PRs are very appreciated!
+
+# Feature Flags
+Enabled by Default:
+- `std`
+- `drivers` : Enables Drivers
+- `scheduler` : Enables Schedulers
+- `spin_sleep` : If `std` is enabled, sets the default Scheduler to use [spin_sleep](https://crates.io/crates/spin_sleep) to schedule tasks.
+
+Opt-in:
+- `named_colors` : Exposes color constants (for example `spatial_led::color::consts::WHITE`)
+- `libm` : Needed for some `no_std` environments.
+- `core-simd` (Nightly) : Allows the vector math library used by the crate to take advantage of SIMD instructions when `std::simd` isn't available.
 
 # License
 Licensed under either of
