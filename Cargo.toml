@@ -17,6 +17,7 @@ scheduler = []
 named_colors = []
 std = ["glam/std", "palette/std"]
 libm = ["glam/libm", "palette/libm"]
+core-simd = ["glam/core-simd"]
 async = []
 spin_sleep = ["std", "dep:spin_sleep"]
 
