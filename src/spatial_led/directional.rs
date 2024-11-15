@@ -1,7 +1,7 @@
 use alloc::collections::BTreeSet;
 
 use crate::{color::Rgb, led::Led, Filter, Sled};
-use glam::Vec2;
+use crate::Vec2;
 use smallvec::SmallVec;
 
 /// # directional read and write methods
