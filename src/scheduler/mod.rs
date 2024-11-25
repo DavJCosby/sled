@@ -64,14 +64,6 @@ where
     }
 
     /// Allows you to change the frequency at which the scheduler tries to run tasks.
-    ///
-    /// Note: Deprecated in favor of [CustomScheduler::set_hz()]
-    #[deprecated]
-    pub fn change_hz(&mut self, new_target_hz: f32) {
-        self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
-    }
-
-    /// Allows you to change the frequency at which the scheduler tries to run tasks.
     pub fn set_hz(&mut self, new_target_hz: f32) {
         self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
     }
@@ -213,14 +205,6 @@ where
             last_loop_end: INSTANT::now(),
             sleeper,
         }
-    }
-
-    /// Allows you to change the frequency at which the scheduler tries to run tasks.
-    ///
-    /// Note: Deprecated in favor of [AsyncCustomScheduler::set_hz()]
-    #[deprecated]
-    pub fn change_hz(&mut self, new_target_hz: f32) {
-        self.target_delta = Duration::from_secs_f32(new_target_hz.recip())
     }
 
     /// Allows you to change the frequency at which the scheduler tries to run tasks.
