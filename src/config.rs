@@ -103,8 +103,8 @@ fn extract_segments_from_string(s: &str) -> Vec<LineSegment> {
 }
 
 impl Config {
-    pub fn from_string(string: &str) -> Result<Self, SledError> {
-        let mut lines = string.lines();
+    pub fn from_str(s: &str) -> Result<Self, SledError> {
+        let mut lines = s.lines();
 
         let (center, density) = extract_center_and_density_from_lines(&mut lines);
 
@@ -132,7 +132,7 @@ impl Config {
     #[cfg(feature = "std")]
     pub fn from_toml_file(path: &str) -> Result<Self, SledError> {
         let as_string = std::fs::read_to_string(path).map_err(SledError::from_error)?;
-        Config::from_string(&as_string)
+        Config::from_str(&as_string)
     }
 }
 

@@ -52,8 +52,8 @@ impl Sled {
     }
 
     /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a String.
-    pub fn new_from_string(string: &str) -> Result<Self, SledError> {
-        let config = Config::from_string(string)?;
+    pub fn new_from_str(string: &str) -> Result<Self, SledError> {
+        let config = Config::from_str(string)?;
         Sled::new_from_config(config)
     }
 
