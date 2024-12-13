@@ -155,9 +155,8 @@
 //! use spatial_led::driver::Driver;
 //! let mut driver = Driver::new();
 //!
-//! driver.set_startup_commands(|_sled, buffers| {
-//!     let colors = buffers.create_buffer::<Rgb>("colors");
-//!     colors.extend([
+//! driver.set_startup_commands(|_sled, data| {
+//!     data.set::<Vec<Rgb>>("colors", vec![
 //!         Rgb::new(1.0, 0.0, 0.0),
 //!         Rgb::new(0.0, 1.0, 0.0),
 //!         Rgb::new(0.0, 0.0, 1.0),
@@ -165,9 +164,9 @@
 //!     Ok(())
 //! });
 //!
-//! driver.set_draw_commands(|sled, buffers, time_info| {
+//! driver.set_draw_commands(|sled, data, time_info| {
 //!     let elapsed = time_info.elapsed.as_secs_f32();
-//!     let colors: &Vec<Rgb> = buffers.get_buffer("colors")?;
+//!     let colors: &Vec<Rgb> = data.get("colors")?;
 //!     let num_colors = colors.len();
 //!     // clear our canvas each frame
 //!     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
@@ -231,33 +230,33 @@
 //!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
-//! # use spatial_led::{Sled, driver::Driver};
+//! # use spatial_led::{Sled, driver::{Driver, Data, TimeInfo}};
 //! # use palette::rgb::Rgb;
-//! # use spatial_led::{BufferContainer, SledResult, TimeInfo};
+//! # use spatial_led::{SledResult};
 //! use spatial_led::driver_macros::*;
 //!
 //! # // #[startup_commands]
-//! fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
-//!     let colors = buffers.create_buffer::<Rgb>("colors");
-//!     colors.extend([
-//!        Rgb::new(1.0, 0.0, 0.0),
-//!        Rgb::new(0.0, 1.0, 0.0),
-//!        Rgb::new(0.0, 0.0, 1.0),
-//!    ]);
+//! fn startup(_: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
+//!     let colors = vec![
+//!         Rgb::new(1.0, 0.0, 0.0),
+//!         Rgb::new(0.0, 1.0, 0.0),
+//!         Rgb::new(0.0, 0.0, 1.0)
+//!     ];
+//!     data.set::<Vec<Rgb>>("colors", colors);
 //!    Ok(())
 //! }
 //!
 //! # // #[draw_commands]
-//! fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+//! fn draw(sled: &mut Sled<Rgb>, data: &Data, time_info: &TimeInfo) -> SledResult {
 //!    let elapsed = time_info.elapsed.as_secs_f32();
-//!    let colors = buffers.get_buffer::<Rgb>("colors")?;
+//!    let colors = data.get::<Vec<Rgb>>("colors")?;
 //!    let num_colors = colors.len();
 //!    // clear our canvas each frame
 //!    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
 //!
 //!    for i in 0..num_colors {
 //!        let alpha = i as f32 / num_colors as f32;
-//!        let angle = elapsed + (std::f32::consts::TAU * alpha);
+//!        let angle = elapsed + (core::f32::consts::TAU * alpha);
 //!        sled.set_at_angle(angle, colors[i]);
 //!    }
 //!    Ok(())
@@ -276,15 +275,24 @@
 //! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
 //!
 //! ```rust
-//! # use spatial_led::{Sled, driver::{BufferContainer, Driver}, SledResult};
-//! # use palette::rgb::Rgb;
+//! # use spatial_led::{Sled, driver::{Data, Driver}, SledResult};
 //! # use spatial_led::driver_macros::*;
-//! # type MY_CUSTOM_TYPE = f32;
-
-//! fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
-//!     let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
-//!     let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
-//!     let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
+//! # type Rgb = palette::rgb::Rgb<f32>;
+//! # #[derive(Debug)]
+//! # pub struct MyCustomType(i32);
+//! # impl MyCustomType {
+//! #   pub fn new() -> Self {
+//! #       MyCustomType(5)
+//! #   }
+//! # }
+//!
+//! fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
+//!     data.set("wall_toggles", vec![true, false, false]);
+//!     data.set("wall_colors",
+//!         vec![Rgb::new(1.0, 0.0, 0.0), Rgb::new(0.0, 1.0, 0.0), Rgb::new(0.0, 0.0, 1.0)]
+//!     );
+//!     data.set("brightness", 1.0);
+//!     data.set("important_data", MyCustomType::new());
 //!     Ok(())
 //! }
 //!
@@ -295,24 +303,24 @@
 //!
 //! To maniplate buffers from outside driver, just do:
 //! ```rust
-//! # use spatial_led::{driver::{BufferContainer, Driver}};
+//! # use spatial_led::{driver::{Data, Driver}};
 //! # use palette::rgb::Rgb;
 //! # let mut driver = Driver::<Rgb>::new();
-//! let buffers: &BufferContainer = driver.buffers();
+//! let data: &Data = driver.data();
 //! // or
-//! let buffers: &mut BufferContainer = driver.buffers_mut();
+//! let data: &mut Data = driver.data_mut();
 //! ```
 //!
 //! Using a BufferContainer is relatively straightforward.
 //! ```rust
-//! # type MY_CUSTOM_TYPE = f32;
-//! # use spatial_led::{Sled, driver::Driver, driver::BufferContainer};
+//! # type MyCustomType = f32;
+//! # use spatial_led::{Sled, driver::Driver, driver::Data};
 //! # use palette::rgb::Rgb;
 //! # let mut driver = Driver::new();
-//! driver.set_draw_commands(|sled: &mut Sled<Rgb>, buffers: &BufferContainer, _| {
-//!     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
-//!     let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
-//!     let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
+//! driver.set_draw_commands(|sled: &mut Sled<Rgb>, data: &Data, _| {
+//!     let wall_toggles = data.get::<Vec<bool>>("wall_toggles")?;
+//!     let wall_colors = data.get::<Vec<Rgb>>("wall_colors")?;
+//!     let important_data = data.get::<MyCustomType>("important_data")?;
 //!
 //!     for i in 0..wall_toggles.len() {
 //!         if wall_toggles[i] == true {
@@ -329,25 +337,14 @@
 //! If you need to mutate buffer values:
 //! ```rust
 //!  // Mutable reference to the whole buffer
-//! # use spatial_led::{driver::BufferContainer, SledError};
+//! # use spatial_led::{driver::Data, SledError};
 //! # use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! # let mut buffers = BufferContainer::new();
-//! # let mut b = buffers.create_buffer::<bool>("wall_toggles");
-//! # b.push(false);
-//! # b.push(false);
-//! # let mut b2 = buffers.create_buffer::<Rgb>("wall_colors");
-//! # b2.push(Rgb::new(1.0, 1.0, 1.0));
-//! # b2.push(Rgb::new(1.0, 1.0, 1.0));
-//! # b2.push(Rgb::new(1.0, 1.0, 1.0));
-//! let buffer_mut = buffers.get_buffer_mut::<bool>("wall_toggles")?;
-//!
-//! // Modify just one item
-//! buffers.set_buffer_item("wall_toggles", 1, false)?;
-//!  
-//! // Mutable reference to just one item
-//! let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
-//! *color /= 2.0;
+//! # let mut data = Data::new();
+//! # data.set("wall_toggles", vec![false, false, true]);
+
+//! let wall_toggles: &mut Vec<bool> = data.get_mut("wall_toggles")?;
+//! wall_toggles[2] = true;
 //!
 //! # Ok(())
 //! # }
@@ -490,9 +487,8 @@ mod spatial_led;
 /// Useful tools for building more complicated, time-based visual effects.
 ///
 /// Drivers are an optional feature that can be disabled by turning off the `drivers` feature flag.
-pub mod driver;
 #[cfg(feature = "drivers")]
-pub use driver::{BufferContainer, TimeInfo};
+pub mod driver;
 
 #[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
 pub use sled_driver_macros as driver_macros;

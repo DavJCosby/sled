@@ -8,11 +8,8 @@ use crate::{color::ColorType, time::Instant, Led, Sled, SledError, Vec2};
 #[cfg(feature = "std")]
 pub type Driver<COLOR> = CustomDriver<std::time::Instant, COLOR>;
 
-mod buffers;
-pub use buffers::BufferContainer;
-pub use data::Data;
-
 mod data;
+pub use data::Data;
 
 #[derive(Clone, Debug)]
 pub struct TimeInfo {
@@ -69,18 +66,19 @@ where
 
     /// Define commands to be called as soon as a Sled is [mounted](CustomDriver::mount) to the driver. This is a good place to initialize important buffer values.
     /// ```rust
-    /// # use spatial_led::{Vec2, BufferContainer, Sled, SledResult, driver::Driver};
+    /// # use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data}};
     /// # use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     ///
     /// # // #[startup_commands]
-    /// fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
-    ///     let streak_positions = buffers.create_buffer::<Vec2>("positions");
-    ///     streak_positions.extend([
+    /// fn startup(_: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
+    ///     let streak_positions = vec![
     ///         Vec2::new(-1.2, 0.3),
     ///         Vec2::new(0.9, 1.6),
     ///         Vec2::new(0.4, -2.3),
-    ///     ]);
+    ///     ];
+    ///     
+    ///     data.set("positions", streak_positions);
     ///     Ok(())
     /// }
     ///
@@ -89,9 +87,7 @@ where
     ///     driver.set_startup_commands(startup);
     /// }
     /// ```
-    pub fn set_startup_commands<
-        F: Fn(&mut Sled<COLOR>, &mut Data) -> SledResult + 'static,
-    >(
+    pub fn set_startup_commands<F: Fn(&mut Sled<COLOR>, &mut Data) -> SledResult + 'static>(
         &mut self,
         startup_commands: F,
     ) {
@@ -100,14 +96,14 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right before we run [draw commands](CustomDriver::set_draw_commands).
     /// ```rust
-    ///# use spatial_led::{Vec2, BufferContainer, TimeInfo, Sled, SledResult, driver::Driver};
+    ///# use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data, TimeInfo}};
     ///# use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
     /// # // #[compute_commands]
-    /// fn compute(_: &Sled<Rgb>, buffers: &mut BufferContainer, time: &TimeInfo) -> SledResult {
-    ///     let streak_positions = buffers.get_buffer_mut::<Vec2>("positions")?;
+    /// fn compute(_: &Sled<Rgb>, data: &mut Data, time: &TimeInfo) -> SledResult {
+    ///     let streak_positions: &mut Vec<Vec2> = data.get_mut("positions")?;
     ///     let elapsed = time.elapsed.as_secs_f32();
     ///     for p in streak_positions {
     ///         *p += WIND * elapsed
@@ -132,16 +128,16 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right after we run [compute commands](CustomDriver::set_compute_commands).
     /// ```rust
-    /// # use spatial_led::{Sled, Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// # use spatial_led::{Sled, Vec2, SledResult, driver::{Driver, TimeInfo, Data}};
     /// # use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     ///
-    /// fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, _:&TimeInfo) -> SledResult {
+    /// fn draw(sled: &mut Sled<Rgb>, data: &Data, _:&TimeInfo) -> SledResult {
     ///     // gradually fade all LEDs to black
     ///     sled.map(|led| led.color * 0.95);
     ///
     ///     // For each position in our buffer, draw  white in the direction to it.
-    ///     let streak_positions = buffers.get_buffer::<Vec2>("positions")?;
+    ///     let streak_positions = data.get::<Vec<Vec2>>("positions")?;
     ///     let center = sled.center_point();
     ///     for pos in streak_positions {
     ///         let dir = (pos - center).normalize();
@@ -156,9 +152,7 @@ where
     /// }
     ///
     /// ```
-    pub fn set_draw_commands<
-        F: Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult + 'static,
-    >(
+    pub fn set_draw_commands<F: Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult + 'static>(
         &mut self,
         draw_commands: F,
     ) {
