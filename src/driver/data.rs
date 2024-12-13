@@ -82,6 +82,14 @@ impl Data {
         );
     }
 
+    pub fn store<T: StorableData>(&mut self, key: &str, value: T) -> &mut T {
+        self.data.insert(
+            key.to_compact_string(),
+            Box::<DataWrapper<T>>::new(DataWrapper::new(value)),
+        );
+        self.get_mut(key).unwrap()
+    }
+
     pub fn empty_at(&self, key: &str) -> bool {
         !self.data.contains_key(key)
     }
