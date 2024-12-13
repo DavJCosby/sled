@@ -504,8 +504,8 @@ pub mod driver;
 #[cfg(feature = "drivers")]
 pub use driver::{BufferContainer, Filters, TimeInfo};
 
-// #[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
-// pub use sled_driver_macros as driver_macros;
+#[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
+pub use sled_driver_macros as driver_macros;
 
 #[cfg(feature = "scheduler")]
 /// Useful tool for scheduling redraws at a fixed rate.
