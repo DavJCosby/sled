@@ -1,4 +1,7 @@
-use glam::Vec2;
+use crate::Vec2;
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 use crate::color::ColorType;
 
@@ -86,25 +89,25 @@ impl<Color: ColorType> PartialEq for Led<Color> {
 impl<Color: ColorType> Eq for Led<Color> {}
 
 impl<Color: ColorType> PartialOrd for Led<Color> {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl<Color: ColorType> Ord for Led<Color> {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.index.cmp(&other.index())
     }
 }
 
-impl<Color: ColorType> std::hash::Hash for Led<Color> {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+impl<Color: ColorType> core::hash::Hash for Led<Color> {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.index.hash(state);
     }
 }
 
-impl<Color: ColorType> std::fmt::Debug for Led<Color> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Color: ColorType> core::fmt::Debug for Led<Color> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let dir = self.direction();
         f.debug_struct("Led")
             .field("color", &self.color)
@@ -118,8 +121,8 @@ impl<Color: ColorType> std::fmt::Debug for Led<Color> {
     }
 }
 
-impl<Color: ColorType> std::fmt::Display for Led<Color> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl<Color: ColorType> core::fmt::Display for Led<Color> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{}: {:?}", self.index, self.color)
     }
 }

@@ -1,7 +1,8 @@
-use std::collections::HashSet;
+use alloc::collections::BTreeSet;
 
+use crate::Vec2;
 use crate::{color::ColorType, led::Led, Filter, Sled};
-use glam::Vec2;
+
 use smallvec::SmallVec;
 
 /// # directional read and write methods
@@ -42,7 +43,7 @@ impl<Color: ColorType> Sled<Color> {
         intersecting_indices
             .iter()
             .map(|i| *i as u16)
-            .collect::<HashSet<u16>>()
+            .collect::<BTreeSet<u16>>()
             .into()
     }
 
@@ -54,14 +55,19 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_at_dir(Vec2::new(0.0, 1.0), |led| led.color * 2.0);
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_dir<F: Fn(&Led<Color>) -> Color>(&mut self, dir: Vec2, color_rule: F) -> bool {
+    pub fn modulate_at_dir<F: Fn(&Led<Color>) -> Color>(
+        &mut self,
+        dir: Vec2,
+        color_rule: F,
+    ) -> bool {
         self.modulate_at_dir_from(dir, self.center_point, color_rule)
     }
 
@@ -73,9 +79,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// let dir = Vec2::new(-1.0, 0.0);
     /// let from = Vec2::new(0.25, -0.6);
     /// sled.modulate_at_dir_from(dir, from, |led| {
@@ -179,15 +186,20 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
-    /// use std::f32::consts::PI;
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
+    /// use core::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_at_angle(PI / 4.0, |led| led.color * 2.0);
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_at_angle<F: Fn(&Led<Color>) -> Color>(&mut self, angle: f32, color_rule: F) -> bool {
+    pub fn modulate_at_angle<F: Fn(&Led<Color>) -> Color>(
+        &mut self,
+        angle: f32,
+        color_rule: F,
+    ) -> bool {
         self.modulate_at_angle_from(angle, self.center_point, color_rule)
     }
 
@@ -202,10 +214,11 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
-    /// use std::f32::consts::PI;
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
+    /// use core::f32::consts::PI;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// let angle = PI * 1.25;
     /// let from = Vec2::new(0.3, 0.2);
     /// sled.modulate_at_angle_from(angle, from, |led| led.color * 2.0);

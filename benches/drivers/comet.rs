@@ -1,8 +1,9 @@
-use spatial_led::driver::{Driver, TimeInfo};
-use spatial_led::driver_macros::*;
-use spatial_led::{Sled, SledResult};
-
 use palette::rgb::Rgb;
+use spatial_led::{
+    driver::{Driver, TimeInfo},
+    driver_macros::*,
+    Sled, SledResult,
+};
 
 use std::f32::consts::TAU;
 const INV_TAU: f32 = 1.0 / TAU;

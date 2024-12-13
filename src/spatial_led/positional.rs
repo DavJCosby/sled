@@ -1,13 +1,16 @@
-use std::collections::HashSet;
+use alloc::collections::BTreeSet;
 
 use crate::{
     color::ColorType,
     led::Led,
     spatial_led::{Filter, Sled},
+    Vec2,
 };
 
-use glam::Vec2;
 use smallvec::{smallvec, SmallVec};
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 /// # position-based read and write methods
 impl<Color: ColorType> Sled<Color> {
@@ -55,9 +58,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(1)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
     ///# Ok(())
     ///# }
@@ -71,9 +75,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
     ///     led.color + Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -145,9 +150,10 @@ impl<Color: ColorType> Sled<Color> {
     ///
     /// O(1)
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_furthest(|led| led.color / led.distance());
     ///# Ok(())
     ///# }
@@ -161,9 +167,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {
     ///     led.color - Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -209,7 +216,7 @@ impl<Color: ColorType> Sled<Color> {
     }
 
     pub fn at_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
-        let mut all_at_distance = HashSet::new();
+        let mut all_at_distance = BTreeSet::new();
 
         for (segment_index, segment) in self.line_segments.iter().enumerate() {
             for alpha in segment.intersects_circle(pos, dist) {
@@ -263,7 +270,7 @@ impl<Color: ColorType> Sled<Color> {
     }
 
     pub fn within_dist_from(&self, dist: f32, pos: Vec2) -> Filter {
-        let mut all_within_distance = HashSet::new();
+        let mut all_within_distance = BTreeSet::new();
 
         let target_sq = dist.powi(2);
 

@@ -1,4 +1,7 @@
-use std::{error::Error, fmt};
+use core::{error::Error, fmt};
+
+use alloc::string::String;
+use alloc::string::ToString as _;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 /// Simple error type used by fallible Sled operations.
@@ -22,7 +25,7 @@ impl SledError {
     }
 }
 
-impl std::convert::From<&str> for SledError {
+impl core::convert::From<&str> for SledError {
     fn from(value: &str) -> Self {
         SledError::new(value.to_string())
     }

@@ -1,4 +1,7 @@
-use std::ops::Range;
+use core::ops::Range;
+
+use alloc::format;
+use alloc::string::ToString;
 
 use crate::{
     color::ColorType,
@@ -8,11 +11,11 @@ use crate::{
 };
 
 /// # Index-based read and write methods.
-impl<Color: ColorType> Sled<Color> {
-    /// Returns `Some(&Led<Color>)` if an [LED](Led) at `index` exists, `None` if not.
+impl<COLOR: ColorType> Sled<COLOR> {
+    /// Returns `Some(&Led<COLOR>)` if an [LED](Led) at `index` exists, `None` if not.
     ///
     /// O(1)
-    pub fn get(&self, index: usize) -> Option<&Led<Color>> {
+    pub fn get(&self, index: usize) -> Option<&Led<COLOR>> {
         self.leds.get(index)
     }
 
@@ -22,16 +25,17 @@ impl<Color: ColorType> Sled<Color> {
     /// O(1)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb};
+    ///# use spatial_led::{Sled, SledError};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate(0,
     ///     |led| led.color + Rgb::new(0.5, 0.0, 0.0)
     /// )?;
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate<F: Fn(&Led<Color>) -> Color>(
+    pub fn modulate<F: Fn(&Led<COLOR>) -> COLOR>(
         &mut self,
         index: usize,
         color_rule: F,
@@ -50,7 +54,7 @@ impl<Color: ColorType> Sled<Color> {
     ///
     /// O(1)
     ///
-    pub fn set(&mut self, index: usize, color: Color) -> Result<(), SledError> {
+    pub fn set(&mut self, index: usize, color: COLOR) -> Result<(), SledError> {
         if index >= self.num_leds {
             return SledError::new(format!("LED at index {} does not exist.", index)).as_err();
         }
@@ -63,7 +67,7 @@ impl<Color: ColorType> Sled<Color> {
     ///
     /// O(LEDS)
     ///
-    pub fn set_all(&mut self, color: Color) {
+    pub fn set_all(&mut self, color: COLOR) {
         for led in &mut self.leds {
             led.color = color;
         }
@@ -74,8 +78,9 @@ impl<Color: ColorType> Sled<Color> {
     /// O(LEDS)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# use spatial_led::Sled;
+    ///# use palette::rgb::Rgb;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// sled.for_each(|led| {
     ///     if led.index() % 2 == 1 {
     ///         led.color = Rgb::new(1.0, 0.0, 0.0);
@@ -84,7 +89,7 @@ impl<Color: ColorType> Sled<Color> {
     ///     }
     /// });
     /// ```
-    pub fn for_each<F: FnMut(&mut Led<Color>)>(&mut self, mut func: F) {
+    pub fn for_each<F: FnMut(&mut Led<COLOR>)>(&mut self, mut func: F) {
         for led in self.leds.iter_mut() {
             func(led);
         }
@@ -92,7 +97,7 @@ impl<Color: ColorType> Sled<Color> {
 }
 
 /// # Index and range-based read and write methods
-impl<Color : ColorType> Sled<Color> {
+impl<COLOR : ColorType> Sled<COLOR> {
     /// Returns a Some([Filter]) containing all [LEDs](Led) with indices within `index_range`.
     /// Returns None if the range extends beyond the size of the system.
     ///
@@ -114,13 +119,14 @@ impl<Color : ColorType> Sled<Color> {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, SledError};
+    ///# use palette::rgb::Rgb;
     ///# fn main() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./examples/resources/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_range(0..50, |led| led.color * 0.5)?;
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_range<F: Fn(&Led<Color>) -> Color>(
+    pub fn modulate_range<F: Fn(&Led<COLOR>) -> COLOR>(
         &mut self,
         index_range: Range<usize>,
         color_rule: F,
@@ -142,7 +148,7 @@ impl<Color : ColorType> Sled<Color> {
     ///
     /// O(RANGE_SIZE)
     ///
-    pub fn set_range(&mut self, index_range: Range<usize>, color: Color) -> Result<(), SledError> {
+    pub fn set_range(&mut self, index_range: Range<usize>, color: COLOR) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return SledError::new("Index range extends beyond size of system.".to_string())
                 .as_err();
@@ -155,14 +161,15 @@ impl<Color : ColorType> Sled<Color> {
     }
 
     /// For-each method granting mutable access to each [LED](Led) with an index in `index_range`
-    /// 
+    ///
     /// Returns an [error](SledError) if the range extends beyond the size of the system.
     ///
     /// O(RANGE_SIZE)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# use spatial_led::Sled;
+    ///# use palette::rgb::Rgb;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// sled.for_each_in_range(50..100, |led| {
     ///     if led.index() % 2 == 1 {
     ///         led.color = Rgb::new(1.0, 0.0, 0.0);
@@ -171,7 +178,7 @@ impl<Color : ColorType> Sled<Color> {
     ///     }
     /// });
     /// ```
-    pub fn for_each_in_range<F: FnMut(&mut Led<Color>)>(
+    pub fn for_each_in_range<F: FnMut(&mut Led<COLOR>)>(
         &mut self,
         index_range: Range<usize>,
         func: F,

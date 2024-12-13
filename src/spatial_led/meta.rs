@@ -1,4 +1,10 @@
-use std::ops::Range;
+use core::ops::Range;
+
+use alloc::vec;
+use alloc::vec::Vec;
+
+#[cfg(not(feature = "std"))]
+use num_traits::float::Float as _;
 
 use crate::{
     color::ColorType,
@@ -10,7 +16,7 @@ use crate::{
 };
 
 /// # Construction, output, and basic sled info
-impl<Color: ColorType> Sled<Color> {
+impl<COLOR: ColorType> Sled<COLOR> {
     /// Constructs a new Sled struct given the path to a config file.
     /// This is an expensive operation as many values are pre-calculated
     /// on construction (i.e, distances/angles from each LED to the center).
@@ -38,26 +44,27 @@ impl<Color: ColorType> Sled<Color> {
     ///     --> (3.5, 0) | (2, 2)
     ///     --> (-2, 2) --> (-2, 0)
     ///     ```
+    #[cfg(feature = "std")]
     pub fn new(config_file_path: &str) -> Result<Self, SledError> {
         let config = Config::from_toml_file(config_file_path)?;
         Sled::new_from_config(config)
     }
 
     /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a String.
-    pub fn new_from_string(string: String) -> Result<Self, SledError> {
-        let config = Config::from_string(string)?;
+    pub fn new_from_str(string: &str) -> Result<Self, SledError> {
+        let config = Config::from_str(string)?;
         Sled::new_from_config(config)
     }
 
     fn new_from_config(config: Config) -> Result<Self, SledError> {
-        let leds_per_segment = Sled::<Color>::leds_per_segment(&config);
+        let leds_per_segment = Sled::<COLOR>::leds_per_segment(&config);
         let leds = Sled::build_led_list(
             &leds_per_segment,
             &config.line_segments,
             &config.center_point,
         );
-        let line_segment_endpoint_indices = Sled::<Color>::line_segment_endpoint_indices(&leds_per_segment);
-        let vertex_indices = Sled::<Color>::vertex_indices(&config);
+        let line_segment_endpoint_indices = Sled::<COLOR>::line_segment_endpoint_indices(&leds_per_segment);
+        let vertex_indices = Sled::<COLOR>::vertex_indices(&config);
         let num_leds = leds.len();
         let index_of_closest = leds
             .iter()
@@ -96,14 +103,15 @@ impl<Color: ColorType> Sled<Color> {
     ///
     ///  ```rust
     ///# use spatial_led::{Sled};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# use palette::rgb::Rgb;
+    ///# let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// for led in sled.leds() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
     ///     );
     /// }
     /// ```
-    pub fn leds(&self) -> impl Iterator<Item = &Led<Color>> {
+    pub fn leds(&self) -> impl Iterator<Item = &Led<COLOR>> {
         self.leds.iter()
     }
 
@@ -112,8 +120,9 @@ impl<Color: ColorType> Sled<Color> {
     /// O(LEDS)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./examples/resources/config.yap").unwrap();
+    ///# use spatial_led::{Sled};
+    ///# use palette::rgb::Rgb;
+    ///# let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// let colors = sled.colors();
     ///
     /// for color in colors {
@@ -121,7 +130,7 @@ impl<Color: ColorType> Sled<Color> {
     ///     /*- snip -*/
     /// }
     /// ```
-    pub fn colors(&self) -> impl Iterator<Item = &Color> + '_ {
+    pub fn colors(&self) -> impl Iterator<Item = &COLOR> + '_ {
         self.leds.iter().map(|led| &led.color)
     }
 
@@ -135,7 +144,7 @@ impl<Color: ColorType> Sled<Color> {
     /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
     ///
     /// O(LEDS)
-    pub fn colors_and_positions(&self) -> impl Iterator<Item = (Color, Vec2)> + '_ {
+    pub fn colors_and_positions(&self) -> impl Iterator<Item = (COLOR, Vec2)> + '_ {
         self.leds.iter().map(|led| (led.color, led.position()))
     }
 
@@ -190,9 +199,9 @@ impl<Color: ColorType> Sled<Color> {
         leds_per_segment: &[usize],
         line_segments: &[LineSegment],
         center_point: &Vec2,
-    ) -> Vec<Led<Color>> {
+    ) -> Vec<Led<COLOR>> {
         let mut leds = vec![];
-        let default_color = Color::default();
+        let default_color = COLOR::default();
 
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
@@ -251,7 +260,7 @@ impl<Color: ColorType> Sled<Color> {
         vertex_indices
     }
 
-    fn calc_domain(leds: &Vec<Led<Color>>) -> Range<Vec2> {
+    fn calc_domain(leds: &Vec<Led<COLOR>>) -> Range<Vec2> {
         let mut min_x = f32::MAX;
         let mut min_y = f32::MAX;
 

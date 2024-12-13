@@ -1,6 +1,8 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+
 //! # Spatial LED (Sled)
 //! <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
- //! </div>
+//! </div>
 //!
 //! Sled is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, Sled is still in its early stages of development which means there is plenty of room for improvement in both categories.
 //!
@@ -14,15 +16,19 @@
 //!     - `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
 //!
 //! What Sled **does not** do:
-//! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out my personal [raspberry pi implementation](https://github.com/DavJCosby/rasp-pi-setup) to get an idea of what that might look like.
+//! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 //! - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
+//!
+//! See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
+//!
 //! ## The Basics
 //! In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 //! ### Setup
 //! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor:
 //! ```rust, ignore
 //! use spatial_led::Sled;
-//! let mut sled = Sled::new("/path/to/config.yap")?;
+//! use palette::rgb::Rgb;
+//! let mut sled = Sled::<Rgb>::new("/path/to/config.yap")?;
 //! ```
 //!
 //! A configuration file explains the layout of your LED strips in 2D space. This is used to pre-calculate some important information that's used to speed up complex draw calls.
@@ -36,14 +42,15 @@
 //! (2, 2) --> (-2, 2) --> (-2, 0)
 //! ```
 //! See [Sled::new()] for more information on this config format.
-//! 
+//!
 //! ### Drawing
 //! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 //!
 //! **Set all vertices to white:**
 //! ```rust
-//! # use spatial_led::{Sled, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use spatial_led::{Sled};
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! sled.set_vertices(Rgb::new(1.0, 1.0, 1.0));
 //! ```
 //! ![Set all Vertices](https://github.com/DavJCosby/sled/blob/master/resources/vertices.png?raw=true)
@@ -51,9 +58,10 @@
 //!
 //! **Set all LEDs 2 units away from the `center_point` to red:**
 //! ```rust
-//! # use spatial_led::{Sled, color::Rgb};
+//! # use spatial_led::{Sled};
+//! # use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! sled.set_at_dist(2.0, Rgb::new(1.0, 0.0, 0.0));
 //! # Ok(())
 //! # }
@@ -62,8 +70,9 @@
 //!
 //! **Set each LED using a function of its direction from point `(2, 1)`:**
 //! ```rust
-//! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use spatial_led::{Sled, Vec2};
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //!  sled.map_by_dir_from(Vec2::new(2.0, 1.0), |dir| {
 //!      let red = (dir.x + 1.0) * 0.5;
 //!      let green = (dir.y + 1.0) * 0.5;
@@ -75,8 +84,9 @@
 //! **Dim one of the walls by 75%:**
 //! ```rust
 //! # use spatial_led::{Sled};
+//! # use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! sled.modulate_segment(3, |led| led.color * 0.25)?;
 //! # Ok(())
 //! # }
@@ -85,8 +95,9 @@
 //!
 //! **Set all LEDs within the overlapping areas of two different circles to blue:**
 //! ```rust
-//! # use spatial_led::{Sled, Filter, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use spatial_led::{Sled, Filter, Vec2};
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! let circle_1: Filter = sled.within_dist_from(
 //!     2.0,
 //!     Vec2::new(1.0, 0.5)
@@ -108,8 +119,9 @@
 //! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of [RGB](color::Rgb) values. There are a few methods available to pack the information you need.
 //!
 //! ```rust
-//! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use spatial_led::{Sled, Vec2};
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! // An Iterator of Rgbs, 32-bits/channel
 //! let colors_f32 = sled.colors();
 //!
@@ -122,16 +134,13 @@
 //! A few other handy output methods:
 //!
 //! ```rust
-//! # use spatial_led::{Sled, Vec2, color::Rgb};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
-//! // An Iterator of Rgbs, 8-bits/channel (overhead for conversion)
-//! let colors_u8 = sled.colors_coerced::<u8>();
+//! # use spatial_led::{Sled, Vec2};
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! // An Iterator of Vec2s, representing the position of each leds
 //! let positions = sled.positions();
 //! // An Iterator of (Rgb, Vec2) tuple pairs representing each leds color and position.
 //! let colors_f32_and_positions = sled.colors_and_positions();
-//! // An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each leds color and position.
-//! let colors_f32_and_positions = sled.colors_and_positions_coerced::<u8>();
 //! ```
 //!
 //! # Advanced Features
@@ -141,7 +150,8 @@
 //! [Drivers](driver::Driver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
 //!
 //! ```rust
-//! # use spatial_led::{Sled, color::Rgb};
+//! # use spatial_led::{Sled};
+//! # use palette::rgb::Rgb;
 //! use spatial_led::driver::Driver;
 //! let mut driver = Driver::new();
 //!
@@ -174,8 +184,9 @@
 //! To start using the Driver, give it ownership over a Sled using [.mount()](driver::Driver::mount) and use [.step()](driver::Driver::step) to manually refresh it.
 //! ```rust, no_run
 //! # use spatial_led::{Sled, driver::Driver};
+//! use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
-//! let sled = Sled::new("path/to/config.yap")?;
+//! let sled = Sled::<Rgb>::new("path/to/config.yap")?;
 //! # let mut driver = Driver::new();
 //! driver.mount(sled); // sled gets moved into driver here.
 //!
@@ -193,7 +204,8 @@
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
 //! # use spatial_led::{Sled, driver::Driver};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! # let mut driver = Driver::new();
 //! # driver.mount(sled);
 //! let sled = driver.dismount();
@@ -205,9 +217,11 @@
 //!
 //! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
 //!
+//! Drivers need a representation of a time instant, which is provided as a generic `INSTANT` that must implement the trait `time::Instant`. For `std` targets, `std::time::Instant` can be used, and a type alias `Driver = CustomDriver<std::time::Instant>` is defined. For `no_std` targets, the client should define their own representation (e.g. using `embassy_time::Instant`).
+//!
 //! If you don't want to Drivers for your project, you can disable the `drivers` compiler feature to shed a couple dependencies.
 //!
-//! For more examples of ways to use drivers, see [drivers/examples](https://github.com/DavJCosby/sled/tree/master/examples/drivers) in the project's github repository.
+//! For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 //!
 //! ### Driver Macros
 //! Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
@@ -217,12 +231,13 @@
 //!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
-//! # use spatial_led::{Sled, driver::Driver, color::Rgb};
-//! # use spatial_led::{BufferContainer, SledResult, TimeInfo};
+//! # use spatial_led::{Sled, driver::Driver};
+//! # use palette::rgb::Rgb;
+//! # use spatial_led::{BufferContainer, Filters, SledResult, TimeInfo};
 //! use spatial_led::driver_macros::*;
 //!
-//! #[startup_commands]
-//! fn startup(buffers: &mut BufferContainer) -> SledResult {
+//! # // #[startup_commands]
+//! fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer, _: &mut Filters) -> SledResult {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
 //!     colors.extend([
 //!        Rgb::new(1.0, 0.0, 0.0),
@@ -232,8 +247,8 @@
 //!    Ok(())
 //! }
 //!
-//! #[draw_commands]
-//! fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+//! # // #[draw_commands]
+//! fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, _: &Filters, time_info: &TimeInfo) -> SledResult {
 //!    let elapsed = time_info.elapsed.as_secs_f32();
 //!    let colors = buffers.get_buffer::<Rgb>("colors")?;
 //!    let num_colors = colors.len();
@@ -261,11 +276,12 @@
 //! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
 //!
 //! ```rust
-//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult, color::Rgb};
+//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult};
+//! # use palette::rgb::Rgb;
 //! # use spatial_led::driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
 //! #[startup_commands]
-//! fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
+//! fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
 //!     let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
 //!     let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
 //!     let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
@@ -280,7 +296,8 @@
 //! To maniplate buffers from outside driver, just do:
 //! ```rust
 //! # use spatial_led::{driver::{BufferContainer, Driver}};
-//! # let mut driver = Driver::new();
+//! # use palette::rgb::Rgb;
+//! # let mut driver = Driver::<Rgb>::new();
 //! let buffers: &BufferContainer = driver.buffers();
 //! // or
 //! let buffers: &mut BufferContainer = driver.buffers_mut();
@@ -289,9 +306,10 @@
 //! Using a BufferContainer is relatively straightforward.
 //! ```rust
 //! # type MY_CUSTOM_TYPE = f32;
-//! # use spatial_led::{color::Rgb, Sled, driver::Driver, driver::BufferContainer};
+//! # use spatial_led::{Sled, driver::Driver, driver::BufferContainer};
+//! # use palette::rgb::Rgb;
 //! # let mut driver = Driver::new();
-//! driver.set_draw_commands(|sled: &mut Sled, buffers: &BufferContainer, _, _| {
+//! driver.set_draw_commands(|sled: &mut Sled<Rgb>, buffers: &BufferContainer, _, _| {
 //!     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
 //!     let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
 //!     let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
@@ -311,7 +329,8 @@
 //! If you need to mutate buffer values:
 //! ```rust
 //!  // Mutable reference to the whole buffer
-//! # use spatial_led::{driver::BufferContainer, color::Rgb, SledError};
+//! # use spatial_led::{driver::BufferContainer, SledError};
+//! # use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
 //! # let mut buffers = BufferContainer::new();
 //! # let mut b = buffers.create_buffer::<bool>("wall_toggles");
@@ -340,8 +359,9 @@
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
 //! ```rust
-//! # use spatial_led::{Sled, Led, Filter, Vec2, color::Rgb, driver::Driver};
-//! # let mut driver = Driver::new();
+//! # use spatial_led::{Sled, Led, Filter, Vec2, driver::Driver};
+//! # use palette::rgb::Rgb;
+//! # let mut driver = Driver::<Rgb>::new();
 //! driver.set_startup_commands(|sled, buffers, filters| {
 //!     let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
 //!
@@ -361,7 +381,8 @@
 //! Most getter methods on Sled will return a [Filter], but if you need more precise control you can do something like this:
 //! ```rust
 //! # use spatial_led::{Sled};
-//! # let mut sled = Sled::new("./examples/resources/config.yap").unwrap();
+//! # use palette::rgb::Rgb;
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
 //!
@@ -372,20 +393,22 @@
 //!
 //! ```rust, no_run
 //! # use spatial_led::{scheduler::Scheduler, driver::Driver};
-//! # let mut driver = Driver::new();
+//! # use palette::rgb::Rgb;
+//! # let mut driver = Driver::<Rgb>::new();
 //! let mut scheduler = Scheduler::new(120.0);
 //!
 //! scheduler.loop_forever(|| {
 //!     driver.step();
 //! });
 //! ```
-//! Scheduler utilizes [spin_sleep](https://crates.io/crates/spin_sleep/) to minimize the high CPU usage you typically see when you spin to wait for the next update.
+//! Scheduler, by default, utilizes [spin_sleep](https://crates.io/crates/spin_sleep/) to minimize the high CPU usage you typically see when you spin to wait for the next update.
 //!
 //! Here are a few other methods that you might also consider:
 //!
 //! ```rust, no_run
 //! # use spatial_led::{scheduler::Scheduler, driver::Driver};
-//! # let mut driver = Driver::new();
+//! # use palette::rgb::Rgb;
+//! # let mut driver = Driver::<Rgb>::new();
 //! # let mut scheduler = Scheduler::new(120.0);
 //! // loops until false is returned
 //! scheduler.loop_while_true(|| {
@@ -406,9 +429,66 @@
 //! }
 //! ```
 //!
-//! If you don't need the Scheduler struct and would like to keep spin_sleep's dependencies out of your project, you can disable the `scheduler` compiler feature.
+//! Schedulers need a representation of a time instant, like drivers, and also a representation of a sleep function, which is provided as a generic `SLEEPER` that must implement the trait `time::Sleeper`. For `std` targets, `std::thread::sleep()` can be used, and a type alias `Scheduler = CustomScheduler<std::time::Instant, StdSleeper>` is defined. For `no_std` targets, the client should define their own representation.
+//!
+//! For async environments, AsyncScheduler can be used instead. No predefined implementation is provided, the client should define their own, e.g. using `embassy_time::Timer::after().await`.
+//!
+//! You can define your own `CustomScheduler` backed by whatever sleeping method you prefer if you wish. If you'd like to trim away the `spin_sleep` dependency, you can also disable the `spin_sleep` feature flag.
+
+//! If you don't need the Scheduler struct in general, you can disable the `scheduler` and `spin_sleep` flags.
+//!
+//! # `no_std` Support
+//! Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
+//!
+//! To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
+//!
+//! Users on the nightly toolchain can also enable the `core-simd` for some extra performance if you know your target platform supports SIMD instructions.
+//!
+//! ## Drivers
+//! The default Driver implementation depends on [std::time::Instant] to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the [crate::time::Instant] trait.
+//!
+//! Once you have that, building a [driver::CustomDriver] becomes as easy as:
+//!
+//! ```rust, ignore
+//! use spatial_led::driver::CustomDriver;
+//!
+//! let driver = CustomDriver<MyCustomInstant>::new();
+//! ```
+//!
+//!
+//! ## Schedulers
+//! Similarly, the default Scheduler relies on Instants, as well as methods only available through the standard library to handle sleeping. Thus, to build a Scheduler in `no_std` environments, you'll need to provide custom implementations of the [crate::time::Instant] and [crate::time::Sleeper] traits.
+//!
+//! ```rust, ignore
+//! use spatial_led::driver::CustomDriver;
+//!
+//! let scheduler = CustomScheduler<MyCustomInstant, MyCustomSleeper>::new(120.0);
+//!
+//! scheduler.loop_forever(|| {
+//!     println!("tick!");
+//! });
+//! ```
+//!
+//! As embassy is gaining popularity in the embedded Rust scene, Claudio has also provided an async interface via the [scheduler::AsyncCustomScheduler] struct.
+//!
+//! ## Contributions
+//! The author of this crate does not own any hardware that would allow him test spatial_led on real `no_std` environments, so bug reports and PRs are very appreciated.
+//!
+//! # Feature Flags
+//! Enabled by Default:
+//! - `std`
+//! - `drivers` : Enables Drivers
+//! - `scheduler` : Enables Schedulers
+//! - `spin_sleep` : If `std` is enabled, sets the default Scheduler to use [spin_sleep](https://crates.io/crates/spin_sleep) to schedule tasks.
+//!
+//! Opt-in:
+//! - `named_colors` : Exposes color constants
+//!     - (for example `spatial_led::color::consts::WHITE`)
+//! - `libm` : Needed for some `no_std` environments.
+//! - `core-simd` (Nightly) : Enables portable SIMD support for use by glam.
 //!
 
+extern crate alloc;
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
 pub mod color;
 mod config;
@@ -423,7 +503,8 @@ mod spatial_led;
 pub mod driver;
 #[cfg(feature = "drivers")]
 pub use driver::{BufferContainer, Filters, TimeInfo};
-#[cfg(feature = "drivers")]
+
+#[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
 pub use sled_driver_macros as driver_macros;
 
 #[cfg(feature = "scheduler")]
@@ -440,3 +521,5 @@ pub use glam::Vec2;
 pub use led::Led;
 pub use spatial_led::Filter;
 pub use spatial_led::Sled;
+
+pub mod time;
