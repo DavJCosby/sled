@@ -1,5 +1,5 @@
 use spatial_led::{
-    driver::{BufferContainer, Driver, TimeInfo},
+    driver::{Data, Driver, TimeInfo},
     // driver_macros::*,
     Sled,
     SledResult,
@@ -27,52 +27,57 @@ pub fn build_driver() -> Driver<Rgb> {
 }
 
 // #[startup_commands]
-fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
+fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
     let sled_bounds = sled.domain();
 
-    let radii = buffers.create_buffer("radii");
+    let mut radii = vec![];
+    let mut positions = vec![];
+
     for _ in 0..MAX_RIPPLES {
         radii.push(rand_init_radius());
     }
 
-    let positions = buffers.create_buffer("positions");
     for _ in 0..MAX_RIPPLES {
         positions.push(rand_point_in_range(&sled_bounds));
     }
 
-    let colors = buffers.create_buffer::<Rgb>("colors");
-    colors.extend([
-        Rgb::new(0.15, 0.5, 1.0),
-        Rgb::new(0.25, 0.3, 1.0),
-        Rgb::new(0.05, 0.4, 0.8),
-        Rgb::new(0.7, 0.0, 0.6),
-        Rgb::new(0.05, 0.75, 1.0),
-        Rgb::new(0.1, 0.8, 0.6),
-        Rgb::new(0.6, 0.05, 0.2),
-        Rgb::new(0.85, 0.15, 0.3),
-        Rgb::new(0.0, 0.0, 1.0),
-        Rgb::new(1.0, 0.71, 0.705),
-    ]);
+    data.set("radii", radii);
+    data.set("positions", positions);
+    data.set::<Vec<Rgb>>(
+        "colors",
+        vec![
+            Rgb::new(0.15, 0.5, 1.0),
+            Rgb::new(0.25, 0.3, 1.0),
+            Rgb::new(0.05, 0.4, 0.8),
+            Rgb::new(0.7, 0.0, 0.6),
+            Rgb::new(0.05, 0.75, 1.0),
+            Rgb::new(0.1, 0.8, 0.6),
+            Rgb::new(0.6, 0.05, 0.2),
+            Rgb::new(0.85, 0.15, 0.3),
+            Rgb::new(0.0, 0.0, 1.0),
+            Rgb::new(1.0, 0.71, 0.705),
+        ],
+    );
 
     Ok(())
 }
 
 // #[compute_commands]
-fn compute(sled: &Sled<Rgb>, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn compute(sled: &Sled<Rgb>, data: &mut Data, time_info: &TimeInfo) -> SledResult {
     let delta = time_info.delta.as_secs_f32();
     let bounds = sled.domain();
     for i in 0..MAX_RIPPLES {
-        let radius: f32 = *buffers.get_buffer_item("radii", i)?;
+        let radius = data.get::<Vec<f32>>("radii")?[i];
         if radius > MAX_RADIUS {
             let new_pos = rand_point_in_range(&bounds);
             let new_radius = rand_init_radius();
-            buffers.set_buffer_item("positions", i, new_pos)?;
-            buffers.set_buffer_item("radii", i, new_radius)?;
+            data.get_mut::<Vec<Vec2>>("positions")?[i] = new_pos;
+            data.get_mut::<Vec<f32>>("radii")?[i] = new_radius;
             continue;
         }
 
         let new_radius = radius + delta * radius.max(1.0).sqrt().recip();
-        buffers.set_buffer_item("radii", i, new_radius)?;
+        data.get_mut::<Vec<f32>>("radii")?[i] = new_radius;
     }
     Ok(())
 }
@@ -92,11 +97,11 @@ fn rand_init_radius() -> f32 {
 }
 
 // #[draw_commands]
-fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, _: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, data: &Data, _: &TimeInfo) -> SledResult {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-    let colors = buffers.get_buffer("colors")?;
-    let positions = buffers.get_buffer("positions")?;
-    let radii = buffers.get_buffer("radii")?;
+    let colors: &Vec<Rgb> = data.get("colors")?;
+    let positions: &Vec<Vec2> = data.get("positions")?;
+    let radii: &Vec<f32> = data.get("radii")?;
     for i in 0..MAX_RIPPLES {
         let pos = positions[i];
         let radius = radii[i];

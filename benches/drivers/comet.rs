@@ -1,8 +1,7 @@
 use palette::rgb::Rgb;
 use spatial_led::{
-    driver::{Driver, TimeInfo},
+    driver::{Driver, TimeInfo, Data},
     //driver_macros::*,
-    BufferContainer,
     Sled,
     SledResult,
 };
@@ -27,7 +26,7 @@ pub fn build_driver() -> Driver<Rgb> {
     driver
 }
 
-fn draw(sled: &mut Sled<Rgb>, _: &BufferContainer, time_info: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, _: &Data, time_info: &TimeInfo) -> SledResult {
     let elapsed = time_info.elapsed.as_secs_f32();
 
     let inner_time_scale = elapsed / GREEN_RADIUS;
