@@ -75,12 +75,11 @@ impl Data {
         }
     }
 
-    pub fn set<T: StorableData>(&mut self, key: &str, value: T) -> Result<(), SledError> {
+    pub fn set<T: StorableData>(&mut self, key: &str, value: T) {
         self.data.insert(
             key.to_compact_string(),
             Box::<DataWrapper<T>>::new(DataWrapper::new(value)),
         );
-        Ok(())
     }
 
     pub fn empty_at(&self, key: &str) -> bool {

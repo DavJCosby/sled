@@ -31,13 +31,13 @@ where
     COLOR: ColorType,
 {
     sled: Option<Sled<COLOR>>,
-    startup_commands: Box<dyn Fn(&mut Sled<COLOR>, &mut BufferContainer) -> SledResult>,
-    compute_commands: Box<dyn Fn(&Sled<COLOR>, &mut BufferContainer, &TimeInfo) -> SledResult>,
-    draw_commands: Box<dyn Fn(&mut Sled<COLOR>, &BufferContainer, &TimeInfo) -> SledResult>,
+    startup_commands: Box<dyn Fn(&mut Sled<COLOR>, &mut Data) -> SledResult>,
+    compute_commands: Box<dyn Fn(&Sled<COLOR>, &mut Data, &TimeInfo) -> SledResult>,
+    draw_commands: Box<dyn Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult>,
     startup: INSTANT,
     last_update: INSTANT,
 
-    buffers: BufferContainer,
+    data: Data,
 }
 
 impl<INSTANT, COLOR> CustomDriver<INSTANT, COLOR>
@@ -53,7 +53,7 @@ where
             draw_commands: Box::new(|_, _, _| Ok(())),
             startup: INSTANT::now(),
             last_update: INSTANT::now(),
-            buffers: BufferContainer::new(),
+            data: Data::new(),
         }
     }
 
@@ -90,7 +90,7 @@ where
     /// }
     /// ```
     pub fn set_startup_commands<
-        F: Fn(&mut Sled<COLOR>, &mut BufferContainer) -> SledResult + 'static,
+        F: Fn(&mut Sled<COLOR>, &mut Data) -> SledResult + 'static,
     >(
         &mut self,
         startup_commands: F,
@@ -122,7 +122,7 @@ where
     ///
     /// ```
     pub fn set_compute_commands<
-        F: Fn(&Sled<COLOR>, &mut BufferContainer, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&Sled<COLOR>, &mut Data, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         compute_commands: F,
@@ -157,7 +157,7 @@ where
     ///
     /// ```
     pub fn set_draw_commands<
-        F: Fn(&mut Sled<COLOR>, &BufferContainer, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         draw_commands: F,
@@ -167,7 +167,7 @@ where
 
     /// Takes ownership of the given Sled and runs the Driver's [startup commands](Driver::set_startup_commands).
     pub fn mount(&mut self, mut sled: Sled<COLOR>) {
-        (self.startup_commands)(&mut sled, &mut self.buffers).unwrap();
+        (self.startup_commands)(&mut sled, &mut self.data).unwrap();
         self.startup = INSTANT::now();
         self.last_update = self.startup;
         self.sled = Some(sled);
@@ -182,8 +182,8 @@ where
             };
 
             self.last_update = INSTANT::now();
-            (self.compute_commands)(sled, &mut self.buffers, &time_info).unwrap();
-            (self.draw_commands)(sled, &self.buffers, &time_info).unwrap();
+            (self.compute_commands)(sled, &mut self.data, &time_info).unwrap();
+            (self.draw_commands)(sled, &self.data, &time_info).unwrap();
         }
     }
 
@@ -233,13 +233,13 @@ where
     }
 
     /// Returns a reference to the Driver's BufferContainer. Helpful for displaying buffer values to the program user.
-    pub fn buffers(&self) -> &BufferContainer {
-        &self.buffers
+    pub fn data(&self) -> &Data {
+        &self.data
     }
 
     /// Returns a mutable reference to the Driver's BufferContainer. Helpful for changing buffer values as the user provides input to the program.
-    pub fn buffers_mut(&mut self) -> &mut BufferContainer {
-        &mut self.buffers
+    pub fn data_mut(&mut self) -> &mut Data {
+        &mut self.data
     }
 }
 
