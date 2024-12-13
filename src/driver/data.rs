@@ -64,9 +64,8 @@ impl Data {
     ///         &bad_key.err().unwrap().message,
     ///         "No data associated with the key `cba`."
     ///     );
-    /// 
-    ///     Ok(())
-    /// }
+    /// #   Ok(())
+    /// # }
     /// ```
     pub fn get<T: StorableData>(&self, key: &str) -> Result<&T, SledError> {
         let candidate = self
