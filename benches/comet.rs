@@ -3,9 +3,10 @@ use drivers::comet;
 
 use spatial_led::Sled;
 use std::time::Duration;
+use palette::rgb::Rgb;
 
 fn trail(c: &mut Criterion) {
-    let sled = Sled::new("./benches/config.yap").unwrap();
+    let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     let mut driver = comet::build_driver();
     driver.mount(sled);
 

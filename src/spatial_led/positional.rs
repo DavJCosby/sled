@@ -58,9 +58,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(1)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_closest(|led| led.color + Rgb::new(0.2, 0.2, 0.2));
     ///# Ok(())
     ///# }
@@ -74,9 +75,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_closest_to(Vec2::new(0.5, 0.0), |led| {
     ///     led.color + Rgb::new(0.2, 0.2, 0.2)
     /// });
@@ -148,9 +150,10 @@ impl<Color: ColorType> Sled<Color> {
     ///
     /// O(1)
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_furthest(|led| led.color / led.distance());
     ///# Ok(())
     ///# }
@@ -164,9 +167,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(SEGMENTS)
     ///  
     ///```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb, Vec2};
+    ///# use spatial_led::{Sled, SledError, Vec2};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_furthest_from(Vec2::new(0.0, -1.0), |led| {
     ///     led.color - Rgb::new(0.2, 0.2, 0.2)
     /// });

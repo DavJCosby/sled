@@ -26,8 +26,9 @@ impl<Color: ColorType> Sled<Color> {
     ///
     ///```rust
     ///# use spatial_led::{Sled, SledError};
+    ///# use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_segment(1, |led| led.color * 2.0)?;
     ///# Ok(())
     ///# }
@@ -77,9 +78,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(LEDS_IN_SEGMENTS)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, SledError, Filter, color::Rgb};
+    ///# use spatial_led::{Sled, SledError, Filter};
+    ///use palette::rgb::Rgb;
     ///# fn main() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// let first_three_walls: Filter = sled.segments(0..3).unwrap();
     /// sled.set_filter(&first_three_walls, Rgb::new(1.0, 1.0, 1.0));
     ///# Ok(())
@@ -102,9 +104,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(LEDS_IN_SEGMENTS)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb};
+    ///# use spatial_led::{Sled, SledError};
+    /// use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// sled.modulate_segments(2..4, |led| led.color * Rgb::new(1.0, 0.0, 0.0))?;
     ///# Ok(())
     ///# }
@@ -158,8 +161,9 @@ impl<Color: ColorType> Sled<Color> {
     /// O(LEDS_IN_SEGMENT)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let mut sled = Sled::new("./benches/config.yap").unwrap();
+    ///# use spatial_led::{Sled};
+    /// use palette::rgb::Rgb;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// sled.for_each_in_segment(2, |led, alpha| {
     ///     led.color = Rgb::new(alpha, alpha, alpha);
     /// });
@@ -210,9 +214,10 @@ impl<Color: ColorType> Sled<Color> {
     /// O(1)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, SledError, color::Rgb};
+    ///# use spatial_led::{Sled, SledError};
+    /// use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// // make the given vertex 25% brighter
     /// sled.modulate_vertex(3, |led| led.color * 1.25)?;
     ///# Ok(())
@@ -266,8 +271,9 @@ impl<Color: ColorType> Sled<Color> {
     ///
     /// ```rust
     ///# use spatial_led::{Sled, SledError};
+    /// use palette::rgb::Rgb;
     ///# fn demo() -> Result<(), SledError> {
-    ///# let mut sled = Sled::new("./benches/config.yap")?;
+    ///# let mut sled = Sled::<Rgb>::new("./benches/config.yap")?;
     /// // make each vertex 25% brighter
     /// sled.modulate_vertices(|led| led.color * 1.25);
     ///# Ok(())

@@ -29,7 +29,8 @@ impl BufferContainer {
     /// Keys may be no longer than 24 bytes (or 12 bytes of 32-bit architectures) as we internally store them as [CompactString](https://docs.rs/compact_str/latest/compact_str/)s under the hood to minimize overhead.
     ///
     /// ```rust
-    /// # use spatial_led::{Sled, color::Rgb, SledError};
+    /// # use spatial_led::{Sled, SledError};
+    /// # use palette::rgb::Rgb;
     /// # use spatial_led::BufferContainer;
     /// # fn main() -> Result<(), spatial_led::SledError> {
     /// let mut buffers = BufferContainer::new();

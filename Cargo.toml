@@ -12,7 +12,7 @@ exclude = ["*.gif", "*.cast"]
 
 [features]
 default = ["drivers", "scheduler", "spin_sleep", "std"]
-drivers = ["compact_str", "sled_driver_macros"]
+drivers = ["compact_str",  "sled_driver_macros"]
 
 scheduler = []
 named_colors = []

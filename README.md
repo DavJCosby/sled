@@ -31,8 +31,9 @@ In absence of an official guide, this will serve as a basic introduction. From h
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
 use spatial_led::<Sled, SledError>;
+use palette::rgb::Rgb;
 fn main() -> Result<(), SledError> {
-    let mut sled = Sled::new("/path/to/config.yap")?;
+    let mut sled = Sled::<Rgb>::new("/path/to/config.yap")?;
     Ok(())
 }
 ```
@@ -169,7 +170,7 @@ driver.set_draw_commands(|sled, buffers, _filters, time_info| {
 ```
 To start using the Driver, give it ownership over a Sled using `.mount()` and use `.step()` to manually refresh it.
 ```rust
-let sled = Sled::new("path/to/config.yap")?;
+let sled = Sled::<Rgb>::new("path/to/config.yap")?;
 driver.mount(sled); // sled gets moved into driver here.
 
 loop {

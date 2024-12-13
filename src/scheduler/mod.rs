@@ -115,10 +115,11 @@ where
     /// Lets you run a task at a fixed interval. Will break when the function returns a result of Err variant.
     /// ```rust
     /// # use spatial_led::{scheduler::Scheduler};
-    /// # use spatial_led::{Sled, SledResult, color::Rgb};
+    /// # use spatial_led::{Sled, SledResult};
+    /// use palette::rgb::Rgb;
     /// pub fn main() {
     ///     let mut scheduler = Scheduler::new(60.0);
-    ///     let mut sled = Sled::new("./benches/config.yap").unwrap();
+    ///     let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     ///     let mut segment_index = 0;
     ///     scheduler.loop_until_err(|| {
     ///         sled.set_segment(segment_index, Rgb::new(1.0, 1.0, 1.0))?;
