@@ -10,6 +10,9 @@ pub type Driver<COLOR> = CustomDriver<std::time::Instant, COLOR>;
 
 mod buffers;
 pub use buffers::BufferContainer;
+pub use data::Data;
+
+mod data;
 
 #[derive(Clone, Debug)]
 pub struct TimeInfo {
