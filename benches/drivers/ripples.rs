@@ -1,7 +1,9 @@
 use spatial_led::{
     driver::{BufferContainer, Driver, TimeInfo},
-    driver_macros::*,
-    Sled, SledResult, Vec2,
+    // driver_macros::*,
+    Sled,
+    SledResult,
+    Vec2,
 };
 
 use rand::Rng;
@@ -24,7 +26,7 @@ pub fn build_driver() -> Driver<Rgb> {
     return driver;
 }
 
-#[startup_commands]
+// #[startup_commands]
 fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
     let sled_bounds = sled.domain();
 
@@ -55,7 +57,7 @@ fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
     Ok(())
 }
 
-#[compute_commands]
+// #[compute_commands]
 fn compute(sled: &Sled<Rgb>, buffers: &mut BufferContainer, time_info: &TimeInfo) -> SledResult {
     let delta = time_info.delta.as_secs_f32();
     let bounds = sled.domain();
@@ -89,8 +91,8 @@ fn rand_init_radius() -> f32 {
     rng.gen_range(-32.0..0.0)
 }
 
-#[draw_commands]
-fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer) -> SledResult {
+// #[draw_commands]
+fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, _: &TimeInfo) -> SledResult {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
     let colors = buffers.get_buffer("colors")?;
     let positions = buffers.get_buffer("positions")?;

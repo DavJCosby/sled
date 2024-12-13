@@ -143,7 +143,7 @@ Drivers are useful for encapsulating everything you need to drive a lighting eff
 let mut driver = Driver::new();
 use spatial_led::driver_macros::*;
 
-driver.set_startup_commands(|_sled, buffers, _filters| {
+driver.set_startup_commands(|_sled, buffers| {
     let colors = buffers.create_buffer::<Rgb>("colors");
     colors.extend([
         Rgb::new(1.0, 0.0, 0.0),
@@ -153,7 +153,7 @@ driver.set_startup_commands(|_sled, buffers, _filters| {
     Ok(())
 });
 
-driver.set_draw_commands(|sled, buffers, _filters, time_info| {
+driver.set_draw_commands(|sled, buffers, time_info| {
     let elapsed = time_info.elapsed.as_secs_f32();
     let colors = buffers.get_buffer::<Rgb>("colors")?;
     let num_colors = colors.len();

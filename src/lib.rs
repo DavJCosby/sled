@@ -155,7 +155,7 @@
 //! use spatial_led::driver::Driver;
 //! let mut driver = Driver::new();
 //!
-//! driver.set_startup_commands(|_sled, buffers, _filters| {
+//! driver.set_startup_commands(|_sled, buffers| {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
 //!     colors.extend([
 //!         Rgb::new(1.0, 0.0, 0.0),
@@ -165,7 +165,7 @@
 //!     Ok(())
 //! });
 //!
-//! driver.set_draw_commands(|sled, buffers, _filters, time_info| {
+//! driver.set_draw_commands(|sled, buffers, time_info| {
 //!     let elapsed = time_info.elapsed.as_secs_f32();
 //!     let colors: &Vec<Rgb> = buffers.get_buffer("colors")?;
 //!     let num_colors = colors.len();
@@ -233,11 +233,11 @@
 //! ```rust
 //! # use spatial_led::{Sled, driver::Driver};
 //! # use palette::rgb::Rgb;
-//! # use spatial_led::{BufferContainer, Filters, SledResult, TimeInfo};
+//! # use spatial_led::{BufferContainer, SledResult, TimeInfo};
 //! use spatial_led::driver_macros::*;
 //!
 //! # // #[startup_commands]
-//! fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer, _: &mut Filters) -> SledResult {
+//! fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
 //!     let colors = buffers.create_buffer::<Rgb>("colors");
 //!     colors.extend([
 //!        Rgb::new(1.0, 0.0, 0.0),
@@ -248,7 +248,7 @@
 //! }
 //!
 //! # // #[draw_commands]
-//! fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, _: &Filters, time_info: &TimeInfo) -> SledResult {
+//! fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
 //!    let elapsed = time_info.elapsed.as_secs_f32();
 //!    let colors = buffers.get_buffer::<Rgb>("colors")?;
 //!    let num_colors = colors.len();
@@ -276,11 +276,11 @@
 //! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
 //!
 //! ```rust
-//! # use spatial_led::{Sled, driver::{BufferContainer, Filters, Driver}, SledResult};
+//! # use spatial_led::{Sled, driver::{BufferContainer, Driver}, SledResult};
 //! # use palette::rgb::Rgb;
 //! # use spatial_led::driver_macros::*;
 //! # type MY_CUSTOM_TYPE = f32;
-//! #[startup_commands]
+
 //! fn startup(sled: &mut Sled<Rgb>, buffers: &mut BufferContainer) -> SledResult {
 //!     let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
 //!     let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
@@ -309,7 +309,7 @@
 //! # use spatial_led::{Sled, driver::Driver, driver::BufferContainer};
 //! # use palette::rgb::Rgb;
 //! # let mut driver = Driver::new();
-//! driver.set_draw_commands(|sled: &mut Sled<Rgb>, buffers: &BufferContainer, _, _| {
+//! driver.set_draw_commands(|sled: &mut Sled<Rgb>, buffers: &BufferContainer, _| {
 //!     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
 //!     let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
 //!     let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
@@ -361,21 +361,11 @@
 //! ```rust
 //! # use spatial_led::{Sled, Led, Filter, Vec2, driver::Driver};
 //! # use palette::rgb::Rgb;
-//! # let mut driver = Driver::<Rgb>::new();
-//! driver.set_startup_commands(|sled, buffers, filters| {
-//!     let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
-//!
-//!     filters.set("area_of_effect", area);
-//!     Ok(())
-//! });
-//!
-//! driver.set_draw_commands(|sled, buffers, filters, _| {
-//!     let area_filter = filters.get("area_of_effect")?;
-//!     sled.map_filter(area_filter, |led| {
-//!         // expensive computation
-//!         # Rgb::new(0.0, 0.0, 0.0)
-//!     });
-//!     Ok(())
+//! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
+//! let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
+//! sled.map_filter(&area, |led| {
+//!     // expensive computation
+//!     # Rgb::new(0.0, 0.0, 0.0)
 //! });
 //! ```
 //! Most getter methods on Sled will return a [Filter], but if you need more precise control you can do something like this:
@@ -502,7 +492,7 @@ mod spatial_led;
 /// Drivers are an optional feature that can be disabled by turning off the `drivers` feature flag.
 pub mod driver;
 #[cfg(feature = "drivers")]
-pub use driver::{BufferContainer, Filters, TimeInfo};
+pub use driver::{BufferContainer, TimeInfo};
 
 #[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
 pub use sled_driver_macros as driver_macros;
