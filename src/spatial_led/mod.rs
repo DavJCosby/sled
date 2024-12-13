@@ -2,7 +2,7 @@ use core::ops::Range;
 
 use alloc::vec::Vec;
 
-use crate::{config::LineSegment, led::Led, Vec2};
+use crate::{color::ColorType, config::LineSegment, led::Led, Vec2};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug)]
@@ -10,9 +10,9 @@ use crate::{config::LineSegment, led::Led, Vec2};
 ///
 /// Sled structs are [constructed](Sled::new) from a .toml file that describe this layout.
 /// Upon construction, key information like the indices of vertices or the angle from each led from the center_point is precalculated and cached for faster access later.
-pub struct Sled {
+pub struct Sled<Color: ColorType> {
     center_point: Vec2,
-    leds: Vec<Led>,
+    leds: Vec<Led<Color>>,
     num_leds: usize,
     density: f32,
     line_segments: Vec<LineSegment>,

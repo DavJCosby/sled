@@ -1,5 +1,5 @@
+use palette::rgb::Rgb;
 use spatial_led::{
-    color::Rgb,
     driver::{Driver, TimeInfo},
     driver_macros::*,
     Sled, SledResult,
@@ -19,14 +19,14 @@ const BLUE: Rgb = Rgb::new(0.4, 0.51, 0.93);
 const TRAIL_RADIUS: f32 = 1.2;
 
 #[allow(dead_code)]
-pub fn build_driver() -> Driver {
+pub fn build_driver() -> Driver<Rgb> {
     let mut driver = Driver::new();
     driver.set_draw_commands(draw);
     driver
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, time_info: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, time_info: &TimeInfo) -> SledResult {
     let elapsed = time_info.elapsed.as_secs_f32();
 
     let inner_time_scale = elapsed / GREEN_RADIUS;

@@ -1,14 +1,15 @@
-use crate::color::Rgb;
 use crate::Vec2;
 
 #[cfg(not(feature = "std"))]
 use num_traits::float::Float as _;
 
+use crate::color::ColorType;
+
 #[derive(Copy, Clone)]
 
 /// An LED in our Sled configuration, representing both the color of the LED as well as it's spatial information.
-pub struct Led {
-    pub color: Rgb,
+pub struct Led<Color: ColorType> {
+    pub color: Color,
     position: Vec2,
     angle: f32,
     distance: f32,
@@ -18,11 +19,11 @@ pub struct Led {
 
 /// *All properties listed below are pre-calculated on construction;
 /// there is no substantial overhead for calling these methods.*
-impl Led {
+impl<Color: ColorType> Led<Color> {
     /// Constructs an LED struct.
     /// Fields like `position`, `angle`, and `distance` are derived from `center_point`.
     pub(crate) fn new(
-        color: Rgb,
+        color: Color,
         position: Vec2,
         index: u16,
         segment: u8,
@@ -79,37 +80,37 @@ impl Led {
     }
 }
 
-impl PartialEq for Led {
+impl<Color: ColorType> PartialEq for Led<Color> {
     fn eq(&self, other: &Self) -> bool {
         self.index() == other.index()
     }
 }
 
-impl Eq for Led {}
+impl<Color: ColorType> Eq for Led<Color> {}
 
-impl PartialOrd for Led {
+impl<Color: ColorType> PartialOrd for Led<Color> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Led {
+impl<Color: ColorType> Ord for Led<Color> {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.index.cmp(&other.index())
     }
 }
 
-impl core::hash::Hash for Led {
+impl<Color: ColorType> core::hash::Hash for Led<Color> {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.index.hash(state);
     }
 }
 
-impl core::fmt::Debug for Led {
+impl<Color: ColorType> core::fmt::Debug for Led<Color> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         let dir = self.direction();
         f.debug_struct("Led")
-            .field("color", &self.color.into_components())
+            .field("color", &self.color)
             .field("position", &(self.position.x, self.position.y))
             .field("direction", &(dir.x, dir.y))
             .field("angle", &self.angle)
@@ -120,12 +121,8 @@ impl core::fmt::Debug for Led {
     }
 }
 
-impl core::fmt::Display for Led {
+impl<Color: ColorType> core::fmt::Display for Led<Color> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(
-            f,
-            "{}: ({}, {}, {})",
-            self.index, self.color.red, self.color.green, self.color.blue
-        )
+        write!(f, "{}: {:?}", self.index, self.color)
     }
 }

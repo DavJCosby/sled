@@ -2,18 +2,14 @@ use core::time::Duration;
 
 use alloc::boxed::Box;
 
-use crate::{
-    color::{Rgb, Srgb},
-    time::Instant,
-    Led, Sled, SledError, Vec2,
-};
+use crate::{color::ColorType, time::Instant, Led, Sled, SledError, Vec2};
 
 /// A driver representing instants with `std::time::Instant`
 #[cfg(feature = "std")]
-pub type Driver = CustomDriver<std::time::Instant>;
+pub type Driver<COLOR> = CustomDriver<std::time::Instant, COLOR>;
 
-mod filters;
 mod buffers;
+mod filters;
 pub use buffers::BufferContainer;
 pub use filters::Filters;
 
@@ -24,31 +20,33 @@ pub struct TimeInfo {
 }
 
 type SledResult = Result<(), SledError>;
-type StartupCommands = Box<dyn Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult>;
-type ComputeCommands =
-    Box<dyn Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>;
-type DrawCommands = Box<dyn Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult>;
 
 /// Drivers are useful for encapsulating everything you need to drive a complicated lighting effect all in one place.
 ///
 /// Some [macros](crate::driver_macros) have been provided to make authoring drivers a more ergonomic experience. See their doc comments for more information.
-pub struct CustomDriver<INSTANT>
+pub struct CustomDriver<INSTANT, COLOR>
 where
     INSTANT: Instant,
+    COLOR: ColorType,
 {
-    sled: Option<Sled>,
-    startup_commands: StartupCommands,
-    compute_commands: ComputeCommands,
-    draw_commands: DrawCommands,
+    sled: Option<Sled<COLOR>>,
+    startup_commands:
+        Box<dyn Fn(&mut Sled<COLOR>, &mut BufferContainer, &mut Filters) -> SledResult>,
+    compute_commands:
+        Box<dyn Fn(&Sled<COLOR>, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult>,
+    draw_commands:
+        Box<dyn Fn(&mut Sled<COLOR>, &BufferContainer, &Filters, &TimeInfo) -> SledResult>,
     startup: INSTANT,
     last_update: INSTANT,
+
     buffers: BufferContainer,
     filters: Filters,
 }
 
-impl<INSTANT> CustomDriver<INSTANT>
+impl<INSTANT, COLOR> CustomDriver<INSTANT, COLOR>
 where
     INSTANT: Instant,
+    COLOR: ColorType,
 {
     pub fn new() -> Self {
         CustomDriver {
@@ -64,7 +62,7 @@ where
     }
 
     /// Returns `Some(&Sled)` if the Driver has been mounted, `None` if it hasn't.
-    pub fn sled(&self) -> Option<&Sled> {
+    pub fn sled(&self) -> Option<&Sled<COLOR>> {
         self.sled.as_ref()
     }
 
@@ -75,11 +73,12 @@ where
 
     /// Define commands to be called as soon as a Sled is [mounted](CustomDriver::mount) to the driver. This is a good place to initialize important buffer values.
     /// ```rust
-    /// # use spatial_led::{Vec2, BufferContainer, SledResult, driver::Driver};
+    /// # use spatial_led::{Vec2, BufferContainer, Sled, Filters, SledResult, driver::Driver};
+    /// # use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     ///
-    /// #[startup_commands]
-    /// fn startup(buffers: &mut BufferContainer) -> SledResult {
+    /// # // #[startup_commands]
+    /// fn startup(_: &mut Sled<Rgb>, buffers: &mut BufferContainer, _: &mut Filters) -> SledResult {
     ///     let streak_positions = buffers.create_buffer::<Vec2>("positions");
     ///     streak_positions.extend([
     ///         Vec2::new(-1.2, 0.3),
@@ -90,12 +89,12 @@ where
     /// }
     ///
     /// pub fn main() {
-    ///     let mut driver = Driver::new();
+    ///     let mut driver = Driver::<Rgb>::new();
     ///     driver.set_startup_commands(startup);
     /// }
     /// ```
     pub fn set_startup_commands<
-        F: Fn(&mut Sled, &mut BufferContainer, &mut Filters) -> SledResult + 'static,
+        F: Fn(&mut Sled<COLOR>, &mut BufferContainer, &mut Filters) -> SledResult + 'static,
     >(
         &mut self,
         startup_commands: F,
@@ -105,12 +104,13 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right before we run [draw commands](CustomDriver::set_draw_commands).
     /// ```rust
-    /// # use spatial_led::{Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    ///# use spatial_led::{Vec2, BufferContainer, TimeInfo, Sled, Filters, SledResult, driver::Driver};
+    ///# use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
-    /// #[compute_commands]
-    /// fn compute(buffers: &mut BufferContainer, time: &TimeInfo) -> SledResult {
+    /// # // #[compute_commands]
+    /// fn compute(_: &Sled<Rgb>, buffers: &mut BufferContainer, _: &mut Filters, time: &TimeInfo) -> SledResult {
     ///     let streak_positions = buffers.get_buffer_mut::<Vec2>("positions")?;
     ///     let elapsed = time.elapsed.as_secs_f32();
     ///     for p in streak_positions {
@@ -120,13 +120,13 @@ where
     /// }
     ///
     /// pub fn main() {
-    ///     let mut driver = Driver::new();
+    ///     let mut driver = Driver::<Rgb>::new();
     ///     driver.set_compute_commands(compute);
     /// }
     ///
     /// ```
     pub fn set_compute_commands<
-        F: Fn(&Sled, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&Sled<COLOR>, &mut BufferContainer, &mut Filters, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         compute_commands: F,
@@ -136,11 +136,12 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right after we run [compute commands](CustomDriver::set_compute_commands).
     /// ```rust
-    /// # use spatial_led::{Sled, Vec2, color::Rgb, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// # use spatial_led::{Sled, Vec2, BufferContainer, TimeInfo, SledResult, driver::Driver};
+    /// # use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     ///
     /// #[draw_commands]
-    /// fn draw(sled: &mut Sled, buffers: &BufferContainer) -> SledResult {
+    /// fn draw(sled: &mut Sled<Rgb>, buffers: &BufferContainer) -> SledResult {
     ///     // gradually fade all LEDs to black
     ///     sled.map(|led| led.color * 0.95);
     ///
@@ -161,7 +162,7 @@ where
     ///
     /// ```
     pub fn set_draw_commands<
-        F: Fn(&mut Sled, &BufferContainer, &Filters, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&mut Sled<COLOR>, &BufferContainer, &Filters, &TimeInfo) -> SledResult + 'static,
     >(
         &mut self,
         draw_commands: F,
@@ -169,8 +170,8 @@ where
         self.draw_commands = Box::new(draw_commands);
     }
 
-    /// Takes ownership of the given Sled and runs the Driver's [startup commands](CustomDriver::set_startup_commands).
-    pub fn mount(&mut self, mut sled: Sled) {
+    /// Takes ownership of the given Sled and runs the Driver's [startup commands](Driver::set_startup_commands).
+    pub fn mount(&mut self, mut sled: Sled<COLOR>) {
         (self.startup_commands)(&mut sled, &mut self.buffers, &mut self.filters).unwrap();
         self.startup = INSTANT::now();
         self.last_update = self.startup;
@@ -197,13 +198,13 @@ where
         self.step();
     }
 
-    /// Returns full ownership over the Driver's assigned Sled. Panics if [CustomDriver::mount()] was never called.
-    pub fn dismount(&mut self) -> Sled {
+    /// Returns full ownership over the Driver's assigned Sled. Panics if [Driver::mount()] was never called.
+    pub fn dismount(&mut self) -> Sled<COLOR> {
         self.sled.take().unwrap()
     }
 
     /// See [Sled::leds()].
-    pub fn leds(&self) -> impl Iterator<Item = &Led> {
+    pub fn leds(&self) -> impl Iterator<Item = &Led<COLOR>> {
         if let Some(sled) = &self.sled {
             sled.leds()
         } else {
@@ -212,21 +213,9 @@ where
     }
 
     /// See [Sled::colors()].
-    pub fn colors(&self) -> impl Iterator<Item = &Rgb> + '_ {
+    pub fn colors(&self) -> impl Iterator<Item = &COLOR> + '_ {
         if let Some(sled) = &self.sled {
             sled.colors()
-        } else {
-            panic!("Driver has no Sled assigned!")
-        }
-    }
-
-    /// See [Sled::colors_coerced()].
-    pub fn colors_coerced<T>(&self) -> impl Iterator<Item = Srgb<T>> + '_
-    where
-        f32: crate::color::stimulus::IntoStimulus<T>,
-    {
-        if let Some(sled) = &self.sled {
-            sled.colors_coerced()
         } else {
             panic!("Driver has no Sled assigned!")
         }
@@ -241,13 +230,9 @@ where
         }
     }
 
-    /// See [Sled::colors_and_positions_coerced()].
-    pub fn colors_and_positions_coerced<T>(&self) -> impl Iterator<Item = (Srgb<T>, Vec2)> + '_
-    where
-        f32: crate::color::stimulus::IntoStimulus<T>,
-    {
+    pub fn colors_and_positions(&self) -> impl Iterator<Item = (COLOR, Vec2)> + '_ {
         if let Some(sled) = &self.sled {
-            sled.colors_and_positions_coerced()
+            sled.colors_and_positions()
         } else {
             panic!("Driver has no Sled assigned!")
         }
@@ -264,9 +249,10 @@ where
     }
 }
 
-impl<INSTANT> Default for CustomDriver<INSTANT>
+impl<INSTANT, COLOR> Default for CustomDriver<INSTANT, COLOR>
 where
     INSTANT: Instant,
+    COLOR: ColorType,
 {
     fn default() -> Self {
         Self::new()

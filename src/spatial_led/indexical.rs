@@ -4,18 +4,18 @@ use alloc::format;
 use alloc::string::ToString;
 
 use crate::{
-    color::Rgb,
+    color::ColorType,
     error::SledError,
     led::Led,
     spatial_led::{Filter, Sled},
 };
 
 /// # Index-based read and write methods.
-impl Sled {
-    /// Returns `Some(&Led)` if an [LED](Led) at `index` exists, `None` if not.
+impl<Color: ColorType> Sled<Color> {
+    /// Returns `Some(&Led<Color>)` if an [LED](Led) at `index` exists, `None` if not.
     ///
     /// O(1)
-    pub fn get(&self, index: usize) -> Option<&Led> {
+    pub fn get(&self, index: usize) -> Option<&Led<Color>> {
         self.leds.get(index)
     }
 
@@ -34,7 +34,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate<F: Fn(&Led) -> Rgb>(
+    pub fn modulate<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         index: usize,
         color_rule: F,
@@ -53,7 +53,7 @@ impl Sled {
     ///
     /// O(1)
     ///
-    pub fn set(&mut self, index: usize, color: Rgb) -> Result<(), SledError> {
+    pub fn set(&mut self, index: usize, color: Color) -> Result<(), SledError> {
         if index >= self.num_leds {
             return SledError::new(format!("LED at index {} does not exist.", index)).as_err();
         }
@@ -66,7 +66,7 @@ impl Sled {
     ///
     /// O(LEDS)
     ///
-    pub fn set_all(&mut self, color: Rgb) {
+    pub fn set_all(&mut self, color: Color) {
         for led in &mut self.leds {
             led.color = color;
         }
@@ -87,7 +87,7 @@ impl Sled {
     ///     }
     /// });
     /// ```
-    pub fn for_each<F: FnMut(&mut Led)>(&mut self, mut func: F) {
+    pub fn for_each<F: FnMut(&mut Led<Color>)>(&mut self, mut func: F) {
         for led in self.leds.iter_mut() {
             func(led);
         }
@@ -95,7 +95,7 @@ impl Sled {
 }
 
 /// # Index and range-based read and write methods
-impl Sled {
+impl<Color : ColorType> Sled<Color> {
     /// Returns a Some([Filter]) containing all [LEDs](Led) with indices within `index_range`.
     /// Returns None if the range extends beyond the size of the system.
     ///
@@ -123,7 +123,7 @@ impl Sled {
     ///# Ok(())
     ///# }
     /// ```
-    pub fn modulate_range<F: Fn(&Led) -> Rgb>(
+    pub fn modulate_range<F: Fn(&Led<Color>) -> Color>(
         &mut self,
         index_range: Range<usize>,
         color_rule: F,
@@ -145,7 +145,7 @@ impl Sled {
     ///
     /// O(RANGE_SIZE)
     ///
-    pub fn set_range(&mut self, index_range: Range<usize>, color: Rgb) -> Result<(), SledError> {
+    pub fn set_range(&mut self, index_range: Range<usize>, color: Color) -> Result<(), SledError> {
         if index_range.end >= self.num_leds {
             return SledError::new("Index range extends beyond size of system.".to_string())
                 .as_err();
@@ -174,7 +174,7 @@ impl Sled {
     ///     }
     /// });
     /// ```
-    pub fn for_each_in_range<F: FnMut(&mut Led)>(
+    pub fn for_each_in_range<F: FnMut(&mut Led<Color>)>(
         &mut self,
         index_range: Range<usize>,
         func: F,

@@ -7,8 +7,7 @@ use alloc::vec::Vec;
 use num_traits::float::Float as _;
 
 use crate::{
-    color,
-    color::{Rgb, Srgb},
+    color::ColorType,
     config::{Config, LineSegment},
     error::SledError,
     led::Led,
@@ -17,7 +16,7 @@ use crate::{
 };
 
 /// # Construction, output, and basic sled info
-impl Sled {
+impl<COLOR: ColorType> Sled<COLOR> {
     /// Constructs a new Sled struct given the path to a config file.
     /// This is an expensive operation as many values are pre-calculated
     /// on construction (i.e, distances/angles from each LED to the center).
@@ -58,14 +57,14 @@ impl Sled {
     }
 
     fn new_from_config(config: Config) -> Result<Self, SledError> {
-        let leds_per_segment = Sled::leds_per_segment(&config);
+        let leds_per_segment = Sled::<COLOR>::leds_per_segment(&config);
         let leds = Sled::build_led_list(
             &leds_per_segment,
             &config.line_segments,
             &config.center_point,
         );
-        let line_segment_endpoint_indices = Sled::line_segment_endpoint_indices(&leds_per_segment);
-        let vertex_indices = Sled::vertex_indices(&config);
+        let line_segment_endpoint_indices = Sled::<COLOR>::line_segment_endpoint_indices(&leds_per_segment);
+        let vertex_indices = Sled::<COLOR>::vertex_indices(&config);
         let num_leds = leds.len();
         let index_of_closest = leds
             .iter()
@@ -104,14 +103,15 @@ impl Sled {
     ///
     ///  ```rust
     ///# use spatial_led::{Sled};
-    ///# let sled = Sled::new("./benches/config.yap").unwrap();
+    ///# use palette::rgb::Rgb;
+    ///# let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// for led in sled.leds() {
     ///     println!("Segment {}, Index {}: {:?}",
     ///         led.segment(), led.index(), led.color
     ///     );
     /// }
     /// ```
-    pub fn leds(&self) -> impl Iterator<Item = &Led> {
+    pub fn leds(&self) -> impl Iterator<Item = &Led<COLOR>> {
         self.leds.iter()
     }
 
@@ -120,8 +120,9 @@ impl Sled {
     /// O(LEDS)
     ///
     /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./benches/config.yap").unwrap();
+    ///# use spatial_led::{Sled};
+    ///# use palette::rgb::Rgb;
+    ///# let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
     /// let colors = sled.colors();
     ///
     /// for color in colors {
@@ -129,30 +130,8 @@ impl Sled {
     ///     /*- snip -*/
     /// }
     /// ```
-    pub fn colors(&self) -> impl Iterator<Item = &Rgb> + '_ {
+    pub fn colors(&self) -> impl Iterator<Item = &COLOR> + '_ {
         self.leds.iter().map(|led| &led.color)
-    }
-
-    /// Returns an Iterator over the RGB colors for each [LED](Led) in the system.
-    /// Type annotations allow you to coerce from 32-bit RGB into another depth.
-    ///
-    /// O(LEDS)
-    ///
-    /// ```rust
-    ///# use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./benches/config.yap").unwrap();
-    /// let colors = sled.colors_coerced::<u8>();
-    ///
-    /// for color in colors {
-    ///     let red: u8 = color.red;
-    ///     /*- snip -*/
-    /// }
-    /// ```
-    pub fn colors_coerced<T>(&self) -> impl Iterator<Item = Srgb<T>> + '_
-    where
-        f32: color::stimulus::IntoStimulus<T>,
-    {
-        self.leds.iter().map(|led| led.color.into_format::<T>())
     }
 
     /// Returns an Iterator over Vec2s, representing the position of each [LED](Led) in the system.
@@ -165,33 +144,8 @@ impl Sled {
     /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
     ///
     /// O(LEDS)
-    pub fn colors_and_positions(&self) -> impl Iterator<Item = (Srgb<f32>, Vec2)> + '_ {
+    pub fn colors_and_positions(&self) -> impl Iterator<Item = (COLOR, Vec2)> + '_ {
         self.leds.iter().map(|led| (led.color, led.position()))
-    }
-
-    /// Returns an Iterator over tuple pairs of the color and position of each [LED](Led) in the system.
-    /// Supports color coercion just like [Sled::colors_coerced()]
-    ///
-    /// O(LEDS)
-    ///
-    /// ```rust
-    /// # use spatial_led::{Sled, color::Rgb};
-    ///# let sled = Sled::new("./benches/config.yap").unwrap();
-    /// let col_and_pos = sled.colors_and_positions_coerced::<u8>();
-    ///
-    /// for (color, position) in col_and_pos {
-    ///     let red: u8 = color.red;
-    ///     let x = position.x;
-    ///     /*- snip -*/
-    /// }
-    /// ```
-    pub fn colors_and_positions_coerced<T>(&self) -> impl Iterator<Item = (Srgb<T>, Vec2)> + '_
-    where
-        f32: color::stimulus::IntoStimulus<T>,
-    {
-        self.leds
-            .iter()
-            .map(|led| (led.color.into_format::<T>(), led.position()))
     }
 
     /// Returns the static reference point declared in the [config file](Sled::new).
@@ -245,9 +199,9 @@ impl Sled {
         leds_per_segment: &[usize],
         line_segments: &[LineSegment],
         center_point: &Vec2,
-    ) -> Vec<Led> {
+    ) -> Vec<Led<COLOR>> {
         let mut leds = vec![];
-        let default_color = Rgb::new(0.0, 0.0, 0.0);
+        let default_color = COLOR::default();
 
         for (segment_index, segment_size) in leds_per_segment.iter().enumerate() {
             for i in 0..*segment_size {
@@ -306,7 +260,7 @@ impl Sled {
         vertex_indices
     }
 
-    fn calc_domain(leds: &Vec<Led>) -> Range<Vec2> {
+    fn calc_domain(leds: &Vec<Led<COLOR>>) -> Range<Vec2> {
         let mut min_x = f32::MAX;
         let mut min_y = f32::MAX;
 
