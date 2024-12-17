@@ -475,7 +475,6 @@ mod error;
 mod led;
 mod spatial_led;
 
-#[cfg(feature = "drivers")]
 /// Useful tools for building more complicated, time-based visual effects.
 ///
 /// Drivers are an optional feature that can be disabled by turning off the `drivers` feature flag.
