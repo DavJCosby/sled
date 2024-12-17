@@ -171,11 +171,13 @@ let colors_and_positions = sled.colors_and_positions();
 </details>
 </details>
 
+
 <details>
 <summary><h1>Advanced Features</h1></summary>
 For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
 
-## Drivers
+<details>
+<summary><h2>Drivers</h2></summary>
 Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
 
 ```rust
@@ -234,7 +236,10 @@ let sled = driver.dismount();
 
 For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 
-### Driver Data
+
+<details>
+<summary><h3> Driver Data </h3></summary>
+
 A driver exposes a data structure called `Data`. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 
 It's best practice to first use startup commands to initialize your data, and then modify them either through compute commands or from outside the driver depending on your needs.
@@ -283,8 +288,11 @@ If you need to mutate data:
 let walls_mut = data.get_mut::<Vec<bool>>("wall_toggles")?;
 walls_mut[1] = true;
 ```
+</details>
 
-### Filters
+<details>
+<summary><h3>Filters</h3></summary>
+
 For exceptionally performance-sensitive scenarios, Filters can be used to predefine important LED regions. They act as sets, containing only the indicies of the LEDs captured in the set. When we want to perform an operation on that set, we pass the Filter back to the Sled like this:
 
 ```rust
@@ -337,7 +345,11 @@ let ab_overlap = circle_a.and(&circle_b);
 let ab_union = circle_a.or(&circle_b);
 ```
 
-## Scheduler
+</details>
+</details>
+
+<details>
+<summary><h2>Scheduler</h2></summary>
 The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
 
 ```rust
@@ -375,8 +387,10 @@ You can define your own `CustomScheduler` backed by whatever sleeping method you
 If you don't need the Scheduler struct in general, you can disable the `scheduler` and `spin_sleep` flags.
 
 </details>
+</details>
+
 <details>
-</summary><h1><code>no_std</code> Support</h1></summary>
+<summary><h1><code>no_std</code> Support</h1></summary>
 
 Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
 
