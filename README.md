@@ -120,17 +120,14 @@ A few other handy output methods:
 let leds = sled.leds();
 // An Iterator of Led structs (holds color, position, distance/angle relative from center, etc)
 
-let colors_u8 = sled.colors_coerced::<u8>();
-// An Iterator of Rgbs, 8-bits/channel
+let positions = sled.positions();
+// An Iterator of whatever type you chose to represent colors in.
 
 let positions = sled.positions();
 // An Iterator of Vec2s, representing the position of each LED
 
-let colors_f32_and_positions = sled.colors_and_positions();
-// An Iterator of (Rgb, Vec2) tuple pairs representing each LEDs color and position.
-
-let colors_f32_and_positions = sled.colors_and_positions_coerced::<u8>();
-// An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each LEDs color and position.
+let colors_and_positions = sled.colors_and_positions();
+// An Iterator of (COLOR_TYPE, Vec2) tuple pairs representing each LEDs color and position.
 ```
 
 # Advanced Features
