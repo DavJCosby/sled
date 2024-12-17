@@ -8,7 +8,7 @@
  </div>
 Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
 <details>
-<summary><h5>What Sled does:</h5></summary>
+<summary><strong>What Sled does:</strong></summary>
 
 - It exposes an API that lets you:
 	- Compute colors depending on each LED's position, distance, direction, line segment, etc;
@@ -21,7 +21,7 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 
 <details>
 
-<summary><h5>What Sled does <ins>not<ins> do:</h5></summary>
+<summary><strong>What Sled does <ins>not<ins> do:</strong></summary>
 
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
