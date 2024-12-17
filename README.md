@@ -51,7 +51,7 @@ density: 30.0
 Note the `::<Rgb>` in the constructor. In previous versions of Sled, [palette's Rgb struct](https://docs.rs/palette/latest/palette/rgb/struct.Rgb.html) was used interally for all color computation. Now, the choice is 100% yours! You just have to specify what data type you'd like to use.
 
 ```rust
-#[derive(Default, Debug)]
+#[derive(Debug)]
 struct RGBW {
     r: f32,
     g: f32,

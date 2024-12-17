@@ -47,7 +47,7 @@
 //!
 //! ```rust, ignore
 //! # use spatial_led::Sled;
-//! #[derive(Default, Debug, Copy, Clone)]
+//! #[derive(Debug)]
 //! struct RGBW {
 //!     r: f32,
 //!     g: f32,
