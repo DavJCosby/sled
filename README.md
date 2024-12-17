@@ -30,9 +30,13 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 
 See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 
-## The Basics
+<details open>
+<summary><h1>The Basics</h1></summary>
+
 In absence of an official guide, this will serve as a basic introduction. From here, you can consult the [docs](https://docs.rs/spatial_led/latest/spatial_led/) to learn what else Sled can do.
-### Setup
+<details open>
+<summary><h3>Setup</h3></summary>
+
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
 use spatial_led::<Sled, SledError>;
@@ -79,7 +83,11 @@ rgbw_sled.set_all(RGBW {
 
 For all further examples we'll use palette's Rgb struct as our backing color format (we really do highly recommend it and encourage its use wherever it makes sense), but just know that you can use any data type that implements `Debug`, `Default`, and `Copy`.
 
-### Drawing
+</details>
+
+<details open>
+<summary><h3>Drawing</h3></summary>
+
 Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
 **Set all vertices to white:**
@@ -160,7 +168,11 @@ let colors_and_positions = sled.colors_and_positions();
 // An Iterator of (COLOR_TYPE, Vec2) tuple pairs representing each LEDs color and position.
 ```
 
-# Advanced Features
+</details>
+</details>
+
+<details>
+<summary><h1>Advanced Features</h1></summary>
 For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
 
 ## Drivers
@@ -362,7 +374,10 @@ You can define your own `CustomScheduler` backed by whatever sleeping method you
 
 If you don't need the Scheduler struct in general, you can disable the `scheduler` and `spin_sleep` flags.
 
-# `no_std` Support
+</details>
+<details>
+</summary><h1><code>no_std</code> Support</h1></summary>
+
 Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
 
 To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
@@ -383,7 +398,7 @@ driver.mount(sled);
 ## Schedulers
 Similarly, the default Scheduler relies on Instants, as well as methods only available through the standard library to handle sleeping. Thus, to build a Scheduler in `no_std` environments, you'll need to provide custom implementations of the `spatial_led::time::Instant` and `spatial_led::time::Sleeper` traits.
 
-```rust, ignore
+```rust
 use spatial_led::driver::CustomDriver;
 
 let scheduler = CustomScheduler<MyCustomInstant, MyCustomSleeper>::new(120.0);
@@ -398,7 +413,11 @@ let scheduler = CustomScheduler<MyCustomInstant, MyCustomSleeper>::new(120.0);
  ## Feedback and Contributions
  The author of this crate does not own any hardware that would allow him test `spatial_led` on real `no_std` environments, so bug reports and PRs are very appreciated!
 
-# Feature Flags
+</details>
+
+<details>
+<summary><h1>Feature Flags</h1></summary>
+
 Enabled by Default:
 - `std`
 - `drivers` : Enables Drivers
@@ -409,10 +428,14 @@ Opt-in:
 - `named_colors` : Exposes color constants (for example `spatial_led::color::consts::WHITE`)
 - `libm` : Needed for some `no_std` environments.
 - `core-simd` (Nightly) : Allows the vector math library used by the crate to take advantage of SIMD instructions when `std::simd` isn't available.
+</details>
 
-# License
+<details>
+<summary><h1>License</h1></summary>
+
 Licensed under either of
 * Apache License, Version 2.0 (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
 * MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
   
 at your option.
+</details>
