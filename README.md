@@ -221,7 +221,6 @@ A driver exposes a data structure called `Data`. This struct essentially acts as
 It's best practice to first use startup commands to initialize your data, and then modify them either through compute commands or from outside the driver depending on your needs.
 
 ```rust
-#[startup_commands]
 fn startup(sled: &mut Sled, data: &mut Data) -> SledResult {
     data.set::<Vec<bool>>("wall_toggles", vec![true, false, true]);
     data.set::<Rgb>("room_color", Rgb::new(1.0, 0.0, 0.0));

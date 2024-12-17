@@ -25,7 +25,6 @@ pub fn build_driver() -> Driver<Rgb> {
     return driver;
 }
 
-// #[startup_commands]
 fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
     let sled_bounds = sled.domain();
 
@@ -61,7 +60,6 @@ fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
     Ok(())
 }
 
-// #[compute_commands]
 fn compute(sled: &Sled<Rgb>, data: &mut Data, time: &Time) -> SledResult {
     let delta = time.delta.as_secs_f32();
     let bounds = sled.domain();
@@ -95,7 +93,6 @@ fn rand_init_radius() -> f32 {
     rng.gen_range(-32.0..0.0)
 }
 
-// #[draw_commands]
 fn draw(sled: &mut Sled<Rgb>, data: &Data, _: &Time) -> SledResult {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
     let colors: &Vec<Rgb> = data.get("colors")?;
