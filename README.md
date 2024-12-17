@@ -161,7 +161,6 @@ Drivers are useful for encapsulating everything you need to drive a lighting eff
 
 ```rust
 let mut driver = Driver::<Rgb>::new(); // often auto-inferred
-use spatial_led::driver_macros::*;
 
 driver.set_startup_commands(|_sled, data| {
     data.set::<Vec<Rgb>>("colors", vec![
