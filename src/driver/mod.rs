@@ -64,7 +64,7 @@ where
         self.startup.elapsed()
     }
 
-    /// Define commands to be called as soon as a Sled is [mounted](CustomDriver::mount) to the driver. This is a good place to initialize important buffer values.
+    /// Define commands to be called as soon as a Sled is [mounted](CustomDriver::mount) to the driver. This is a good place to initialize important data.
     /// ```rust
     /// # use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data}};
     /// # use palette::rgb::Rgb;
@@ -136,7 +136,7 @@ where
     ///     // gradually fade all LEDs to black
     ///     sled.map(|led| led.color * 0.95);
     ///
-    ///     // For each position in our buffer, draw  white in the direction to it.
+    ///     // For each position in our vector, draw white in the direction to it.
     ///     let streak_positions = data.get::<Vec<Vec2>>("positions")?;
     ///     let center = sled.center_point();
     ///     for pos in streak_positions {
@@ -226,12 +226,12 @@ where
         }
     }
 
-    /// Returns a reference to the Driver's BufferContainer. Helpful for displaying buffer values to the program user.
+    /// Returns a reference to the Driver's Data. Helpful for displaying data values to the program user.
     pub fn data(&self) -> &Data {
         &self.data
     }
 
-    /// Returns a mutable reference to the Driver's BufferContainer. Helpful for changing buffer values as the user provides input to the program.
+    /// Returns a mutable reference to the Driver's Data. Helpful for changing data values as the user provides input to the program.
     pub fn data_mut(&mut self) -> &mut Data {
         &mut self.data
     }

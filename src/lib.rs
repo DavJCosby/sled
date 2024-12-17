@@ -198,7 +198,7 @@
 //! # Ok(())
 //! # }
 //! ```
-//! ![Basic Time-Driven Effect Using Buffers](https://github.com/DavJCosby/sled/blob/master/resources/driver1.gif?raw=true)
+//! ![Basic Time-Driven Effect](https://github.com/DavJCosby/sled/blob/master/resources/driver1.gif?raw=true)
 //!
 //! If you need to retrieve ownership of your sled later, you can do:
 //! ```rust
@@ -210,11 +210,11 @@
 //! let sled = driver.dismount();
 //! ```
 //!
-//! * [set_startup_commands()](driver::Driver::set_startup_commands) - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over [Sled], [BufferContainer], and [Filters].
+//! * [set_startup_commands()](driver::Driver::set_startup_commands) - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over [Sled] and [Data](driver::Data).
 //!
-//! * [set_draw_commands()](driver::Driver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `BufferContainer`, `Filters`, and `TimeInfo`.
+//! * [set_draw_commands()](driver::Driver::set_draw_commands) - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over `Sled`, and immutable access to `Data` and `Time`.
 //!
-//! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled`, mutable control over `BufferContainer` and `Filters` and immutable access to `TimeInfo`.
+//! * [set_compute_commands()](driver::Driver::set_compute_commands) - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to `Sled` and `Time`, and mutable control over `Data`.
 //!
 //! Drivers need a representation of a time instant, which is provided as a generic `INSTANT` that must implement the trait `time::Instant`. For `std` targets, `std::time::Instant` can be used, and a type alias `Driver = CustomDriver<std::time::Instant>` is defined. For `no_std` targets, the client should define their own representation (e.g. using `embassy_time::Instant`).
 //!
@@ -269,10 +269,10 @@
 //! driver.set_draw_commands(draw);
 //! ```
 //!
-//! ### Buffers
-//! A driver exposes a data structure called [BufferContainer]. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
+//! ### Driver Data
+//! A driver exposes a data structure called [Data]. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
-//! It's best practice to create buffers with [startup commands](driver::Driver::set_startup_commands), and then modify them either through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::buffers_mut) depending on your needs.
+//! It's best practice to first use [startup commands](driver::Driver::set_startup_commands) to initialize your data, and then modify them through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::data_mut) depending on your needs.
 //!
 //! ```rust
 //! # use spatial_led::{Sled, driver::{Data, Driver}, SledResult};
@@ -301,7 +301,7 @@
 //! driver.set_startup_commands(startup);
 //! ```
 //!
-//! To maniplate buffers from outside driver, just do:
+//! To access driver data externally, just do:
 //! ```rust
 //! # use spatial_led::{driver::{Data, Driver}};
 //! # use palette::rgb::Rgb;
@@ -311,7 +311,7 @@
 //! let data: &mut Data = driver.data_mut();
 //! ```
 //!
-//! Using a BufferContainer is relatively straightforward.
+//! Using that data is relatively straightforward.
 //! ```rust
 //! # type MyCustomType = f32;
 //! # use spatial_led::{Sled, driver::Driver, driver::Data};
@@ -319,8 +319,8 @@
 //! # let mut driver = Driver::new();
 //! driver.set_draw_commands(|sled: &mut Sled<Rgb>, data: &Data, _| {
 //!     let wall_toggles = data.get::<Vec<bool>>("wall_toggles")?;
-//!     let wall_colors = data.get::<Vec<Rgb>>("wall_colors")?;
-//!     let important_data = data.get::<MyCustomType>("important_data")?;
+//!     let wall_colors = data.get::<Rgb>("room_color")?;
+//!     let important_data: &CustomDataType = data.get("important_data")?;
 //!
 //!     for i in 0..wall_toggles.len() {
 //!         if wall_toggles[i] == true {
@@ -334,24 +334,22 @@
 //! });
 //! ```
 //!
-//! If you need to mutate buffer values:
+//! If you need to mutate data:
 //! ```rust
-//!  // Mutable reference to the whole buffer
+//!  // Mutable reference to the whole vector
 //! # use spatial_led::{driver::Data, SledError};
 //! # use palette::rgb::Rgb;
 //! # fn main() -> Result<(), spatial_led::SledError> {
 //! # let mut data = Data::new();
 //! # data.set("wall_toggles", vec![false, false, true]);
-
 //! let wall_toggles: &mut Vec<bool> = data.get_mut("wall_toggles")?;
-//! wall_toggles[2] = true;
-//!
+//! wall_toggles[1] = true;
 //! # Ok(())
 //! # }
 //! ```
 //!
 //! ### Filters
-//! For exceptionally performance-sensitive scenarios, [Filters] can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
+//! For exceptionally performance-sensitive scenarios, [Filters](Filter) can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
 //!
 //! Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //!
@@ -372,8 +370,26 @@
 //! # let mut sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
-//!
-//! I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
+//! Once you've stored a Filter, you can save it to `Data` for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
+//! 
+//! A slightly better example would be to imagine that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
+//! ```rust, ignore
+//! let startup_commands = |sled, data| {
+//!     let area: Filter = sled.within_dist_from(
+//!         5.0, Vec2::new(-0.25, 1.5)
+//!     );
+//! 
+//!     data.set("area_of_effect", area);
+//!     Ok(())
+//! };
+//! 
+//! let draw_commands = |sled, data, _| {
+//!     let area_filter = data.get("area_of_effect")?;
+//!     sled.map_filter(area_filter, |led| {
+//!         // expensive computation
+//!      });
+//!     Ok(())
+//! };
 //!
 //! ## Scheduler
 //! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
