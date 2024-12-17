@@ -52,13 +52,13 @@ impl Data {
     ///
     ///     let retrieved: &i32 = data.get("abc")?;
     ///     assert_eq!(retrieved, &123);
-    /// 
+    ///
     ///     let type_mismatch = data.get::<bool>("abc");
     ///     assert_eq!(
     ///         &type_mismatch.err().unwrap().message,
     ///         "Data associated with the key `abc` exists, but it is not of type bool."
     ///     );
-    /// 
+    ///
     ///     let bad_key = data.get::<i32>("cba");
     ///     assert_eq!(
     ///         &bad_key.err().unwrap().message,
@@ -100,6 +100,22 @@ impl Data {
     }
 
     pub fn set<T: StorableData>(&mut self, key: &str, value: T) {
+        #[cfg(target_pointer_width = "64")]
+        assert!(
+            key.len() < 24,
+            "Invalid data key; Max size is 24 bytes, `{}` is {} bytes.",
+            key,
+            key.len()
+        );
+
+        #[cfg(target_pointer_width = "32")]
+        assert!(
+            key.len() < 24,
+            "Invalid data key; Max size is 12 bytes on 32-bit systems, `{}` is {} bytes.",
+            key,
+            key.len()
+        );
+
         self.data.insert(
             key.to_compact_string(),
             Box::<DataWrapper<T>>::new(DataWrapper::new(value)),
@@ -107,6 +123,22 @@ impl Data {
     }
 
     pub fn store<T: StorableData>(&mut self, key: &str, value: T) -> &mut T {
+        #[cfg(target_pointer_width = "64")]
+        assert!(
+            key.len() < 24,
+            "Invalid data key; Max size is 24 bytes, `{}` is {} bytes.",
+            key,
+            key.len()
+        );
+
+        #[cfg(target_pointer_width = "32")]
+        assert!(
+            key.len() < 24,
+            "Invalid data key; Max size is 12 bytes on 32-bit systems, `{}` is {} bytes.",
+            key,
+            key.len()
+        );
+
         self.data.insert(
             key.to_compact_string(),
             Box::<DataWrapper<T>>::new(DataWrapper::new(value)),
