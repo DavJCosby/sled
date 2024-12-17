@@ -50,7 +50,7 @@ impl<COLOR: ColorType> Sled<COLOR> {
         Sled::new_from_config(config)
     }
 
-    /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a String.
+    /// Works like [Sled::new()] but rather than reading the contents of a config file from disk, allows you to pass in the same information as a `&str`.
     pub fn new_from_str(string: &str) -> Result<Self, SledError> {
         let config = Config::from_str(string)?;
         Sled::new_from_config(config)
@@ -156,6 +156,7 @@ impl<COLOR: ColorType> Sled<COLOR> {
     }
 
     /// Returns the total number of [LEDs](Led) in the system.
+    /// 
     /// O(1)
     pub fn num_leds(&self) -> usize {
         self.num_leds

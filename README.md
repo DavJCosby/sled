@@ -308,27 +308,26 @@ sled.for_each_in_filter(&all_due_north, |led| {
 ```
 > Note that other methods exist like `.set_filter(filter, color)`, `.modulate_filter(filter, color_rule)`, and `.map_filter(filter, map)`
 
-Once you've stored a Filter, you can save it to `Data` for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
+Once you've created a Filter, you can save it to `Data` for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
 
 A slightly better example would be to imagine that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 
 ```rust
-let startup_commands = |sled, data| {
-    let area: Filter = sled.within_dist_from(
-        5.0, Vec2::new(-0.25, 1.5)
-    );
+driver.set_startup_commands(|sled, data| {
+     let area: Filter = sled.within_dist_from(
+         5.0, Vec2::new(-0.25, 1.5)
+     );
 
     data.set("area_of_effect", area);
-    Ok(())
-};
-
-let draw_commands = |sled, data, _| {
-    let area_filter = data.get("area_of_effect")?;
-    sled.map_filter(area_filter, |led| {
-        // expensive computation
-    });
-    Ok(())
-};
+     Ok(())
+ });
+ driver.set_draw_commands(|sled, data, _| {
+     let area_filter = data.get("area_of_effect")?;
+     sled.map_filter(area_filter, |led| {
+         // expensive computation
+     });
+     Ok(())
+ });
 ```
 Most `.get` methods on sled will return a Filter, but if you need more precise control you can do something like this:
 ```rust
