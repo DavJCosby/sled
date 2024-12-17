@@ -35,7 +35,7 @@ See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples
 
 In absence of an official guide, this will serve as a basic introduction. From here, you can consult the [docs](https://docs.rs/spatial_led/latest/spatial_led/) to learn what else Sled can do.
 <details open>
-<summary><h3>Setup</h3></summary>
+<summary><h2>Setup</h2></summary>
 
 To create a Sled struct, you need to create a configuration file and provide its path to the constructor:
 ```rust
@@ -86,7 +86,7 @@ For all further examples we'll use palette's Rgb struct as our backing color for
 </details>
 
 <details open>
-<summary><h3>Drawing</h3></summary>
+<summary><h2>Drawing</h2></summary>
 
 Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
@@ -140,7 +140,11 @@ sled.set_filter(&overlap, Rgb::new(0.0, 0.0, 1.0));
 ![Set Overlapping Areas](resources/filter_and.png)
 For more examples, see the documentation comments on the Sled struct.
 
-## Output
+</details>
+
+<details open>
+<summary><h2>Output</h2></summary>
+
 Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of RGB values. There are a few methods available to pack the information you need.
 
 ```rust
@@ -167,7 +171,6 @@ let positions = sled.positions();
 let colors_and_positions = sled.colors_and_positions();
 // An Iterator of (COLOR_TYPE, Vec2) tuple pairs representing each LEDs color and position.
 ```
-
 </details>
 </details>
 
