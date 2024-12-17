@@ -21,8 +21,6 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 
-> This project is still somewhat early in development so please report any bugs you discover! Pull requests are more than welcome!
-
 See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 
 ## The Basics
@@ -49,6 +47,31 @@ density: 30.0
 (2, 2) --> (-2, 2) --> (-2, 0)
  ```
  > For more information on how to write config files in this format, check out the [docs](https://docs.rs/spatial_led/latest/spatial_led/struct.Sled.html#method.new).
+
+Note the `::<Rgb>` in the constructor. In previous versions of Sled, [palette's Rgb struct](https://docs.rs/palette/latest/palette/rgb/struct.Rgb.html) was used interally for all color computation. Now, the choice is 100% yours! You just have to specify what data type you'd like to use.
+
+```rust
+#[derive(Default, Debug)]
+struct RGBW {
+    r: f32,
+    g: f32,
+    b: f32,
+    w: f32
+}
+let mut u8_sled = Sled::<(u8, u8, u8)>::new("/path/to/config.yap")?;
+let mut rgbw_sled = Sled::<RGBW>::new("/path/to/config.yap")?;
+
+u8_sled.set(4, (255, 0, 0))?; // set 5th led to red
+rgbw_sled.set_all(RGBW {
+    r: 0.0,
+    g: 1.0,
+    b: 0.0,
+    w: 0.0
+});
+```
+
+For all further examples we'll use palette's Rgb struct as our backing color format (we really do highly recommend it and encourage its use wherever it makes sense), but just know that you can use any data type that implements `Debug`, `Default`, and `Copy`.
+
 ### Drawing
 Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
@@ -120,17 +143,14 @@ A few other handy output methods:
 let leds = sled.leds();
 // An Iterator of Led structs (holds color, position, distance/angle relative from center, etc)
 
-let colors_u8 = sled.colors_coerced::<u8>();
-// An Iterator of Rgbs, 8-bits/channel
+let positions = sled.positions();
+// An Iterator of whatever type you chose to represent colors in.
 
 let positions = sled.positions();
 // An Iterator of Vec2s, representing the position of each LED
 
-let colors_f32_and_positions = sled.colors_and_positions();
-// An Iterator of (Rgb, Vec2) tuple pairs representing each LEDs color and position.
-
-let colors_f32_and_positions = sled.colors_and_positions_coerced::<u8>();
-// An Iterator of (Rgb<u8>, Vec2) tuple pairs representing each LEDs color and position.
+let colors_and_positions = sled.colors_and_positions();
+// An Iterator of (COLOR_TYPE, Vec2) tuple pairs representing each LEDs color and position.
 ```
 
 # Advanced Features
@@ -140,12 +160,11 @@ For basic applications, the Sled struct gives you plenty of power. Odds are thou
 Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
 
 ```rust
-let mut driver = Driver::new();
+let mut driver = Driver::<Rgb>::new(); // often auto-inferred
 use spatial_led::driver_macros::*;
 
-driver.set_startup_commands(|_sled, buffers, _filters| {
-    let colors = buffers.create_buffer::<Rgb>("colors");
-    colors.extend([
+driver.set_startup_commands(|_sled, data| {
+    data.set::<Vec<Rgb>>("colors", vec![
         Rgb::new(1.0, 0.0, 0.0),
         Rgb::new(0.0, 1.0, 0.0),
         Rgb::new(0.0, 0.0, 1.0),
@@ -153,9 +172,9 @@ driver.set_startup_commands(|_sled, buffers, _filters| {
     Ok(())
 });
 
-driver.set_draw_commands(|sled, buffers, _filters, time_info| {
-    let elapsed = time_info.elapsed.as_secs_f32();
-    let colors = buffers.get_buffer::<Rgb>("colors")?;
+driver.set_draw_commands(|sled, data, time| {
+    let elapsed = time.elapsed.as_secs_f32();
+    let colors = data.get::<Vec<Rgb>>("colors")?;
     let num_colors = colors.len();
     // clear our canvas each frame
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
@@ -179,14 +198,14 @@ loop {
     // display those colors however you want
 }
 ```
-![Basic Time-Driven Effect Using Buffers](resources/driver1.gif)
+![Basic Time-Driven Effect](resources/driver1.gif)
 
 
-`.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled, BufferContainer, and Filters.
+`.set_startup_commands()` - Define a function or closure to run when `driver.mount()` is called. Grants mutable control over Sled and Data.
 
-`set_draw_commands()` - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over Sled, and immutable access to BufferContainer, Filters, and TimeInfo.
+`set_draw_commands()` - Define a function or closure to run every time `driver.step()` is called. Grants mutable control over Sled, and immutable access to Data and Time.
 
-`set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled, mutable control over BufferContainer and Filters and immutable access to TimeInfo.
+`set_compute_commands()` - Define a function or closure to run every time `driver.step()` is called, scheduled right before draw commands. Grants immutable access to Sled and Time, and mutable control over Data.
 
 If you need to retrieve ownership of your sled later, you can do:
 ```rust
@@ -206,12 +225,11 @@ Some macros have been provided to make authoring drivers a more ergonomic experi
 Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 ```rust
 use spatial_led::driver_macros::*;
-use spatial_led::{BufferContainer, SledResult, TimeInfo};
+use spatial_led::{Data, SledResult, Time};
 
 #[startup_commands]
-fn startup(buffers: &mut BufferContainer) -> SledResult {
-    let colors = buffers.create_buffer::<Rgb>("colors");
-    colors.extend([
+fn startup(data: &mut Data) -> SledResult {
+    data.set::<Vec<Rgb>>("colors", vec![
         Rgb::new(1.0, 0.0, 0.0),
         Rgb::new(0.0, 1.0, 0.0),
         Rgb::new(0.0, 0.0, 1.0),
@@ -220,9 +238,9 @@ fn startup(buffers: &mut BufferContainer) -> SledResult {
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
-    let elapsed = time_info.elapsed.as_secs_f32();
-    let colors = buffers.get_buffer::<Rgb>("colors")?;
+fn draw(sled: &mut Sled, data: &Data, time: &Time) -> SledResult {
+    let elapsed = time.elapsed.as_secs_f32();
+    let colors = data.get::<Vec<Rgb>>("colors")?;
     let num_colors = colors.len();
     // clear our canvas each frame
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
@@ -242,40 +260,41 @@ driver.set_startup_commands(startup);
 driver.set_draw_commands(draw));
 ```
 
-### Buffers
-A driver exposes a data structure called `BufferContainer`. A BufferContainer essentially acts as a HashMap of `&str` keys to Vectors of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
+### Driver Data
+A driver exposes a data structure called `Data`. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 
-It's best practice to create buffers with startup commands, and then modify them either through compute commands or from outside the driver depending on your needs.
+It's best practice to first use startup commands to initialize your data, and then modify them either through compute commands or from outside the driver depending on your needs.
 
 ```rust
 #[startup_commands]
-fn startup(sled: &mut Sled, buffers: &mut BufferContainer) -> SledResult {
-    let wall_toggles: &mut Vec<bool> = buffers.create_buffer("wall_toggles");
-    let wall_colors: &mut Vec<Rgb> = buffers.create_buffer("wall_colors");
-    let some_important_data = buffers.create_buffer::<MY_CUSTOM_TYPE>("important_data");
+fn startup(sled: &mut Sled, data: &mut Data) -> SledResult {
+    data.set::<Vec<bool>>("wall_toggles", vec![true, false, true]);
+    data.set::<Rgb>("room_color", Rgb::new(1.0, 0.0, 0.0));
+    data.set("important_data", CustomDataType::new());
+    // the compiler can usually infer the data type
     Ok(())
 }
 
 driver.set_startup_commands(startup);
 ```
 
-To access buffers from outside driver, just do:
+To access driver data externally, just do:
 ```rust
-let buffers: &BufferContainer = driver.buffers();
+let data: &Data = driver.data();
 // or
-let buffers: &mut BufferContainer = driver.buffers_mut();
+let data: &mut Data = driver.data_mut();
 ```
 
-Using a BufferContainer is relatively straightforward.
+Using that data is relatively straightforward.
 ```rust
-let draw_commands = |sled, buffers, _, _| {
-    let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
-    let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
-    let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
+let draw_commands = |sled, data, _time| {
+    let wall_toggles = data.get::<Vec<bool>>("wall_toggles")?;
+    let color = data.get::<Rgb>("room_color")?;
+    let important_data: &CustomDataType = data.get("important_data")?;
 
     for i in 0..wall_toggles.len() {
         if wall_toggles[i] == true {
-            sled.set_segment(i, wall_colors[i])?;
+            sled.set_segment(i, *color)?;
         } else {
             sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
         }
@@ -285,17 +304,11 @@ let draw_commands = |sled, buffers, _, _| {
 }
 ```
 
-If you need to mutate buffer values:
+If you need to mutate data:
 ```rust
-// Mutable reference to the whole buffer
-let buffer_mut = buffers.get_buffer_mut::<bool>("wall_toggles")?;
-
-// Modify just one item
-buffers.set_buffer_item("wall_toggles", 1, false)?;
-
-// Mutable reference to just one item
-let color: &mut Rgb = buffers.get_buffer_item_mut("wall_colors", 2)?;
-*color /= 2.0;
+// Mutable reference to the whole vector
+let walls_mut = data.get_mut::<Vec<bool>>("wall_toggles")?;
+walls_mut[1] = true;
 ```
 
 ### Filters
@@ -309,21 +322,22 @@ sled.for_each_in_filter(&all_due_north, |led| {
 ```
 > Note that other methods exist like `.set_filter(filter, color)`, `.modulate_filter(filter, color_rule)`, and `.map_filter(filter, map)`
 
-The `Filters` struct provided by Driver is basically a hashmap of `&str` keys to Sled `Filter` structs. Using this, we can pre-compute important sets and then store them to the driver for later usage.
-
+Once you've stored a Filter, you can save it to `Data` for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
 
 A slightly better example would be to imagine that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 
 ```rust
-let startup_commands = |sled, buffers, filters| {
-    let area: Filter = sled.within_dist_from(5.0, Vec2::new(-0.25, 1.5));
+let startup_commands = |sled, data| {
+    let area: Filter = sled.within_dist_from(
+        5.0, Vec2::new(-0.25, 1.5)
+    );
 
-    filters.set("area_of_effect", area);
+    data.set("area_of_effect", area);
     Ok(())
 };
 
-let draw_commands = |sled, buffers, filters, _| {
-    let area_filter = filters.get("area_of_effect")?;
+let draw_commands = |sled, data, _| {
+    let area_filter = data.get("area_of_effect")?;
     sled.map_filter(area_filter, |led| {
         // expensive computation
     });
@@ -335,7 +349,20 @@ Most `.get` methods on sled will return a Filter, but if you need more precise c
 let even_filter = sled.filter(|led| led.index() % 2 == 0);
 ```
 
-I imagine this feature will get less love than buffers, but I can still see a handful of scenarios where this can be very useful for some users. In a future version this may become an opt-in compiler feature.
+Lastly, Filters support a few basic boolean operations, which can be used to combine multiple filters in interesting ways. 
+
+```rust
+let circle_a = sled.within_dist_from(
+    5.0, Vec2::new(-0.25, 1.5)
+);
+
+let circle_b = sled.within_dist_from(
+    4.0, Vec2::new(0.5, 0.5)
+);
+
+let ab_overlap = circle_a.and(&circle_b);
+let ab_union = circle_a.or(&circle_b);
+```
 
 ## Scheduler
 The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
