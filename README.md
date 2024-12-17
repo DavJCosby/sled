@@ -153,9 +153,9 @@ driver.set_startup_commands(|_sled, buffers| {
     Ok(())
 });
 
-driver.set_draw_commands(|sled, buffers, time_info| {
-    let elapsed = time_info.elapsed.as_secs_f32();
     let colors = buffers.get_buffer::<Rgb>("colors")?;
+driver.set_draw_commands(|sled, data, time| {
+    let elapsed = time.elapsed.as_secs_f32();
     let num_colors = colors.len();
     // clear our canvas each frame
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
@@ -206,7 +206,7 @@ Some macros have been provided to make authoring drivers a more ergonomic experi
 Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 ```rust
 use spatial_led::driver_macros::*;
-use spatial_led::{BufferContainer, SledResult, TimeInfo};
+use spatial_led::{Data, SledResult, Time};
 
 #[startup_commands]
 fn startup(buffers: &mut BufferContainer) -> SledResult {
@@ -220,9 +220,9 @@ fn startup(buffers: &mut BufferContainer) -> SledResult {
 }
 
 #[draw_commands]
-fn draw(sled: &mut Sled, buffers: &BufferContainer, time_info: &TimeInfo) -> SledResult {
-    let elapsed = time_info.elapsed.as_secs_f32();
     let colors = buffers.get_buffer::<Rgb>("colors")?;
+fn draw(sled: &mut Sled, data: &Data, time: &Time) -> SledResult {
+    let elapsed = time.elapsed.as_secs_f32();
     let num_colors = colors.len();
     // clear our canvas each frame
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
@@ -268,10 +268,10 @@ let buffers: &mut BufferContainer = driver.buffers_mut();
 
 Using a BufferContainer is relatively straightforward.
 ```rust
-let draw_commands = |sled, buffers, _, _| {
     let wall_toggles = buffers.get_buffer::<bool>("wall_toggles")?;
     let wall_colors = buffers.get_buffer::<Rgb>("wall_colors")?;
     let important_data = buffers.get_buffer::<MY_CUSTOM_TYPE>("important_data")?;
+let draw_commands = |sled, data, _time| {
 
     for i in 0..wall_toggles.len() {
         if wall_toggles[i] == true {

@@ -12,7 +12,7 @@ mod data;
 pub use data::Data;
 
 #[derive(Clone, Debug)]
-pub struct TimeInfo {
+pub struct Time {
     pub elapsed: Duration,
     pub delta: Duration,
 }
@@ -29,8 +29,8 @@ where
 {
     sled: Option<Sled<COLOR>>,
     startup_commands: Box<dyn Fn(&mut Sled<COLOR>, &mut Data) -> SledResult>,
-    compute_commands: Box<dyn Fn(&Sled<COLOR>, &mut Data, &TimeInfo) -> SledResult>,
-    draw_commands: Box<dyn Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult>,
+    compute_commands: Box<dyn Fn(&Sled<COLOR>, &mut Data, &Time) -> SledResult>,
+    draw_commands: Box<dyn Fn(&mut Sled<COLOR>, &Data, &Time) -> SledResult>,
     startup: INSTANT,
     last_update: INSTANT,
 
@@ -96,13 +96,13 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right before we run [draw commands](CustomDriver::set_draw_commands).
     /// ```rust
-    ///# use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data, TimeInfo}};
+    ///# use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data, Time}};
     ///# use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
     /// # // #[compute_commands]
-    /// fn compute(_: &Sled<Rgb>, data: &mut Data, time: &TimeInfo) -> SledResult {
+    /// fn compute(_: &Sled<Rgb>, data: &mut Data, time: &Time) -> SledResult {
     ///     let streak_positions: &mut Vec<Vec2> = data.get_mut("positions")?;
     ///     let elapsed = time.elapsed.as_secs_f32();
     ///     for p in streak_positions {
@@ -118,7 +118,7 @@ where
     ///
     /// ```
     pub fn set_compute_commands<
-        F: Fn(&Sled<COLOR>, &mut Data, &TimeInfo) -> SledResult + 'static,
+        F: Fn(&Sled<COLOR>, &mut Data, &Time) -> SledResult + 'static,
     >(
         &mut self,
         compute_commands: F,
@@ -128,11 +128,11 @@ where
 
     /// Define commands to be called each time [CustomDriver::step()] is called, right after we run [compute commands](CustomDriver::set_compute_commands).
     /// ```rust
-    /// # use spatial_led::{Sled, Vec2, SledResult, driver::{Driver, TimeInfo, Data}};
+    /// # use spatial_led::{Sled, Vec2, SledResult, driver::{Driver, Time, Data}};
     /// # use palette::rgb::Rgb;
     /// use spatial_led::driver_macros::*;
     ///
-    /// fn draw(sled: &mut Sled<Rgb>, data: &Data, _:&TimeInfo) -> SledResult {
+    /// fn draw(sled: &mut Sled<Rgb>, data: &Data, _:&Time) -> SledResult {
     ///     // gradually fade all LEDs to black
     ///     sled.map(|led| led.color * 0.95);
     ///
@@ -152,7 +152,7 @@ where
     /// }
     ///
     /// ```
-    pub fn set_draw_commands<F: Fn(&mut Sled<COLOR>, &Data, &TimeInfo) -> SledResult + 'static>(
+    pub fn set_draw_commands<F: Fn(&mut Sled<COLOR>, &Data, &Time) -> SledResult + 'static>(
         &mut self,
         draw_commands: F,
     ) {
@@ -170,14 +170,14 @@ where
     /// Runs the Driver's [compute commands](CustomDriver::set_compute_commands) first, and then runs its [draw commands](CustomDriver::set_draw_commands).
     pub fn step(&mut self) {
         if let Some(sled) = &mut self.sled {
-            let time_info = TimeInfo {
+            let time = Time {
                 elapsed: self.startup.elapsed(),
                 delta: self.last_update.elapsed(),
             };
 
             self.last_update = INSTANT::now();
-            (self.compute_commands)(sled, &mut self.data, &time_info).unwrap();
-            (self.draw_commands)(sled, &self.data, &time_info).unwrap();
+            (self.compute_commands)(sled, &mut self.data, &time).unwrap();
+            (self.draw_commands)(sled, &self.data, &time).unwrap();
         }
     }
 

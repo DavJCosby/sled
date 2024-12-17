@@ -1,5 +1,5 @@
 use spatial_led::{
-    driver::{Data, Driver, TimeInfo},
+    driver::{Data, Driver, Time},
     // driver_macros::*,
     Sled,
     SledResult,
@@ -63,8 +63,8 @@ fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
 }
 
 // #[compute_commands]
-fn compute(sled: &Sled<Rgb>, data: &mut Data, time_info: &TimeInfo) -> SledResult {
-    let delta = time_info.delta.as_secs_f32();
+fn compute(sled: &Sled<Rgb>, data: &mut Data, time: &Time) -> SledResult {
+    let delta = time.delta.as_secs_f32();
     let bounds = sled.domain();
     for i in 0..MAX_RIPPLES {
         let radius = data.get::<Vec<f32>>("radii")?[i];
@@ -97,7 +97,7 @@ fn rand_init_radius() -> f32 {
 }
 
 // #[draw_commands]
-fn draw(sled: &mut Sled<Rgb>, data: &Data, _: &TimeInfo) -> SledResult {
+fn draw(sled: &mut Sled<Rgb>, data: &Data, _: &Time) -> SledResult {
     sled.set_all(Rgb::new(0.0, 0.0, 0.0));
     let colors: &Vec<Rgb> = data.get("colors")?;
     let positions: &Vec<Vec2> = data.get("positions")?;

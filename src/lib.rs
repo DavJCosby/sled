@@ -164,8 +164,8 @@
 //!     Ok(())
 //! });
 //!
-//! driver.set_draw_commands(|sled, data, time_info| {
-//!     let elapsed = time_info.elapsed.as_secs_f32();
+//! driver.set_draw_commands(|sled, data, time| {
+//!     let elapsed = time.elapsed.as_secs_f32();
 //!     let colors: &Vec<Rgb> = data.get("colors")?;
 //!     let num_colors = colors.len();
 //!     // clear our canvas each frame
@@ -230,7 +230,7 @@
 //!
 //! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
 //! ```rust
-//! # use spatial_led::{Sled, driver::{Driver, Data, TimeInfo}};
+//! # use spatial_led::{Sled, driver::{Driver, Data, Time}};
 //! # use palette::rgb::Rgb;
 //! # use spatial_led::{SledResult};
 //! use spatial_led::driver_macros::*;
@@ -247,8 +247,8 @@
 //! }
 //!
 //! # // #[draw_commands]
-//! fn draw(sled: &mut Sled<Rgb>, data: &Data, time_info: &TimeInfo) -> SledResult {
-//!    let elapsed = time_info.elapsed.as_secs_f32();
+//! fn draw(sled: &mut Sled<Rgb>, data: &Data, time: &Time) -> SledResult {
+//!    let elapsed = time.elapsed.as_secs_f32();
 //!    let colors = data.get::<Vec<Rgb>>("colors")?;
 //!    let num_colors = colors.len();
 //!    // clear our canvas each frame
