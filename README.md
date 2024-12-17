@@ -177,10 +177,12 @@ let colors_and_positions = sled.colors_and_positions();
 
 <details>
 <summary><h1>Advanced Features</h1></summary>
+
 For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
 
 <details>
 <summary><h2>Drivers</h2></summary>
+
 Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
 
 ```rust
@@ -353,6 +355,7 @@ let ab_union = circle_a.or(&circle_b);
 
 <details>
 <summary><h2>Scheduler</h2></summary>
+
 The Scheduler struct makes it super easy to schedule redraws at a fixed rate.
 
 ```rust
