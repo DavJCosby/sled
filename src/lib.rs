@@ -5,8 +5,9 @@
 //! </div>
 //!
 //! Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
-//!
-//! What Sled **does** do:
+//!<details>
+//! <summary><h5>What Sled does:</h5></summary>
+//! 
 //! - It exposes an API that lets you:
 //!     - Modify virtual LED colors depending on each LED's position, distance, direction, line segment, etc;
 //!     - Output that color data in a simple, contiguous data structure for your own usage;
@@ -14,11 +15,15 @@
 //! - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with compiler features):
 //!     - `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime.
 //!     - `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
+//! </details>
 //!
-//! What Sled **does not** do:
+//! <details>
+//! <summary><h5>What Sled does <ins>not</ins> do:</h5></summary>
+//! 
 //! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 //! - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
-//!
+//!</details>
+//! 
 //! See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 //!
 //! ## The Basics
@@ -140,7 +145,7 @@
 //!
 //! ## Output
 //!
-//! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of [RGB](color::Rgb) values. There are a few methods available to pack the information you need.
+//! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of color values. There are a few methods available to pack the information you need.
 //!
 //! ```rust
 //! # use spatial_led::{Sled, Vec2};
@@ -247,7 +252,7 @@
 //! For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 //!
 //! ### Driver Data
-//! A driver exposes a data structure called [Data]. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
+//! A driver exposes a data structure called [Data](driver::Data). This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
 //! It's best practice to first use [startup commands](driver::Driver::set_startup_commands) to initialize your data, and then modify them through [compute commands](driver::Driver::set_compute_commands) or from [outside the driver](driver::Driver::data_mut) depending on your needs.
 //!
@@ -366,7 +371,7 @@
 //!      });
 //!     Ok(())
 //! };
-//!
+//!```
 //! ## Scheduler
 //! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
 //!

@@ -7,8 +7,9 @@
 <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
  </div>
 Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
+<details>
+<summary><h5>What Sled does:</h5></summary>
 
-### What Sled **does**:
 - It exposes an API that lets you:
 	- Compute colors depending on each LED's position, distance, direction, line segment, etc;
 	- Output colors via a simple, contiguous iterator for your own usage;
@@ -16,10 +17,16 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 - Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [compiler features](https://doc.rust-lang.org/cargo/reference/features.html)):
 	- [Driver](#drivers) - Pack draw/compute logic into a Driver to simplify the process of swapping between effects, or changing effect settings at runtime. 
 	- [Scheduler](#scheduler) - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
+</details>
 
-### What Sled does *not* do:
+<details>
+
+<summary><h5>What Sled does <ins>not<ins> do:</h5></summary>
+
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
+
+</details>
 
 See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 
