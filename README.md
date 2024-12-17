@@ -240,7 +240,7 @@ let sled = driver.dismount();
 For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 
 
-<details>
+<details open>
 <summary><h3> Driver Data </h3></summary>
 
 A driver exposes a data structure called `Data`. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
@@ -293,7 +293,7 @@ walls_mut[1] = true;
 ```
 </details>
 
-<details>
+<details open>
 <summary><h3>Filters</h3></summary>
 
 For exceptionally performance-sensitive scenarios, Filters can be used to predefine important LED regions. They act as sets, containing only the indicies of the LEDs captured in the set. When we want to perform an operation on that set, we pass the Filter back to the Sled like this:
