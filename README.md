@@ -21,8 +21,6 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 
-> This project is still somewhat early in development so please report any bugs you discover! Pull requests are more than welcome!
-
 See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 
 ## The Basics
@@ -49,6 +47,31 @@ density: 30.0
 (2, 2) --> (-2, 2) --> (-2, 0)
  ```
  > For more information on how to write config files in this format, check out the [docs](https://docs.rs/spatial_led/latest/spatial_led/struct.Sled.html#method.new).
+
+Note the `::<Rgb>` in the constructor. In previous versions of Sled, [palette's Rgb struct](https://docs.rs/palette/latest/palette/rgb/struct.Rgb.html) was used interally for all color computation. Now, the choice is 100% yours! You just have to specify what data type you'd like to use.
+
+```rust
+#[derive(Default, Debug)]
+struct RGBW {
+    r: f32,
+    g: f32,
+    b: f32,
+    w: f32
+}
+let mut u8_sled = Sled::<(u8, u8, u8)>::new("/path/to/config.yap")?;
+let mut rgbw_sled = Sled::<RGBW>::new("/path/to/config.yap")?;
+
+u8_sled.set(4, (255, 0, 0))?; // set 5th led to red
+rgbw_sled.set_all(RGBW {
+    r: 0.0,
+    g: 1.0,
+    b: 0.0,
+    w: 0.0
+});
+```
+
+For all further examples we'll use palette's Rgb struct as our backing color format (we really do highly recommend it and encourage its use wherever it makes sense), but just know that you can use any data type that implements `Debug`, `Default`, and `Copy`.
+
 ### Drawing
 Once you have your Sled struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 
@@ -137,7 +160,7 @@ For basic applications, the Sled struct gives you plenty of power. Odds are thou
 Drivers are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple one might look like:
 
 ```rust
-let mut driver = Driver::new();
+let mut driver = Driver::<Rgb>::new(); // often auto-inferred
 use spatial_led::driver_macros::*;
 
 driver.set_startup_commands(|_sled, data| {

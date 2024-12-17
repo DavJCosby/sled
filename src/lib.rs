@@ -4,7 +4,7 @@
 //! <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
 //! </div>
 //!
-//! Sled is a rust library for creating spatial lighting effects for individually addressable LED strips. API ergonomics and performance are top priorities for this project. That said, Sled is still in its early stages of development which means there is plenty of room for improvement in both categories.
+//! Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
 //!
 //! What Sled **does** do:
 //! - It exposes an API that lets you:
@@ -24,7 +24,7 @@
 //! ## The Basics
 //! In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 //! ### Setup
-//! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor:
+//! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor.
 //! ```rust, ignore
 //! use spatial_led::Sled;
 //! use palette::rgb::Rgb;
@@ -42,6 +42,30 @@
 //! (2, 2) --> (-2, 2) --> (-2, 0)
 //! ```
 //! See [Sled::new()] for more information on this config format.
+//! 
+//! //! Note the `::<Rgb>` in the constructor. In previous versions of Sled, [palette's Rgb struct](https://docs.rs/palette/latest/palette/rgb/struct.Rgb.html) was used interally for all color computation. Now, the choice is 100% yours! You just have to specify what data type you'd like to use.
+//! 
+//! ```rust, ignore
+//! # use spatial_led::Sled;
+//! #[derive(Default, Debug, Copy, Clone)]
+//! struct RGBW {
+//!     r: f32,
+//!     g: f32,
+//!     b: f32,
+//!     w: f32
+//! }
+//! let mut u8_sled = Sled::<(u8, u8, u8)>::new("/path/to/config.yap")?;
+//! let mut rgbw_sled = Sled::<RGBW>::new("/path/to/config.yap")?;
+//! 
+//! u8_sled.set(4, (255, 0, 0))?; // set 5th led to red
+//! rgbw_sled.set_all(RGBW {
+//!     r: 0.0,
+//!     g: 1.0,
+//!     b: 0.0,
+//!     w: 0.0
+//! });
+//! ```
+//! For all further examples we'll use palette's Rgb struct as our backing color format (we really do highly recommend it and encourage its use wherever it makes sense), but just know that you can use any data type that implements `Debug`, `Default`, and `Copy`.
 //!
 //! ### Drawing
 //! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
@@ -153,7 +177,7 @@
 //! # use spatial_led::{Sled};
 //! # use palette::rgb::Rgb;
 //! use spatial_led::driver::Driver;
-//! let mut driver = Driver::new();
+//! let mut driver = Driver::<Rgb>::new(); // often auto-inferred
 //!
 //! driver.set_startup_commands(|_sled, data| {
 //!     data.set::<Vec<Rgb>>("colors", vec![
