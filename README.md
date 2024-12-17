@@ -215,50 +215,6 @@ let sled = driver.dismount();
 
 For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 
-### Driver Macros
-Some macros have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
-* `#[startup_commands]`
-* `#[compute_commands]`
-* `#[draw_commands]`
-
-Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
-```rust
-use spatial_led::driver_macros::*;
-use spatial_led::{Data, SledResult, Time};
-
-#[startup_commands]
-fn startup(data: &mut Data) -> SledResult {
-    data.set::<Vec<Rgb>>("colors", vec![
-        Rgb::new(1.0, 0.0, 0.0),
-        Rgb::new(0.0, 1.0, 0.0),
-        Rgb::new(0.0, 0.0, 1.0),
-    ]);
-    Ok(())
-}
-
-#[draw_commands]
-fn draw(sled: &mut Sled, data: &Data, time: &Time) -> SledResult {
-    let elapsed = time.elapsed.as_secs_f32();
-    let colors = data.get::<Vec<Rgb>>("colors")?;
-    let num_colors = colors.len();
-    // clear our canvas each frame
-    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-
-    for i in 0..num_colors {
-        let alpha = i as f32 / num_colors as f32;
-        let angle = elapsed + (2 * PI * alpha);
-        sled.set_at_angle(angle, colors[i])?;
-    }
-    Ok(())
-}
-
-//--snip--//
-
-let mut driver = Driver::new();
-driver.set_startup_commands(startup);
-driver.set_draw_commands(draw));
-```
-
 ### Driver Data
 A driver exposes a data structure called `Data`. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 

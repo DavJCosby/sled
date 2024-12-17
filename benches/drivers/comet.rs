@@ -1,7 +1,6 @@
 use palette::rgb::Rgb;
 use spatial_led::{
     driver::{Driver, Time, Data},
-    //driver_macros::*,
     Sled,
     SledResult,
 };

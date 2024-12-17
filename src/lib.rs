@@ -42,9 +42,9 @@
 //! (2, 2) --> (-2, 2) --> (-2, 0)
 //! ```
 //! See [Sled::new()] for more information on this config format.
-//! 
+//!
 //! //! Note the `::<Rgb>` in the constructor. In previous versions of Sled, [palette's Rgb struct](https://docs.rs/palette/latest/palette/rgb/struct.Rgb.html) was used interally for all color computation. Now, the choice is 100% yours! You just have to specify what data type you'd like to use.
-//! 
+//!
 //! ```rust, ignore
 //! # use spatial_led::Sled;
 //! #[derive(Default, Debug, Copy, Clone)]
@@ -56,7 +56,7 @@
 //! }
 //! let mut u8_sled = Sled::<(u8, u8, u8)>::new("/path/to/config.yap")?;
 //! let mut rgbw_sled = Sled::<RGBW>::new("/path/to/config.yap")?;
-//! 
+//!
 //! u8_sled.set(4, (255, 0, 0))?; // set 5th led to red
 //! rgbw_sled.set_all(RGBW {
 //!     r: 0.0,
@@ -246,53 +246,6 @@
 //!
 //! For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 //!
-//! ### Driver Macros
-//! Some [macros](driver_macros) have been provided to make authoring drivers a more ergonomic experience. You can apply the following attributes to functions that you want to use for driver commands:
-//! * `#[startup_commands]`
-//! * `#[compute_commands]`
-//! * `#[draw_commands]`
-//!
-//! Using these, you can express your commands as a function that only explicitly states the parameters it needs. The previous example could be rewritten like this, for example:
-//! ```rust
-//! # use spatial_led::{Sled, driver::{Driver, Data, Time}};
-//! # use palette::rgb::Rgb;
-//! # use spatial_led::{SledResult};
-//! use spatial_led::driver_macros::*;
-//!
-//! # // #[startup_commands]
-//! fn startup(_: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
-//!     let colors = vec![
-//!         Rgb::new(1.0, 0.0, 0.0),
-//!         Rgb::new(0.0, 1.0, 0.0),
-//!         Rgb::new(0.0, 0.0, 1.0)
-//!     ];
-//!     data.set::<Vec<Rgb>>("colors", colors);
-//!    Ok(())
-//! }
-//!
-//! # // #[draw_commands]
-//! fn draw(sled: &mut Sled<Rgb>, data: &Data, time: &Time) -> SledResult {
-//!    let elapsed = time.elapsed.as_secs_f32();
-//!    let colors = data.get::<Vec<Rgb>>("colors")?;
-//!    let num_colors = colors.len();
-//!    // clear our canvas each frame
-//!    sled.set_all(Rgb::new(0.0, 0.0, 0.0));
-//!
-//!    for i in 0..num_colors {
-//!        let alpha = i as f32 / num_colors as f32;
-//!        let angle = elapsed + (core::f32::consts::TAU * alpha);
-//!        sled.set_at_angle(angle, colors[i]);
-//!    }
-//!    Ok(())
-//! }
-//!
-//! //--snip--/
-//!
-//! let mut driver = Driver::new();
-//! driver.set_startup_commands(startup);
-//! driver.set_draw_commands(draw);
-//! ```
-//!
 //! ### Driver Data
 //! A driver exposes a data structure called [Data]. This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
@@ -300,7 +253,6 @@
 //!
 //! ```rust
 //! # use spatial_led::{Sled, driver::{Data, Driver}, SledResult};
-//! # use spatial_led::driver_macros::*;
 //! # type Rgb = palette::rgb::Rgb<f32>;
 //! # #[derive(Debug)]
 //! # pub struct CustomDataType(i32);
@@ -529,9 +481,6 @@ mod spatial_led;
 /// Drivers are an optional feature that can be disabled by turning off the `drivers` feature flag.
 #[cfg(feature = "drivers")]
 pub mod driver;
-
-#[cfg(feature = "drivers")] // syn may or may not use std features, need to confirm this.
-pub use sled_driver_macros as driver_macros;
 
 #[cfg(feature = "scheduler")]
 /// Useful tool for scheduling redraws at a fixed rate.

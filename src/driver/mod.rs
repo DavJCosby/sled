@@ -20,8 +20,6 @@ pub struct Time {
 type SledResult = Result<(), SledError>;
 
 /// Drivers are useful for encapsulating everything you need to drive a complicated lighting effect all in one place.
-///
-/// Some [macros](crate::driver_macros) have been provided to make authoring drivers a more ergonomic experience. See their doc comments for more information.
 pub struct CustomDriver<INSTANT, COLOR>
 where
     INSTANT: Instant,
@@ -68,9 +66,7 @@ where
     /// ```rust
     /// # use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data}};
     /// # use palette::rgb::Rgb;
-    /// use spatial_led::driver_macros::*;
     ///
-    /// # // #[startup_commands]
     /// fn startup(_: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
     ///     let streak_positions = vec![
     ///         Vec2::new(-1.2, 0.3),
@@ -98,10 +94,8 @@ where
     /// ```rust
     ///# use spatial_led::{Vec2, Sled, SledResult, driver::{Driver, Data, Time}};
     ///# use palette::rgb::Rgb;
-    /// use spatial_led::driver_macros::*;
     /// const WIND: Vec2 = Vec2::new(0.25, 1.5);
     ///
-    /// # // #[compute_commands]
     /// fn compute(_: &Sled<Rgb>, data: &mut Data, time: &Time) -> SledResult {
     ///     let streak_positions: &mut Vec<Vec2> = data.get_mut("positions")?;
     ///     let elapsed = time.elapsed.as_secs_f32();
@@ -117,9 +111,7 @@ where
     /// }
     ///
     /// ```
-    pub fn set_compute_commands<
-        F: Fn(&Sled<COLOR>, &mut Data, &Time) -> SledResult + 'static,
-    >(
+    pub fn set_compute_commands<F: Fn(&Sled<COLOR>, &mut Data, &Time) -> SledResult + 'static>(
         &mut self,
         compute_commands: F,
     ) {
@@ -130,7 +122,6 @@ where
     /// ```rust
     /// # use spatial_led::{Sled, Vec2, SledResult, driver::{Driver, Time, Data}};
     /// # use palette::rgb::Rgb;
-    /// use spatial_led::driver_macros::*;
     ///
     /// fn draw(sled: &mut Sled<Rgb>, data: &Data, _:&Time) -> SledResult {
     ///     // gradually fade all LEDs to black

@@ -1,6 +1,5 @@
 use spatial_led::{
     driver::{Data, Driver, Time},
-    // driver_macros::*,
     Sled,
     SledResult,
     Vec2,
