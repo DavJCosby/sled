@@ -279,10 +279,10 @@
 //! # use spatial_led::driver_macros::*;
 //! # type Rgb = palette::rgb::Rgb<f32>;
 //! # #[derive(Debug)]
-//! # pub struct MyCustomType(i32);
-//! # impl MyCustomType {
+//! # pub struct CustomDataType(i32);
+//! # impl CustomDataType {
 //! #   pub fn new() -> Self {
-//! #       MyCustomType(5)
+//! #       CustomDataType(5)
 //! #   }
 //! # }
 //!
@@ -292,7 +292,7 @@
 //!         vec![Rgb::new(1.0, 0.0, 0.0), Rgb::new(0.0, 1.0, 0.0), Rgb::new(0.0, 0.0, 1.0)]
 //!     );
 //!     data.set("brightness", 1.0);
-//!     data.set("important_data", MyCustomType::new());
+//!     data.set("important_data", CustomDataType::new());
 //!     Ok(())
 //! }
 //!
@@ -313,18 +313,18 @@
 //!
 //! Using that data is relatively straightforward.
 //! ```rust
-//! # type MyCustomType = f32;
+//! # type CustomDataType = f32;
 //! # use spatial_led::{Sled, driver::Driver, driver::Data};
 //! # use palette::rgb::Rgb;
 //! # let mut driver = Driver::new();
 //! driver.set_draw_commands(|sled: &mut Sled<Rgb>, data: &Data, _| {
 //!     let wall_toggles = data.get::<Vec<bool>>("wall_toggles")?;
-//!     let wall_colors = data.get::<Rgb>("room_color")?;
+//!     let color = data.get::<Rgb>("room_color")?;
 //!     let important_data: &CustomDataType = data.get("important_data")?;
 //!
 //!     for i in 0..wall_toggles.len() {
 //!         if wall_toggles[i] == true {
-//!             sled.set_segment(i, wall_colors[i])?;
+//!             sled.set_segment(i, *color)?;
 //!        } else {
 //!            sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
 //!        }
@@ -371,18 +371,18 @@
 //! let even_filter = sled.filter(|led| led.index() % 2 == 0);
 //! ```
 //! Once you've stored a Filter, you can save it to `Data` for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
-//! 
+//!
 //! A slightly better example would be to imagine that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$. Rather than checking the distance of each LED from that point every frame, we can instead do something like this:
 //! ```rust, ignore
 //! let startup_commands = |sled, data| {
 //!     let area: Filter = sled.within_dist_from(
 //!         5.0, Vec2::new(-0.25, 1.5)
 //!     );
-//! 
+//!
 //!     data.set("area_of_effect", area);
 //!     Ok(())
 //! };
-//! 
+//!
 //! let draw_commands = |sled, data, _| {
 //!     let area_filter = data.get("area_of_effect")?;
 //!     sled.map_filter(area_filter, |led| {

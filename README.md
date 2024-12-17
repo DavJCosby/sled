@@ -266,12 +266,12 @@ Using that data is relatively straightforward.
 ```rust
 let draw_commands = |sled, data, _time| {
     let wall_toggles = data.get::<Vec<bool>>("wall_toggles")?;
-    let wall_colors = data.get::<Rgb>("room_color")?;
+    let color = data.get::<Rgb>("room_color")?;
     let important_data: &CustomDataType = data.get("important_data")?;
 
     for i in 0..wall_toggles.len() {
         if wall_toggles[i] == true {
-            sled.set_segment(i, wall_colors[i])?;
+            sled.set_segment(i, *color)?;
         } else {
             sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
         }
