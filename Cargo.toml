@@ -15,7 +15,6 @@ default = ["drivers", "scheduler", "spin_sleep", "std"]
 drivers = ["compact_str"]
 
 scheduler = []
-named_colors = []
 std = ["glam/std", "palette/std"]
 libm = ["glam/libm", "palette/libm"]
 core-simd = ["glam/core-simd"]

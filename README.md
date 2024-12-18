@@ -444,7 +444,6 @@ Enabled by Default:
 - `spin_sleep` : If `std` is enabled, sets the default Scheduler to use [spin_sleep](https://crates.io/crates/spin_sleep) to schedule tasks.
 
 Opt-in:
-- `named_colors` : Exposes color constants (for example `spatial_led::color::consts::WHITE`)
 - `libm` : Needed for some `no_std` environments.
 - `core-simd` (Nightly) : Allows the vector math library used by the crate to take advantage of SIMD instructions when `std::simd` isn't available.
 </details>
