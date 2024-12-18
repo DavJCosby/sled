@@ -97,7 +97,7 @@ impl<COLOR: ColorType> Sled<COLOR> {
 }
 
 /// # Index and range-based read and write methods
-impl<COLOR : ColorType> Sled<COLOR> {
+impl<COLOR: ColorType> Sled<COLOR> {
     /// Returns a Some([Filter]) containing all [LEDs](Led) with indices within `index_range`.
     /// Returns None if the range extends beyond the size of the system.
     ///

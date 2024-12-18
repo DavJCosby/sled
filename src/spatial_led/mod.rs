@@ -21,7 +21,7 @@ use crate::{color::ColorType, config::LineSegment, led::Led, Vec2};
 /// }
 /// let mut u8_sled = Sled::<(u8, u8, u8)>::new("/path/to/config.yap")?;
 /// let mut rgbw_sled = Sled::<RGBW>::new("/path/to/config.yap")?;
-/// 
+///
 /// u8_sled.set(4, (255, 0, 0))?; // set 5th led to red
 /// rgbw_sled.set_all(RGBW {
 ///     r: 0.0,

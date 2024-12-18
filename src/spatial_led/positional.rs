@@ -176,7 +176,11 @@ impl<Color: ColorType> Sled<Color> {
     /// });
     ///# Ok(())
     ///# }
-    pub fn modulate_furthest_from<F: Fn(&Led<Color>) -> Color>(&mut self, pos: Vec2, color_rule: F) {
+    pub fn modulate_furthest_from<F: Fn(&Led<Color>) -> Color>(
+        &mut self,
+        pos: Vec2,
+        color_rule: F,
+    ) {
         let index_of_furthest = self.index_of_furthest_from(pos);
         let led = &mut self.leds[index_of_furthest];
         led.color = color_rule(led);
@@ -228,7 +232,11 @@ impl<Color: ColorType> Sled<Color> {
         all_at_distance.into()
     }
 
-    pub fn modulate_at_dist<F: Fn(&Led<Color>) -> Color>(&mut self, dist: f32, color_rule: F) -> bool {
+    pub fn modulate_at_dist<F: Fn(&Led<Color>) -> Color>(
+        &mut self,
+        dist: f32,
+        color_rule: F,
+    ) -> bool {
         self.modulate_at_dist_from(dist, self.center_point, color_rule)
     }
 
@@ -283,7 +291,11 @@ impl<Color: ColorType> Sled<Color> {
         all_within_distance.into()
     }
 
-    pub fn modulate_within_dist<F: Fn(&Led<Color>) -> Color>(&mut self, dist: f32, color_rule: F) -> bool {
+    pub fn modulate_within_dist<F: Fn(&Led<Color>) -> Color>(
+        &mut self,
+        dist: f32,
+        color_rule: F,
+    ) -> bool {
         let mut changes_made = false;
 
         for led in &mut self.leds {

@@ -1,8 +1,6 @@
 use spatial_led::{
     driver::{Data, Driver, Time},
-    Sled,
-    SledResult,
-    Vec2,
+    Sled, SledResult, Vec2,
 };
 
 use rand::Rng;

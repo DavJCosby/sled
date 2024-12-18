@@ -1,8 +1,7 @@
 use palette::rgb::Rgb;
 use spatial_led::{
-    driver::{Driver, Time, Data},
-    Sled,
-    SledResult,
+    driver::{Data, Driver, Time},
+    Sled, SledResult,
 };
 
 use std::f32::consts::TAU;

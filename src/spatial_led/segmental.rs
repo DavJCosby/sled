@@ -22,7 +22,7 @@ impl<Color: ColorType> Sled<Color> {
         Some(led_range.into())
     }
     /// Modulates the color of each [LED](Led) assigned to the line segment with index `segment_index` given a color rule function. Returns an [error](SledError) if there is no line segment with the given index.
-    /// 
+    ///
     /// O(LEDS_IN_SEGMENT)
     ///
     ///```rust
@@ -56,7 +56,7 @@ impl<Color: ColorType> Sled<Color> {
     }
 
     /// Sets the color of each [LED](Led) assigned to the line segment with index `segment_index`. Returns an [error](SledError) if there is no line segment with the given index.
-    /// 
+    ///
     /// O(LEDS_IN_SEGMENT)
     ///
     pub fn set_segment(&mut self, segment_index: usize, color: Color) -> Result<(), SledError> {
@@ -137,7 +137,7 @@ impl<Color: ColorType> Sled<Color> {
 
     /// Sets the color of each [LED](Led) assigned to the line segments whose indices are within the given range.
     /// Returns an [error](SledError) if the range exceeds the number of line segments in the system.
-    /// 
+    ///
     /// O(LEDS_IN_SEGMENTS)
     pub fn set_segments(&mut self, range: Range<usize>, color: Color) -> Result<(), SledError> {
         if range.start >= self.line_segment_endpoint_indices.len() {

@@ -1,9 +1,9 @@
 mod drivers;
 use drivers::ripples;
 
+use palette::rgb::Rgb;
 use spatial_led::Sled;
 use std::time::Duration;
-use palette::rgb::Rgb;
 
 fn ripples(c: &mut Criterion) {
     let sled = Sled::<Rgb>::new("./benches/config.yap").unwrap();

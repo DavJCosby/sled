@@ -63,7 +63,8 @@ impl<COLOR: ColorType> Sled<COLOR> {
             &config.line_segments,
             &config.center_point,
         );
-        let line_segment_endpoint_indices = Sled::<COLOR>::line_segment_endpoint_indices(&leds_per_segment);
+        let line_segment_endpoint_indices =
+            Sled::<COLOR>::line_segment_endpoint_indices(&leds_per_segment);
         let vertex_indices = Sled::<COLOR>::vertex_indices(&config);
         let num_leds = leds.len();
         let index_of_closest = leds
@@ -156,7 +157,7 @@ impl<COLOR: ColorType> Sled<COLOR> {
     }
 
     /// Returns the total number of [LEDs](Led) in the system.
-    /// 
+    ///
     /// O(1)
     pub fn num_leds(&self) -> usize {
         self.num_leds
