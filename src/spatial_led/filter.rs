@@ -3,7 +3,7 @@ use alloc::collections::{btree_set, BTreeSet};
 use crate::{color::ColorType, led::Led, spatial_led::Sled};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-/// A Filter is a set of LEDs that can be obtained via one of [Sled's](Sled) `.get()` methods.
+/// A Filter is a set of LEDs that can be obtained via one of [Sled's](Sled) getter-type methods.
 ///
 /// They are particularly useful for scenarios when you have computationally expensive calculations and you want to limit which LEDs those calculations are run on. Once you've created a filter, you can save it to [Data](crate::driver::Data) for use in draw/compute stages. Using this pattern, we can pre-compute important sets at startup and then store them to the driver for later usage.
 ///

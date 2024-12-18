@@ -329,7 +329,7 @@ driver.set_startup_commands(|sled, data| {
      Ok(())
  });
 ```
-Most `.get` methods on sled will return a Filter, but if you need more precise control you can do something like this:
+Most getter-type methods on sled will return a Filter, but if you need more precise control you can do something like this:
 ```rust
 let even_filter = sled.filter(|led| led.index() % 2 == 0);
 ```
