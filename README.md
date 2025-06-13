@@ -399,7 +399,7 @@ If you don't need the Scheduler struct in general, you can disable the `schedule
 
 Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
 
-To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
+To do this, disable the `std` flag and enable the `libm` flag (for use by glam).
 
 Users on the nightly toolchain can also enable the `core-simd` feature flag for some extra performance if you know your target platform supports SIMD instructions.
 
