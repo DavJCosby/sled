@@ -1,4 +1,4 @@
-use std::fmt::Debug;
+use core::fmt::Debug;
 pub trait ColorType: Debug + Default + Copy {}
 
 impl<T: Debug + Default + Copy> ColorType for T {}
