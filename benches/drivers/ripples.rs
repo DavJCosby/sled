@@ -3,7 +3,7 @@ use spatial_led::{
     Sled, SledResult, Vec2,
 };
 
-use rand::Rng;
+use rand::prelude::*;
 
 use palette::rgb::Rgb;
 use std::ops::Range;
@@ -20,7 +20,7 @@ pub fn build_driver() -> Driver<Rgb> {
     driver.set_startup_commands(startup);
     driver.set_compute_commands(compute);
     driver.set_draw_commands(draw);
-    return driver;
+    driver
 }
 
 fn startup(sled: &mut Sled<Rgb>, data: &mut Data) -> SledResult {
@@ -78,17 +78,17 @@ fn compute(sled: &Sled<Rgb>, data: &mut Data, time: &Time) -> SledResult {
 }
 
 fn rand_point_in_range(range: &Range<Vec2>) -> Vec2 {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     Vec2::new(
-        rng.gen_range(range.start.x * 1.25..range.end.x * 1.25),
-        rng.gen_range(range.start.y * 1.25..range.end.y * 1.25),
+        rng.random_range(range.start.x * 1.25..range.end.x * 1.25),
+        rng.random_range(range.start.y * 1.25..range.end.y * 1.25),
     )
 }
 
 fn rand_init_radius() -> f32 {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     // using a negative radius, we can scheudle a delay before the ripple actually appears
-    rng.gen_range(-32.0..0.0)
+    rng.random_range(-32.0..0.0)
 }
 
 fn draw(sled: &mut Sled<Rgb>, data: &Data, _: &Time) -> SledResult {
