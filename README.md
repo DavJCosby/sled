@@ -397,8 +397,6 @@ Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` i
 
 To do this, disable the `std` flag and enable the `libm` flag (for use by glam).
 
-Users on the nightly toolchain can also enable the `core-simd` feature flag for some extra performance if you know your target platform supports SIMD instructions.
-
 ## Drivers
 The default Driver implementation depends on `std::time::Instant` to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the `crate::time::Instant` trait.
 
@@ -441,7 +439,6 @@ Enabled by Default:
 
 Opt-in:
 - `libm` : Needed for some `no_std` environments.
-- `core-simd` (Nightly) : Allows the vector math library used by the crate to take advantage of SIMD instructions when `std::simd` isn't available.
 </details>
 
 <details>

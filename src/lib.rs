@@ -132,7 +132,7 @@
 //!     2.0,
 //!     Vec2::new(1.0, 0.5)
 //! );
-//!     
+//!
 //! let circle_2: Filter = sled.within_dist_from(
 //!     2.5,
 //!     Vec2::new(-1.0, 1.5)
@@ -315,7 +315,7 @@
 //!            sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
 //!        }
 //!    }
-//!    
+//!
 //!    Ok(())
 //! });
 //! ```
@@ -439,7 +439,6 @@
 //!
 //! To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
 //!
-//! Users on the nightly toolchain can also enable the `core-simd` for some extra performance if you know your target platform supports SIMD instructions.
 //!
 //! ## Drivers
 //! The default Driver implementation depends on [std::time::Instant] to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the [crate::time::Instant] trait.
@@ -482,7 +481,6 @@
 //!
 //! Opt-in:
 //! - `libm` : Needed for some `no_std` environments.
-//! - `core-simd` (Nightly) : Enables portable SIMD support for use by glam.
 
 extern crate alloc;
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
