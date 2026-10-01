@@ -7,26 +7,22 @@
 <div> <img src="https://github.com/DavJCosby/sled/blob/master/resources/ripples-demo.gif?raw=true" width="49%" title="cargo run --example ripples"> <img src="https://github.com/DavJCosby/sled/blob/master/resources/warpspeed-demo.gif?raw=true" width="49%" title="cargo run --example warpspeed">
  </div>
 Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
-<details>
-<summary><strong>What Sled does:</strong></summary>
+
+### What Sled does:
 
 - It exposes an API that lets you:
 	- Compute colors depending on each LED's position, distance, direction, line segment, etc;
 	- Output colors via a simple, contiguous iterator for your own usage;
 	- Filter LEDs by spatial properties to predefine important sets and regions for faster computation;
-- Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [compiler features](https://doc.rust-lang.org/cargo/reference/features.html)):
+- Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [feature flags](https://doc.rust-lang.org/cargo/reference/features.html)):
 	- [Driver](#drivers) - Pack draw/compute logic into a Driver to simplify the process of swapping between effects, or changing effect settings at runtime. 
 	- [Scheduler](#scheduler) - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
-</details>
 
-<details>
-
-<summary><strong>What Sled does <ins>not<ins> do:</strong></summary>
+### What Sled does *not* do:
 
 - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
 
-</details>
 
 See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 
@@ -178,7 +174,7 @@ let colors_and_positions = sled.colors_and_positions();
 <details>
 <summary><h1>Advanced Features</h1></summary>
 
-For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
+For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their feature flags) tools are provided to streamline that process.
 
 <details>
 <summary><h2>Drivers</h2></summary>
@@ -401,8 +397,6 @@ Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` i
 
 To do this, disable the `std` flag and enable the `libm` flag (for use by glam).
 
-Users on the nightly toolchain can also enable the `core-simd` feature flag for some extra performance if you know your target platform supports SIMD instructions.
-
 ## Drivers
 The default Driver implementation depends on `std::time::Instant` to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the `crate::time::Instant` trait.
 
@@ -445,7 +439,6 @@ Enabled by Default:
 
 Opt-in:
 - `libm` : Needed for some `no_std` environments.
-- `core-simd` (Nightly) : Allows the vector math library used by the crate to take advantage of SIMD instructions when `std::simd` isn't available.
 </details>
 
 <details>

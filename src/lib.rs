@@ -5,34 +5,28 @@
 //! </div>
 //!
 //! Sled is an ergonomic rust library that maps out the shape of your LED strips in 2D space to help you create stunning lighting effects.
-//!<details>
-//! <summary><strong>What Sled does:</strong></summary>
+//! ## What Sled does
 //!
 //! - It exposes an API that lets you:
 //!     - Modify virtual LED colors depending on each LED's position, distance, direction, line segment, etc;
 //!     - Output that color data in a simple, contiguous data structure for your own usage;
 //!     - Filter LEDs by their spatial properties to pre-compute important sets;
-//! - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with compiler features):
+//! - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with feature flags):
 //!     - `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime.
 //!     - `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
-//! </details>
 //!
-//! <details>
-//! <summary><strong>What Sled does <ins>not</ins> do:</strong></summary>
+//! ## What Sled does not do
 //!
 //! - It does not interface directly with your GPIO pins to control your LED hardware. Each project will be different, so it's up to you to bring your own glue. Check out the [Raspberry Pi example](https://github.com/DavJCosby/spatial_led_examples/tree/main/raspberry_pi) to get an idea what that might look like.
 //! - It does not allow you to represent your LEDs in 3D space. Could be a fun idea in the future, but it's just not planned for the time being.
-//!</details>
 //!
 //! See the [spatial_led_examples](https://github.com/DavJCosby/spatial_led_examples) repository for examples of Sled in action!
 //!
-//! <details open>
-//! <summary><h1>The Basics</h1></summary>
+//! ## The Basics
 //!
 //! In absence of an official guide, this will serve as a basic introduction to Sled. From here, you can use the documentation comments to learn what else Sled offers.
 //
-//! <details open>
-//! <summary><h3>Setup</h3></summary>
+//! ### Setup
 //!
 //! To [create](Sled::new) a [Sled] struct, you need to create a configuration file and provide its path to the constructor.
 //! ```rust, ignore
@@ -77,10 +71,8 @@
 //! ```
 //! For all further examples we'll use palette's Rgb struct as our backing color format (we really do highly recommend it and encourage its use wherever it makes sense), but just know that you can use any data type that implements `Debug`, `Default`, and `Copy`.
 //!
-//!</details>
 //!
-//!<details open>
-//!<summary><h3>Drawing</h3></summary>
+//! ### Drawing
 //!
 //! Once you have your [Sled] struct, you can start drawing to it right away! Here’s a taste of some of the things Sled lets you do:
 //!
@@ -140,7 +132,7 @@
 //!     2.0,
 //!     Vec2::new(1.0, 0.5)
 //! );
-//!     
+//!
 //! let circle_2: Filter = sled.within_dist_from(
 //!     2.5,
 //!     Vec2::new(-1.0, 1.5)
@@ -152,10 +144,8 @@
 //! ![Set Overlapping Areas](https://github.com/DavJCosby/sled/blob/master/resources/filter_and.png?raw=true)
 //! For more examples, see the documentation comments on the [Sled] struct.
 //!
-//! </details>
 //!
-//! <details open>
-//! <summary><h3>Output</h3></summary>
+//! ### Output
 //!
 //! Once you’re ready to display these colors, you’ll probably want them packed in a nice contiguous array of color values. There are a few methods available to pack the information you need.
 //!
@@ -183,17 +173,12 @@
 //! // An Iterator of (Rgb, Vec2) tuple pairs representing each leds color and position.
 //! let colors_f32_and_positions = sled.colors_and_positions();
 //! ```
-//! </details>
-//! </details>
 //!
+//! ## Advanced Features
 //!
-//! <details>
-//! <summary><h1>Advanced Features</h1></summary>
+//! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their feature flags) tools are provided to streamline that process.
 //!
-//! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
-//!
-//! <details>
-//! <summary><h3>Drivers</h3></summary>
+//! ### Drivers
 //!
 //! [Drivers](driver::Driver) are useful for encapsulating everything you need to drive a lighting effect all in one place. Here's an example of what a simple, time-based one might look like:
 //!
@@ -270,8 +255,7 @@
 //!
 //! For more examples of ways to use drivers, see the [driver_examples folder](https://github.com/DavJCosby/spatial_led_examples/tree/main/driver_examples) in the spatial_led_examples repository.
 //!
-//! <details open>
-//! <summary><h4> Driver Data </h4></summary>
+//! #### Driver Data
 //!
 //! A driver exposes a data structure called [Data](driver::Data). This struct essentially acts as a HashMap of `&str` keys to values of any type you choose to instantiate. This is particularly useful for passing important data and settings in to the effect.
 //!
@@ -331,7 +315,7 @@
 //!            sled.set_segment(i, Rgb::new(0.0, 0.0, 0.0))?;
 //!        }
 //!    }
-//!    
+//!
 //!    Ok(())
 //! });
 //! ```
@@ -350,10 +334,8 @@
 //! # }
 //! ```
 //!
-//! </details>
 //!
-//! <details open>
-//! <summary><h4>Filters</h4></summary>
+//! #### Filters
 //!
 //! For exceptionally performance-sensitive scenarios, [Filters](Filter) can be used to predefine important LED regions. Imagine for example that we have an incredibly expensive mapping function that will only have a visible impact on the LEDs within some radius $R$ from a given point $P$.
 //!
@@ -399,11 +381,8 @@
 //!     Ok(())
 //! });
 //! ```
-//! </details>
-//! </details>
 //!
-//! <details>
-//! <summary><h3>Scheduler</h3></summary>
+//! ### Scheduler
 
 //! The [Scheduler](scheduler::Scheduler) struct makes it super easy to schedule redraws at a fixed rate.
 //!
@@ -453,17 +432,13 @@
 
 //! If you don't need the Scheduler struct in general, you can disable the `scheduler` and `spin_sleep` flags.
 //!
-//! </details>
-//! </details>
 //!
-//! <details>
-//! <summary><h1><code>no_std</code> Support</h1></summary>
+//! ## `no_std` Support
 //!
 //! Spatial LED is now usable in `no_std` environments as of 0.2.0 (though `alloc` is still required), thanks to some [awesome contributions](https://github.com/DavJCosby/sled/pull/86) by [Claudio Mattera](https://github.com/claudiomattera).
 //!
 //! To do this, disable the `std` flag and enable the `libm` flag (for use by glam and palette).
 //!
-//! Users on the nightly toolchain can also enable the `core-simd` for some extra performance if you know your target platform supports SIMD instructions.
 //!
 //! ## Drivers
 //! The default Driver implementation depends on [std::time::Instant] to track elapsed time between driver steps. For `no_std` environments, you must provide your own struct that implements the [crate::time::Instant] trait.
@@ -495,10 +470,8 @@
 //! ## Feedback and Contributions
 //! The author of this crate does not own any hardware that would allow him test spatial_led on real `no_std` environments, so bug reports and PRs are very appreciated.
 //!
-//! </details>
 //!
-//! <details>
-//! <summary><h1>Feature Flags</h1></summary>
+//! ## Feature Flags
 //!
 //! Enabled by Default:
 //! - `std`
@@ -508,8 +481,6 @@
 //!
 //! Opt-in:
 //! - `libm` : Needed for some `no_std` environments.
-//! - `core-simd` (Nightly) : Enables portable SIMD support for use by glam.
-//! </details>
 
 extern crate alloc;
 /// Exposes [palette](https://crates.io/crates/palette)'s color management tools and brings the Rgb struct forward for easier use in Sled projects.
