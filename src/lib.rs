@@ -11,7 +11,7 @@
 //!     - Modify virtual LED colors depending on each LED's position, distance, direction, line segment, etc;
 //!     - Output that color data in a simple, contiguous data structure for your own usage;
 //!     - Filter LEDs by their spatial properties to pre-compute important sets;
-//! - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with compiler features):
+//! - Additionally, some tools are provided to help you build functional apps faster (you may opt-out with feature flags):
 //!     - `Driver` - Pack draw/compute logic into a Driver to simplify to the process of swapping between effects, or changing effect settings at runtime.
 //!     - `Scheduler` - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
 //!
@@ -176,7 +176,7 @@
 //!
 //! ## Advanced Features
 //!
-//! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
+//! For basic applications, the [Sled] struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their feature flags) tools are provided to streamline that process.
 //!
 //! ### Drivers
 //!

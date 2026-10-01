@@ -14,7 +14,7 @@ Sled is an ergonomic rust library that maps out the shape of your LED strips in 
 	- Compute colors depending on each LED's position, distance, direction, line segment, etc;
 	- Output colors via a simple, contiguous iterator for your own usage;
 	- Filter LEDs by spatial properties to predefine important sets and regions for faster computation;
-- Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [compiler features](https://doc.rust-lang.org/cargo/reference/features.html)):
+- Additionally, some tools are provided to help you build functional apps faster (you may opt-out via [feature flags](https://doc.rust-lang.org/cargo/reference/features.html)):
 	- [Driver](#drivers) - Pack draw/compute logic into a Driver to simplify the process of swapping between effects, or changing effect settings at runtime. 
 	- [Scheduler](#scheduler) - Lightweight tool to schedule redraws at a fixed rate, powered by [spin_sleep](https://github.com/alexheretic/spin-sleep).
 
@@ -174,7 +174,7 @@ let colors_and_positions = sled.colors_and_positions();
 <details>
 <summary><h1>Advanced Features</h1></summary>
 
-For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their compiler features) tools are provided to streamline that process.
+For basic applications, the Sled struct gives you plenty of power. Odds are though, you'll want to create more advanced effects that might be time or user-input driven. A few optional (enabled by default, opt-out by disabling their feature flags) tools are provided to streamline that process.
 
 <details>
 <summary><h2>Drivers</h2></summary>
